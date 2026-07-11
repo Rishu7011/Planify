@@ -1,0 +1,94 @@
+"""
+Feasibility Agent.
+
+Assesses technical complexity, risks, and critical dependencies
+based on the PRD output.
+"""
+from __future__ import annotations
+
+import json
+import logging
+from typing import Any, Dict
+
+from langchain_core.prompts import ChatPromptTemplate
+
+from app.agents.llm import get_llm
+from app.agents.state import WorkflowState
+from app.schemas.agents import FeasibilityOutput
+
+logger = logging.getLogger(__name__)
+
+_PROMPT = ChatPromptTemplate.from_template(
+    """You are a seasoned Solution Architect with 15+ years of experience.
+
+Given this Product Requirements Document, assess technical feasibility:
+
+Domain: {domain}
+Functional Requirements:
+{features}
+
+Non-Functional Requirements:
+{non_functional}
+
+Constraints: {constraints}
+
+Return ONLY a valid JSON object:
+{{
+  "technical_approach": "High-level technology strategy (2-3 paragraphs)",
+  "complexity_signal": "low|medium|high",
+  "key_risks": [
+    "Risk 1: [description] — Mitigation: [mitigation approach]",
+    "Risk 2: ..."
+  ],
+  "critical_dependencies": [
+    "External service or technology required (e.g., Stripe for payments, Twilio for SMS)"
+  ],
+  "regulatory_notes": "Any compliance/regulatory considerations or null",
+  "assumptions_stated": ["assumption 1", "assumption 2"]
+}}
+
+Rules:
+- complexity_signal: low (simple CRUD), medium (moderate AI/integrations), high (novel ML/real-time/compliance)
+- Be realistic — if something is hard, say it's hard
+- List 4-6 risks with concrete mitigations
+- Include build-vs-buy decisions in technical_approach
+"""
+)
+
+
+async def feasibility_agent(state: WorkflowState) -> Dict[str, Any]:
+    """LangGraph node: assess technical feasibility from PRD."""
+    if "prd" not in state.agent_outputs:
+        logger.warning("[feasibility] No PRD found — skipping")
+        return {}
+
+    llm = get_llm()
+    prd = state.agent_outputs["prd"]
+    context = state.project_context
+
+    features = "\n".join(f"- {r}" for r in prd.get("functional_requirements", []))
+    non_func = "\n".join(f"- {r}" for r in prd.get("non_functional_requirements", []))
+
+    messages = _PROMPT.format_messages(
+        domain=context.domain or "unknown",
+        features=features or "See PRD",
+        non_functional=non_func or "Standard requirements",
+        constraints=json.dumps(context.constraints.model_dump()) if context.constraints else "{}",
+    )
+
+    logger.info("[feasibility_agent] Running feasibility assessment")
+    response = await llm.ainvoke(messages)
+
+    try:
+        content = response.content.strip().lstrip("```json").rstrip("```").strip()
+        data = json.loads(content)
+        output = FeasibilityOutput(**data)
+    except Exception as exc:
+        logger.error("[feasibility_agent] Parse failed: %s", exc)
+        raise ValueError(f"Feasibility parse failed: {exc}") from exc
+
+    return {
+        "agent_outputs": {**state.agent_outputs, "feasibility": output.model_dump()},
+        "agents_executed": [*state.agents_executed, "feasibility_agent"],
+        "current_agent": "feasibility",
+    }

@@ -1,18 +1,12 @@
-# Graph Report - Planify  (2026-07-11)
+# Graph Report - .  (2026-07-11)
 
 ## Corpus Check
-- 32 files · ~3,365 words
-- Verdict: corpus is large enough that graph structure adds value.
+- Corpus is ~3,388 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 184 nodes · 189 edges · 26 communities (24 shown, 2 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.77)
+- 196 nodes · 213 edges · 26 communities (25 shown, 1 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 16 edges (avg confidence: 0.84)
 - Token cost: 0 input · 0 output
-
-## Graph Freshness
-- Built from commit: `b3cf0232`
-- Run `git rev-parse HEAD` and compare to check if the graph is stale.
-- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - Frontend Dependencies
@@ -38,12 +32,12 @@
 2. `Next.js Breaking Changes Warning` - 6 edges
 3. `get_current_user()` - 5 edges
 4. `scripts` - 5 edges
-5. `init_indexes()` - 4 edges
-6. `get_database()` - 4 edges
-7. `CorrelationIdFilter` - 4 edges
-8. `setup_logging()` - 4 edges
-9. `auth_middleware()` - 4 edges
-10. `connect_to_mongo()` - 3 edges
+5. `graphify` - 5 edges
+6. `Knowledge Graph at graphify-out/` - 5 edges
+7. `graphify query` - 5 edges
+8. `Graphify-First Codebase Exploration Workflow` - 5 edges
+9. `init_indexes()` - 4 edges
+10. `get_database()` - 4 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `init_indexes()` --calls--> `get_database()`  [INFERRED]
@@ -61,9 +55,11 @@
 - None detected.
 
 ## Hyperedges (group relationships)
+- **Graphify CLI Tooling** — gemini_graphify_query, gemini_graphify_path, gemini_graphify_explain, gemini_graphify_update [EXTRACTED 1.00]
+- **Knowledge Graph Structural Components** — gemini_knowledge_graph, gemini_god_nodes, gemini_community_structure, gemini_cross_file_relationships [EXTRACTED 1.00]
 - **Next.js Breaking Change Surfaces** — frontend_agents_nextjs_apis, frontend_agents_nextjs_conventions, frontend_agents_nextjs_file_structure, frontend_agents_deprecation_notices [EXTRACTED 1.00]
 
-## Communities (26 total, 2 thin omitted)
+## Communities (26 total, 1 thin omitted)
 
 ### Community 0 - "Frontend Dependencies"
 Cohesion: 0.07
@@ -80,6 +76,10 @@ Nodes (14): AsyncIOMotorDatabase, init_indexes(), Create all MongoDB indexes for
 ### Community 3 - "Agent Schemas"
 Cohesion: 0.18
 Nodes (15): ClarificationOutput, FeasibilityOutput, InputUnderstandingOutput, PRDOutput, PRDSection, BaseModel, Output from the Clarification Agent., Output from the PRD Agent. (+7 more)
+
+### Community 4 - "Graphify Documentation"
+Cohesion: 0.27
+Nodes (13): Graphify-First Codebase Exploration Workflow, Community Structure, Cross-File Relationships, God Nodes, graphify, graphify explain, graphify path, graphify query (+5 more)
 
 ### Community 5 - "Chat Schemas"
 Cohesion: 0.27
@@ -126,21 +126,21 @@ Cohesion: 0.70
 Nodes (3): Button(), buttonVariants, cn()
 
 ## Knowledge Gaps
-- **42 isolated node(s):** `graphify`, `handler`, `geistSans`, `geistMono`, `metadata` (+37 more)
+- **44 isolated node(s):** `handler`, `geistSans`, `geistMono`, `metadata`, `fs` (+39 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `Frontend Dependencies` to `Package Metadata`?**
-  _High betweenness centrality (0.069) - this node is a cross-community bridge._
+  _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `Dev Tooling` to `Package Metadata`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `lifespan()` (e.g. with `init_indexes()` and `close_mongo_connection()`) actually correct?**
   _`lifespan()` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `graphify`, `Create all MongoDB indexes for the planify database.`, `Open async MongoDB connection on app startup.` to the rest of the system?**
-  _69 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `Create all MongoDB indexes for the planify database.`, `Open async MongoDB connection on app startup.`, `Close MongoDB connection on app shutdown.` to the rest of the system?**
+  _71 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Frontend Dependencies` be split into smaller, more focused modules?**
   _Cohesion score 0.06896551724137931 - nodes in this community are weakly interconnected._
 - **Should `Dev Tooling` be split into smaller, more focused modules?**

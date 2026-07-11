@@ -1,6 +1,14 @@
-from pydantic import BaseModel
-from typing import List, Dict, Optional
+"""
+Pydantic schemas for all AI agent inputs and outputs.
+"""
+from __future__ import annotations
 
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel
+
+
+# ── Input Understanding ───────────────────────────────────────────────────────
 
 class InputUnderstandingOutput(BaseModel):
     """Output from the Input Understanding Agent."""
@@ -12,6 +20,8 @@ class InputUnderstandingOutput(BaseModel):
     confidence: float
 
 
+# ── Clarification ─────────────────────────────────────────────────────────────
+
 class ClarificationOutput(BaseModel):
     """Output from the Clarification Agent."""
 
@@ -19,9 +29,18 @@ class ClarificationOutput(BaseModel):
     clarification_questions: Optional[List[str]] = None
 
 
+# ── PRD ───────────────────────────────────────────────────────────────────────
+
 class PRDSection(BaseModel):
     title: str
     content: str
+
+
+class Persona(BaseModel):
+    name: str
+    role: str
+    needs: List[str]
+    pain_points: List[str]
 
 
 class PRDOutput(BaseModel):
@@ -30,7 +49,7 @@ class PRDOutput(BaseModel):
     overview: PRDSection
     problem_statement: PRDSection
     goals: List[str]
-    personas: List[Dict]
+    personas: List[Persona]
     user_stories: List[str]
     functional_requirements: List[str]
     non_functional_requirements: List[str]
@@ -40,6 +59,8 @@ class PRDOutput(BaseModel):
     assumptions_stated: List[str]
 
 
+# ── Feasibility ───────────────────────────────────────────────────────────────
+
 class FeasibilityOutput(BaseModel):
     """Output from the Feasibility Agent."""
 
@@ -48,27 +69,56 @@ class FeasibilityOutput(BaseModel):
     key_risks: List[str]
     critical_dependencies: List[str]
     regulatory_notes: Optional[str] = None
+    assumptions_stated: List[str] = []
+
+
+# ── ROI ───────────────────────────────────────────────────────────────────────
+
+class ROIScenario(BaseModel):
+    name: str
+    timeline_months: int
+    breakeven: str
+    notes: Optional[str] = None
 
 
 class ROIOutput(BaseModel):
-    """Output from the ROI / Financial Agent."""
+    """Output from the ROI Agent."""
 
-    estimated_revenue_year1: Optional[str] = None
-    estimated_costs: Optional[str] = None
-    break_even_timeline: Optional[str] = None
-    key_assumptions: List[str] = []
-    confidence: float = 0.0
+    development_cost_range: str
+    infrastructure_cost_estimate: str
+    team_cost_estimate: str
+    revenue_assumptions: List[str]
+    roi_scenarios: List[ROIScenario]
+    assumptions_stated: List[str]
 
 
-class RoadmapMilestone(BaseModel):
-    title: str
+# ── Roadmap ───────────────────────────────────────────────────────────────────
+
+class RoadmapPhase(BaseModel):
+    phase_name: str
+    description: str
     duration_weeks: int
+    milestones: List[str]
     deliverables: List[str]
 
 
 class RoadmapOutput(BaseModel):
     """Output from the Roadmap Agent."""
 
-    phases: List[RoadmapMilestone]
-    total_duration_weeks: int
-    critical_path_notes: Optional[str] = None
+    phases: List[RoadmapPhase]
+    total_timeline_weeks: int
+    critical_path: str
+    priority_rationale: str
+
+
+# ── Final Report ──────────────────────────────────────────────────────────────
+
+class FinalReportOutput(BaseModel):
+    """Output from the Final Report Agent — assembled bundle."""
+
+    prd_version: int = 1
+    feasibility_version: int = 1
+    roi_version: int = 1
+    roadmap_version: int = 1
+    consistency_issues: List[str] = []
+    status: str  # ready | review_needed

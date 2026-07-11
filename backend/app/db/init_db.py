@@ -19,6 +19,10 @@ async def init_indexes() -> None:
     # ── AI Workflow ───────────────────────────────────────────────────
     await db.ai_workflow_runs.create_index([("project_id", 1), ("created_at", -1)])
 
+    # ── Checkpoints ───────────────────────────────────────────────────
+    await db.checkpoints.create_index([("thread_id", 1), ("checkpoint_ns", 1), ("checkpoint_id", -1)])
+    await db.pending_writes.create_index([("thread_id", 1), ("checkpoint_ns", 1)])
+
     # ── Members (unique per org + user) ───────────────────────────────
     await db.members.create_index([("organization_id", 1), ("user_id", 1)], unique=True)
 
