@@ -1079,18 +1079,18 @@ describe("LoginPage", () => {
 
 ## Phase 0 Deliverables Checklist
 
-- [ ] Monorepo initialized with proper structure
-- [ ] Docker Compose file allows `docker-compose up` to spin up full stack
-- [ ] GitHub Actions CI/CD pipeline runs on every commit
+- [x] Monorepo initialized with proper structure
+- [x] ~~Docker Compose file allows `docker-compose up` to spin up full stack~~ (Skipped per user request)
+- [x] ~~GitHub Actions CI/CD pipeline runs on every commit~~ (Skipped per user request)
 - [x] MongoDB collections created with proper indexes
 - [x] NextAuth configured with Google/GitHub OAuth
-- [ ] FastAPI JWT verification middleware implemented
-- [ ] Context object schema defined and validated
-- [ ] All agent output schemas defined
-- [ ] Logging, APM, and error tracking configured
-- [ ] Code linting and formatting standards established
-- [ ] Testing framework set up for both backend and frontend
-- [ ] Documentation in place (architecture, schemas, API)
+- [x] FastAPI JWT verification middleware implemented
+- [x] Context object schema defined and validated
+- [x] All agent output schemas defined
+- [x] Logging, APM, and error tracking configured
+- [x] Code linting and formatting standards established
+- [x] Testing framework set up for both backend and frontend
+- [x] Documentation in place (architecture, schemas, API)
 
 ### Phase 0 Success Criteria
 
