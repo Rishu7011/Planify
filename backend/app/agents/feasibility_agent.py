@@ -13,8 +13,8 @@ from typing import Any, Dict
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.llm import get_llm
-from app.agents.state import WorkflowState
 from app.schemas.agents import FeasibilityOutput
+from app.schemas.context import ProjectContext
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ Non-Functional Requirements:
 
 Constraints: {constraints}
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object — no markdown fences:
 {{
   "technical_approach": "High-level technology strategy (2-3 paragraphs)",
   "complexity_signal": "low|medium|high",
@@ -56,15 +56,39 @@ Rules:
 )
 
 
-async def feasibility_agent(state: WorkflowState) -> Dict[str, Any]:
+def _strip_fences(text: str) -> str:
+    """Strip markdown code fences from LLM output."""
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:] if lines[0].startswith("```") else lines
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    return text
+
+
+async def feasibility_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """LangGraph node: assess technical feasibility from PRD."""
-    if "prd" not in state.agent_outputs:
-        logger.warning("[feasibility] No PRD found — skipping")
+    existing_outputs = state.get("agent_outputs") or {}
+
+    if "prd" not in existing_outputs:
+        logger.warning("[feasibility] No PRD found in state — skipping")
         return {}
 
     llm = get_llm()
-    prd = state.agent_outputs["prd"]
-    context = state.project_context
+    prd = existing_outputs["prd"]
+
+    raw_context = state.get("project_context")
+    if isinstance(raw_context, dict):
+        context = ProjectContext(**raw_context)
+    elif raw_context is not None:
+        context = raw_context
+    else:
+        context = ProjectContext()
+
+    constraints = context.constraints
+    constraints_dict = constraints.model_dump() if hasattr(constraints, "model_dump") else (constraints or {})
 
     features = "\n".join(f"- {r}" for r in prd.get("functional_requirements", []))
     non_func = "\n".join(f"- {r}" for r in prd.get("non_functional_requirements", []))
@@ -73,22 +97,24 @@ async def feasibility_agent(state: WorkflowState) -> Dict[str, Any]:
         domain=context.domain or "unknown",
         features=features or "See PRD",
         non_functional=non_func or "Standard requirements",
-        constraints=json.dumps(context.constraints.model_dump()) if context.constraints else "{}",
+        constraints=json.dumps(constraints_dict),
     )
 
-    logger.info("[feasibility_agent] Running feasibility assessment")
+    logger.info("[feasibility_agent] Running feasibility assessment for project %s", state.get("project_id"))
     response = await llm.ainvoke(messages)
 
     try:
-        content = response.content.strip().lstrip("```json").rstrip("```").strip()
+        content = _strip_fences(response.content)
         data = json.loads(content)
         output = FeasibilityOutput(**data)
     except Exception as exc:
         logger.error("[feasibility_agent] Parse failed: %s", exc)
         raise ValueError(f"Feasibility parse failed: {exc}") from exc
 
+    existing_executed = state.get("agents_executed") or []
+
     return {
-        "agent_outputs": {**state.agent_outputs, "feasibility": output.model_dump()},
-        "agents_executed": [*state.agents_executed, "feasibility_agent"],
+        "agent_outputs": {**existing_outputs, "feasibility": output.model_dump()},
+        "agents_executed": [*existing_executed, "feasibility_agent"],
         "current_agent": "feasibility",
     }

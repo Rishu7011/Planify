@@ -1,48 +1,55 @@
 """
 LangGraph WorkflowState — the shared state object that flows through every agent node.
+
+IMPORTANT: Must be a TypedDict (not Pydantic BaseModel) for LangGraph to correctly
+perform partial state merges. Each agent node returns a DICT of only the fields it
+updates; LangGraph merges that dict into the existing state. With Pydantic BaseModel,
+the merge would replace the entire object with only the returned fields, causing
+accumulated agent_outputs to be lost.
+
+All fields are JSON-serialisable — required for the MongoDB checkpointer.
 """
 from __future__ import annotations
 
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from langgraph.graph.message import add_messages
-from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 from app.schemas.context import ProjectContext
 
 
-class WorkflowState(BaseModel):
+class WorkflowState(TypedDict, total=False):
     """
     Shared state flowing through the LangGraph pipeline.
 
     LangGraph passes this between nodes and merges return dicts into it.
-    All fields should be JSON-serialisable.
+    All fields are JSON-serialisable for MongoDB checkpoint persistence.
+
+    Using TypedDict (not Pydantic BaseModel) so LangGraph can correctly
+    do partial dict-style merges per node output.
     """
 
     # ── Input ─────────────────────────────────────────────────────────────────
     project_id: str
     raw_user_message: str
-    chat_history: List[Dict[str, str]] = Field(default_factory=list)
-    project_context: ProjectContext = Field(default_factory=ProjectContext)
-    uploaded_file_summaries: List[str] = Field(default_factory=list)
+    chat_history: List[Dict[str, str]]
+    project_context: ProjectContext
+    uploaded_file_summaries: List[str]
 
     # ── Execution tracking ────────────────────────────────────────────────────
-    current_agent: Optional[str] = None
-    agents_executed: List[str] = Field(default_factory=list)
+    current_agent: Optional[str]
+    agents_executed: List[str]
 
     # ── Agent outputs ─────────────────────────────────────────────────────────
-    agent_outputs: Dict[str, Any] = Field(default_factory=dict)
+    agent_outputs: Dict[str, Any]
 
     # ── Routing ───────────────────────────────────────────────────────────────
-    routing_decision: Optional[str] = None  # "prd" | "awaiting_input"
+    routing_decision: Optional[str]  # "prd" | "awaiting_input" | "persist"
 
     # ── Status ────────────────────────────────────────────────────────────────
-    status: str = "running"  # running | awaiting_input | completed | failed
-    error_message: Optional[str] = None
+    status: str  # running | awaiting_input | completed | failed
+    error_message: Optional[str]
 
     # ── Token usage ───────────────────────────────────────────────────────────
-    total_input_tokens: int = 0
-    total_output_tokens: int = 0
-
-    class Config:
-        arbitrary_types_allowed = True
+    total_input_tokens: int
+    total_output_tokens: int

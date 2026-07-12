@@ -18,6 +18,7 @@ from app.routes.projects import router as projects_router
 from app.routes.chat import router as chat_router
 from app.routes.reports import router as reports_router
 from app.routes.export import router as export_router
+from app.routes.dashboard import router as dashboard_router
 
 # ── Logging & Observability ───────────────────────────────────────────────────
 logger = setup_logging()
@@ -66,6 +67,7 @@ app.include_router(projects_router)
 app.include_router(chat_router)
 app.include_router(reports_router)
 app.include_router(export_router)
+app.include_router(dashboard_router)
 
 
 # ── Health Check ────────────────────────────────────────────────────────────

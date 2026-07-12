@@ -9,6 +9,7 @@ Compiles the full agent pipeline:
 from __future__ import annotations
 
 import logging
+from typing import Any, Dict
 
 from langgraph.graph import END, StateGraph
 
@@ -28,14 +29,18 @@ from app.db.mongodb import get_database
 logger = logging.getLogger(__name__)
 
 
-def _route_after_clarification(state: WorkflowState) -> str:
-    """Conditional edge: go to PRD or pause for user input."""
-    decision = state.routing_decision or "awaiting_input"
+def _route_after_clarification(state: Dict[str, Any]) -> str:
+    """
+    Conditional edge: go to PRD or pause for user input.
+    Reads routing_decision from the TypedDict state.
+    """
+    decision = state.get("routing_decision") or "awaiting_input"
     logger.info("[workflow] Routing after clarification: %s", decision)
     return decision
 
 
 _compiled_graph = None
+
 
 def get_graph():
     """Build and compile the full LangGraph agent pipeline, attaching the checkpointer."""
@@ -81,9 +86,11 @@ def get_graph():
         db = get_database()
         saver = MongoCheckpointSaver(db.client, db.name)
         _compiled_graph = graph.compile(checkpointer=saver)
-    except RuntimeError:
+        logger.info("[workflow] LangGraph compiled with MongoDB checkpointer")
+    except Exception as exc:
         # Fallback if DB not connected (e.g., during tests or initialisation)
+        logger.warning("[workflow] Checkpointer unavailable (%s) — compiling without persistence", exc)
         _compiled_graph = graph.compile()
-        
+
     logger.info("[workflow] LangGraph compiled successfully")
     return _compiled_graph

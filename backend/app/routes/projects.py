@@ -230,3 +230,35 @@ async def delete_project(request: Request, project_id: str) -> dict:
         {"$set": {"status": "deleted", "updated_at": datetime.now(UTC)}},
     )
     return {"message": "Project archived"}
+
+
+@router.get("/{project_id}/workflow-runs", summary="Get workflow runs for a specific project")
+async def get_project_workflow_runs(request: Request, project_id: str) -> list:
+    """
+    Returns all AI workflow runs executed for this project.
+    Lacks paging as runs are typically few per project.
+    """
+    user = request.state.user
+    db = get_database()
+
+    # Asserts access and loads project
+    await _assert_project_access(project_id, user, db)
+
+    runs = (
+        await db.ai_workflow_runs.find({"project_id": ObjectId(project_id)})
+        .sort("created_at", -1)
+        .to_list(None)
+    )
+
+    return [
+        {
+            "run_id": str(r["_id"]),
+            "project_id": str(r["project_id"]),
+            "status": r.get("status", "unknown"),
+            "agents_executed": r.get("agents_executed", []),
+            "duration_ms": r.get("duration_ms", 0),
+            "created_at": r["created_at"].isoformat() if r.get("created_at") else None,
+        }
+        for r in runs
+    ]
+

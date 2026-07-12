@@ -13,8 +13,8 @@ from typing import Any, Dict
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.llm import get_llm
-from app.agents.state import WorkflowState
 from app.schemas.agents import ClarificationOutput
+from app.schemas.context import ProjectContext
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ SUFFICIENT means:
 - We know at least one constraint (budget OR timeline OR team size)
 - The target audience is implied
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object — no markdown fences:
 {{
   "sufficient_context": true or false,
   "clarification_questions": []
@@ -53,26 +53,51 @@ Every question must be specific and actionable.
 )
 
 
-async def clarification_agent(state: WorkflowState) -> Dict[str, Any]:
+def _strip_fences(text: str) -> str:
+    """Strip markdown code fences from LLM output."""
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:] if lines[0].startswith("```") else lines
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    return text
+
+
+async def clarification_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     LangGraph node: check context completeness and generate targeted questions.
     Routes to 'prd' if sufficient, or 'awaiting_input' to pause for user answers.
     """
     llm = get_llm()
-    context = state.project_context
+    project_id = state.get("project_id", "unknown")
+
+    # Resolve project context (may be Pydantic model or plain dict)
+    raw_context = state.get("project_context")
+    if isinstance(raw_context, dict):
+        context = ProjectContext(**raw_context)
+    elif raw_context is not None:
+        context = raw_context
+    else:
+        context = ProjectContext()
+
+    known_facts = context.known_facts or []
+    ambiguity_flags = context.ambiguity_flags or []
 
     messages = _PROMPT.format_messages(
         domain=context.domain or "Unknown",
         problem=context.problem_statement or "Not stated",
-        known_facts=", ".join(context.known_facts) if context.known_facts else "None",
-        ambiguity_flags=", ".join(context.ambiguity_flags) if context.ambiguity_flags else "None",
+        known_facts=", ".join(known_facts) if known_facts else "None",
+        ambiguity_flags=", ".join(ambiguity_flags) if ambiguity_flags else "None",
     )
 
-    logger.info("[clarification] Evaluating context completeness")
+    logger.info("[clarification] Evaluating context completeness for project %s", project_id)
     response = await llm.ainvoke(messages)
 
     try:
-        data = json.loads(response.content)
+        content = _strip_fences(response.content)
+        data = json.loads(content)
         output = ClarificationOutput(**data)
     except Exception as exc:
         logger.warning("[clarification] Parse failed (%s) — defaulting to ask questions", exc)
@@ -88,9 +113,12 @@ async def clarification_agent(state: WorkflowState) -> Dict[str, Any]:
 
     routing = "prd" if output.sufficient_context else "awaiting_input"
 
+    existing_outputs = state.get("agent_outputs") or {}
+    existing_executed = state.get("agents_executed") or []
+
     return {
-        "agent_outputs": {**state.agent_outputs, "clarification": output.model_dump()},
-        "agents_executed": [*state.agents_executed, "clarification_agent"],
+        "agent_outputs": {**existing_outputs, "clarification": output.model_dump()},
+        "agents_executed": [*existing_executed, "clarification_agent"],
         "routing_decision": routing,
         "status": "running" if routing == "prd" else "awaiting_input",
         "current_agent": "clarification",

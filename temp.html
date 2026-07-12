@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "danger": "#F87171",
+                            "warning": "#F6C453",
+                            "background": "#090B14",
+                            "bg-primary": "#090B14",
+                            "bg-secondary": "#0F1220",
+                            "bg-card": "#151A2B",
+                            "bg-card-hover": "#1B2136",
+                            "primary": "#aec6ff",
+                            "primary-container": "#508eff",
+                            "on-primary-container": "#00275e",
+                            "text-primary": "#F7F8FC",
+                            "text-secondary": "#B4BCCB",
+                            "text-muted": "#7C869A",
+                            "surface-container": "#1d1f26",
+                            "surface-container-low": "#191b22",
+                            "border-default": "rgba(255,255,255,0.08)",
+                            "glass-surface": "rgba(255,255,255,0.05)",
+                            "success": "#34D399"
+                        },
+                        borderRadius: {
+                            "DEFAULT": "12px",
+                            "lg": "12px",
+                            "xl": "16px",
+                            "full": "9999px"
+                        },
+                        spacing: {
+                            "card-padding": "24px",
+                            "section-padding-y": "32px",
+                            "sidebar-width": "240px",
+                            "sidebar-collapsed-width": "72px"
+                        },
+                        fontSize: {
+                            "display": ["56px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+                            "section-heading": ["40px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }],
+                            "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                            "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }],
+                            "label-caps": ["12px", { lineHeight: "1", letterSpacing: "0.1em", fontWeight: "600" }]
+                        }
+                    }
+                }
+            }
+        } catch (_e) {}
+    </script>
+<style>
+        .sidebar-transition {
+            transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .content-transition {
+            transition: padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .fade-transition {
+            transition: opacity 200ms ease-in-out, visibility 200ms ease-in-out;
+        }
+        .collapsed .hide-collapsed {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            width: 0;
+        }
+        .collapsed .sidebar-width {
+            width: 72px;
+        }
+        .collapsed .new-project-btn {
+            padding-left: 0;
+            padding-right: 0;
+            justify-content: center;
+        }
+        .collapsed .nav-item {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+    </style>
+</head>
+<body class="dark selection:bg-primary/30 min-h-screen overflow-x-hidden bg-background text-text-primary font-['Geist']">
+<!-- Main Layout Wrapper -->
+<div class="flex min-h-screen" id="layout-wrapper">
+<!-- Sidebar -->
+<aside class="fixed inset-y-0 left-0 w-[240px] bg-bg-secondary border-r border-border-default z-[60] flex flex-col -translate-x-full lg:translate-x-0 sidebar-transition" id="sidebar">
+<!-- Logo Section -->
+<div class="h-20 flex items-center px-4 border-b border-border-default/50 overflow-hidden shrink-0">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center shadow-lg shrink-0">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="hide-collapsed fade-transition whitespace-nowrap">
+<p class="text-sm font-bold text-text-primary tracking-tight">ProjectPilot</p>
+<p class="text-[10px] text-text-muted uppercase tracking-widest font-semibold">Enterprise AI</p>
+</div>
+</div>
+<!-- Desktop Toggle Button (Hamburger) -->
+<button class="ml-auto p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors hidden lg:flex items-center justify-center" id="sidebar-toggle">
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</button>
+</div>
+<!-- Scrollable Navigation -->
+<div class="flex-1 overflow-y-auto no-scrollbar py-6">
+<div class="px-3 mb-6">
+<button class="new-project-btn w-full h-11 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-white/10 transition-all flex items-center justify-start gap-3 px-4 group">
+<span class="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform">add</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">New Project</span>
+</button>
+</div>
+<nav class="px-2 space-y-1">
+<a class="nav-item flex items-center gap-3 bg-primary/10 text-primary px-4 py-2.5 rounded-xl font-medium text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] shrink-0">dashboard</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">Dashboard</span>
+</a>
+<a class="nav-item flex items-center gap-3 text-text-muted hover:bg-white/5 hover:text-text-primary px-4 py-2.5 rounded-xl transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] shrink-0">folder_copy</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">Projects</span>
+</a>
+<a class="nav-item flex items-center gap-3 text-text-muted hover:bg-white/5 hover:text-text-primary px-4 py-2.5 rounded-xl transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] shrink-0">bolt</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">AI Workspace</span>
+</a>
+<a class="nav-item flex items-center gap-3 text-text-muted hover:bg-white/5 hover:text-text-primary px-4 py-2.5 rounded-xl transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] shrink-0">inventory_2</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">Assets</span>
+</a>
+<a class="nav-item flex items-center gap-3 text-text-muted hover:bg-white/5 hover:text-text-primary px-4 py-2.5 rounded-xl transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] shrink-0">group</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">Team</span>
+</a>
+<a class="nav-item flex items-center gap-3 text-text-muted hover:bg-white/5 hover:text-text-primary px-4 py-2.5 rounded-xl transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] shrink-0">insights</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">Analytics</span>
+</a>
+</nav>
+</div>
+<!-- Fixed Bottom Sidebar Section -->
+<div class="p-3 border-t border-border-default/50 space-y-1">
+<a class="nav-item flex items-center gap-3 text-text-muted hover:bg-white/5 hover:text-text-primary px-4 py-2.5 rounded-xl transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] shrink-0">settings</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">Settings</span>
+</a>
+<a class="nav-item flex items-center gap-3 text-text-muted hover:bg-white/5 hover:text-text-primary px-4 py-2.5 rounded-xl transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] shrink-0">help</span>
+<span class="hide-collapsed fade-transition whitespace-nowrap">Help Center</span>
+</a>
+<div class="mt-4 p-2 bg-white/5 rounded-xl flex items-center gap-3 border border-white/5 overflow-hidden">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-xs font-bold shrink-0">OJ</div>
+<div class="flex-1 min-w-0 hide-collapsed fade-transition">
+<p class="text-xs font-bold truncate">Olivia Jensen</p>
+<p class="text-[10px] text-text-muted truncate">Admin Plan</p>
+</div>
+<span class="material-symbols-outlined text-text-muted text-sm hide-collapsed fade-transition">more_vert</span>
+</div>
+</div>
+</aside>
+<!-- Content Area -->
+<main class="flex-1 flex flex-col min-w-0 lg:pl-[240px] content-transition" id="main-content">
+<!-- Header -->
+<header class="h-16 border-b border-border-default/50 sticky top-0 bg-bg-primary/80 backdrop-blur-xl z-50 px-6 sm:px-8">
+<div class="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-4">
+<div class="flex items-center gap-4 flex-1">
+<button class="lg:hidden p-2 -ml-2 text-text-muted hover:text-text-primary transition-colors" id="menu-toggle">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="hidden sm:flex items-center gap-2 text-sm text-text-muted">
+<span class="hover:text-text-primary cursor-pointer transition-colors">Dashboard</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-text-primary font-medium">Control Center</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 gap-2 w-64 focus-within:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-sm text-text-muted">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs text-text-primary placeholder:text-text-muted w-full" placeholder="Search projects..." type="text"/>
+<span class="text-[10px] bg-white/10 px-1 rounded text-text-muted">⌘K</span>
+</div>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-bg-primary"></span>
+</button>
+<button class="bg-primary-container text-on-primary-container px-4 h-9 rounded-lg text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary-container/10">Upgrade</button>
+</div>
+</div>
+</header>
+<!-- Main Body -->
+<div class="p-6 sm:p-8 md:p-10 max-w-[1440px] mx-auto w-full">
+<!-- Greeting -->
+<section class="mb-10">
+<h1 class="text-3xl font-bold text-text-primary tracking-tight mb-2">Welcome back, Olivia.</h1>
+<p class="text-text-secondary font-medium">
+                    Your <span class="text-primary">AI team</span> processed 14 documents today. 3 workflows are currently active.
+                </p>
+</section>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Content -->
+<div class="col-span-12 xl:col-span-9 space-y-8">
+<!-- AI Command Center -->
+<div class="bg-bg-card p-6 rounded-2xl border border-border-default relative overflow-hidden">
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 blur-[60px] rounded-full pointer-events-none"></div>
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#8E6BFF]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<h2 class="text-lg font-bold">AI Command Center</h2>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-success/10 border border-success/20 rounded-full">
+<span class="flex h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
+<span class="text-[10px] font-bold text-success uppercase tracking-widest">System Live</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Agent 1 -->
+<div class="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-400 text-sm">query_stats</span>
+</div>
+<span class="text-xs font-bold">Market Research</span>
+</div>
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-success/20 text-success uppercase font-bold">Active</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between text-[10px] text-text-muted font-bold uppercase">
+<span>Scanning...</span>
+<span>84%</span>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-blue-500 h-full rounded-full" style="width: 84%;"></div>
+</div>
+</div>
+</div>
+<!-- Agent 2 -->
+<div class="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-purple-400 text-sm">architecture</span>
+</div>
+<span class="text-xs font-bold">Tech Architect</span>
+</div>
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-primary/20 text-primary uppercase font-bold">Syncing</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between text-[10px] text-text-muted font-bold uppercase">
+<span>Validating...</span>
+<span>42%</span>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-purple-500 h-full rounded-full" style="width: 42%;"></div>
+</div>
+</div>
+</div>
+<!-- Agent 3 -->
+<div class="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-amber-400 text-sm">payments</span>
+</div>
+<span class="text-xs font-bold">ROI Agent</span>
+</div>
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-text-muted/20 text-text-muted uppercase font-bold">Idle</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between text-[10px] text-text-muted font-bold uppercase">
+<span>Waiting...</span>
+<span>0%</span>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-full rounded-full w-0"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Projects -->
+<div>
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-xl font-bold">Active Projects</h2>
+<button class="text-sm font-semibold text-primary hover:underline underline-offset-4">View all projects</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-bg-card border border-border-default rounded-2xl p-6 hover:border-white/20 transition-all flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-400 text-xl">account_balance</span>
+</div>
+<div>
+<h3 class="text-base font-bold truncate max-w-[180px]">Fintech Super App</h3>
+<p class="text-[10px] text-text-muted uppercase tracking-widest font-bold">Updated 2h ago</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[10px] font-bold text-blue-400 uppercase tracking-tight block">Analyzing</span>
+<span class="text-sm font-bold text-text-primary">84%</span>
+</div>
+</div>
+<p class="text-sm text-text-muted mb-6 line-clamp-1">Enterprise-grade wealth management platform integration.</p>
+<div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+<div class="flex -space-x-2">
+<div class="w-7 h-7 rounded-full border-2 border-bg-card bg-surface-container flex items-center justify-center text-[9px] font-bold">JD</div>
+<div class="w-7 h-7 rounded-full border-2 border-bg-card bg-surface-container flex items-center justify-center text-[9px] font-bold">SK</div>
+<div class="w-7 h-7 rounded-full border-2 border-bg-card bg-primary-container text-on-primary-container flex items-center justify-center text-[9px] font-bold">+3</div>
+</div>
+<button class="text-[10px] font-bold text-text-muted hover:text-text-primary uppercase tracking-widest transition-colors">Details</button>
+</div>
+</div>
+<div class="bg-bg-card border border-border-default rounded-2xl p-6 hover:border-white/20 transition-all flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-purple-400 text-xl">shopping_bag</span>
+</div>
+<div>
+<h3 class="text-base font-bold truncate max-w-[180px]">B2B Marketplace</h3>
+<p class="text-[10px] text-text-muted uppercase tracking-widest font-bold">Updated 5h ago</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[10px] font-bold text-primary uppercase tracking-tight block">PRD Syncing</span>
+<span class="text-sm font-bold text-text-primary">42%</span>
+</div>
+</div>
+<p class="text-sm text-text-muted mb-6 line-clamp-1">Global distribution network portal for industrial components.</p>
+<div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+<div class="flex -space-x-2">
+<div class="w-7 h-7 rounded-full border-2 border-bg-card bg-surface-container flex items-center justify-center text-[9px] font-bold">ML</div>
+<div class="w-7 h-7 rounded-full border-2 border-bg-card bg-surface-container flex items-center justify-center text-[9px] font-bold">AB</div>
+</div>
+<button class="text-[10px] font-bold text-text-muted hover:text-text-primary uppercase tracking-widest transition-colors">Details</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar -->
+<div class="col-span-12 xl:col-span-3 space-y-8">
+<div class="bg-bg-card rounded-2xl border border-border-default p-6 sticky top-24">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-[1.5px]">
+<div class="w-full h-full rounded-full bg-bg-card flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl">smart_toy</span>
+</div>
+</div>
+<div>
+<h3 class="font-bold text-sm">AI Assistant</h3>
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+<span class="text-[10px] text-text-muted font-bold uppercase">Learning</span>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<h4 class="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-4">Suggestions</h4>
+<div class="space-y-4">
+<div class="flex gap-3 items-start group cursor-pointer">
+<div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary text-[14px]">lightbulb</span>
+</div>
+<p class="text-xs text-text-secondary leading-relaxed group-hover:text-text-primary transition-colors">
+                                            Review the "User Security" section in Fintech PRD.
+                                        </p>
+</div>
+<div class="flex gap-3 items-start group cursor-pointer">
+<div class="w-6 h-6 rounded bg-purple-500/10 flex items-center justify-center shrink-0 group-hover:bg-purple-500/20 transition-colors">
+<span class="material-symbols-outlined text-purple-400 text-[14px]">auto_graph</span>
+</div>
+<p class="text-xs text-text-secondary leading-relaxed group-hover:text-text-primary transition-colors">
+                                            Market data shift in "Industrial Logistics" detected.
+                                        </p>
+</div>
+</div>
+</div>
+<button class="w-full py-3.5 bg-primary text-on-primary-container font-bold text-[10px] rounded-xl hover:shadow-[0_0_20px_rgba(79,141,255,0.3)] transition-all uppercase tracking-widest mt-4">
+                                Ask AI Anything
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-auto border-t border-border-default bg-bg-primary/50 py-10 px-8 flex flex-col md:flex-row justify-between items-center gap-6 text-[11px] font-bold text-text-muted uppercase tracking-widest">
+<div class="flex items-center gap-4">
+<span class="opacity-40 font-bold text-xs">PROJECTPILOT AI</span>
+<p class="">© 2024 ProjectPilot AI. Engineered for Excellence.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Security</a>
+<a class="hover:text-primary transition-colors" href="#">Status</a>
+</div>
+</footer>
+</main>
+</div>
+<!-- Mobile Bottom Navigation -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full bg-bg-secondary border-t border-white/10 flex justify-around items-center h-16 z-[70] px-4 backdrop-blur-2xl">
+<button class="text-primary"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span></button>
+<button class="text-text-muted"><span class="material-symbols-outlined">folder</span></button>
+<button class="w-12 h-12 -mt-10 rounded-full bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center text-white shadow-xl ring-4 ring-bg-primary">
+<span class="material-symbols-outlined">bolt</span>
+</button>
+<button class="text-text-muted"><span class="material-symbols-outlined">group</span></button>
+<button class="text-text-muted"><span class="material-symbols-outlined">settings</span></button>
+</nav>
+<!-- Mobile Overlay -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] hidden lg:hidden opacity-0 transition-opacity duration-300" id="mobile-overlay"></div>
+<script>
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const layoutWrapper = document.getElementById('layout-wrapper');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    const menuToggle = document.getElementById('menu-toggle');
+    const overlay = document.getElementById('mobile-overlay');
+
+    // Desktop Toggle Logic
+    sidebarToggle.addEventListener('click', () => {
+        layoutWrapper.classList.toggle('collapsed');
+        
+        if (layoutWrapper.classList.contains('collapsed')) {
+            sidebar.style.width = '72px';
+            mainContent.style.paddingLeft = '72px';
+        } else {
+            sidebar.style.width = '240px';
+            mainContent.style.paddingLeft = '240px';
+        }
+    });
+
+    // Mobile Sidebar Logic
+    function toggleMobileSidebar() {
+        const isHidden = sidebar.classList.contains('-translate-x-full');
+        if (isHidden) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.add('opacity-100'), 10);
+            document.body.style.overflow = 'hidden';
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.remove('opacity-100');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+            document.body.style.overflow = '';
+        }
+    }
+
+    menuToggle.addEventListener('click', toggleMobileSidebar);
+    overlay.addEventListener('click', toggleMobileSidebar);
+
+    // Initial state setup for resize handling
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('opacity-100');
+            document.body.style.overflow = '';
+            
+            // Re-apply correct padding based on collapse state
+            if (layoutWrapper.classList.contains('collapsed')) {
+                mainContent.style.paddingLeft = '72px';
+            } else {
+                mainContent.style.paddingLeft = '240px';
+            }
+        } else {
+            // Mobile reset
+            mainContent.style.paddingLeft = '0px';
+        }
+    });
+</script>
+</body></html>

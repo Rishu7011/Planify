@@ -13,8 +13,8 @@ from typing import Any, Dict
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.llm import get_llm
-from app.agents.state import WorkflowState
 from app.schemas.agents import RoadmapOutput
+from app.schemas.context import ProjectContext
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ Budget: {budget}
 Timeline: {timeline}
 Complexity: {complexity}
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object — no markdown fences:
 {{
   "phases": [
     {{
@@ -65,41 +65,73 @@ Rules:
 )
 
 
-async def roadmap_agent(state: WorkflowState) -> Dict[str, Any]:
+def _strip_fences(text: str) -> str:
+    """Strip markdown code fences from LLM output."""
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:] if lines[0].startswith("```") else lines
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    return text
+
+
+async def roadmap_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """LangGraph node: generate prioritized project roadmap with milestones."""
-    if "prd" not in state.agent_outputs or "roi" not in state.agent_outputs:
-        logger.warning("[roadmap_agent] Missing PRD or ROI — skipping")
+    existing_outputs = state.get("agent_outputs") or {}
+
+    if "prd" not in existing_outputs or "roi" not in existing_outputs:
+        logger.warning("[roadmap_agent] Missing PRD or ROI outputs — skipping")
         return {}
 
     llm = get_llm()
-    prd = state.agent_outputs["prd"]
-    feasibility = state.agent_outputs["feasibility"]
-    context = state.project_context
+    prd = existing_outputs["prd"]
+    feasibility = existing_outputs["feasibility"] if "feasibility" in existing_outputs else {}
+
+    raw_context = state.get("project_context")
+    if isinstance(raw_context, dict):
+        context = ProjectContext(**raw_context)
+    elif raw_context is not None:
+        context = raw_context
+    else:
+        context = ProjectContext()
+
     constraints = context.constraints
+    if hasattr(constraints, "budget"):
+        budget = constraints.budget or "Not specified"
+        timeline = constraints.timeline or "Not specified"
+    elif isinstance(constraints, dict):
+        budget = constraints.get("budget") or "Not specified"
+        timeline = constraints.get("timeline") or "Not specified"
+    else:
+        budget = timeline = "Not specified"
 
     features = "\n".join(f"- {r}" for r in prd.get("functional_requirements", []))
 
     messages = _PROMPT.format_messages(
         mvp=prd.get("mvp_definition", "Not defined"),
         features=features or "See PRD",
-        budget=constraints.budget or "Not specified",
-        timeline=constraints.timeline or "Not specified",
+        budget=budget,
+        timeline=timeline,
         complexity=feasibility.get("complexity_signal", "medium"),
     )
 
-    logger.info("[roadmap_agent] Generating project roadmap")
+    logger.info("[roadmap_agent] Generating project roadmap for project %s", state.get("project_id"))
     response = await llm.ainvoke(messages)
 
     try:
-        content = response.content.strip().lstrip("```json").rstrip("```").strip()
+        content = _strip_fences(response.content)
         data = json.loads(content)
         output = RoadmapOutput(**data)
     except Exception as exc:
         logger.error("[roadmap_agent] Parse failed: %s", exc)
         raise ValueError(f"Roadmap parse failed: {exc}") from exc
 
+    existing_executed = state.get("agents_executed") or []
+
     return {
-        "agent_outputs": {**state.agent_outputs, "roadmap": output.model_dump()},
-        "agents_executed": [*state.agents_executed, "roadmap_agent"],
+        "agent_outputs": {**existing_outputs, "roadmap": output.model_dump()},
+        "agents_executed": [*existing_executed, "roadmap_agent"],
         "current_agent": "roadmap",
     }

@@ -3,10 +3,17 @@ Chat Service.
 
 Orchestrates the LangGraph workflow:
 1. Load chat history from MongoDB
-2. Build WorkflowState
+2. Build initial WorkflowState dict
 3. Create ai_workflow_run record
 4. Stream the graph, yielding SSE chunks
 5. Persist agent_outputs + update workflow run on completion
+
+SSE event types emitted:
+    data: {"type": "agent_start",       "agent": "prd_agent"}
+    data: {"type": "agent_complete",    "agent": "prd_agent"}
+    data: {"type": "clarification",     "questions": [...]}
+    data: {"type": "workflow_complete", "status": "completed", "reports": [...], "run_id": "..."}
+    data: {"type": "error",             "message": "..."}
 """
 from __future__ import annotations
 
@@ -17,7 +24,6 @@ from typing import AsyncGenerator
 
 from bson import ObjectId
 
-from app.agents.state import WorkflowState
 from app.agents.workflow import get_graph
 from app.db.mongodb import get_database
 from app.schemas.context import Constraint, ProjectContext
@@ -36,13 +42,6 @@ async def run_workflow_and_stream(
     """
     Execute the LangGraph workflow and yield SSE data strings.
     Persists all outputs to MongoDB when done.
-
-    Yields strings like:
-        data: {"type": "agent_start", "agent": "prd_agent"}\n\n
-        data: {"type": "clarification", "questions": [...]}\n\n
-        data: {"type": "agent_complete", "agent": "prd_agent"}\n\n
-        data: {"type": "workflow_complete", "status": "completed"}\n\n
-        data: {"type": "error", "message": "..."}\n\n
     """
     db = get_database()
 
@@ -59,8 +58,8 @@ async def run_workflow_and_stream(
     raw_user_message = chat_messages[-1]["content"] if chat_messages else ""
 
     # ── Build ProjectContext from stored doc ───────────────────────────────────
-    ctx_doc = project_doc.get("context_object", {})
-    constraint_doc = ctx_doc.get("constraints", {}) or {}
+    ctx_doc = project_doc.get("context_object") or {}
+    constraint_doc = ctx_doc.get("constraints") or {}
     context = ProjectContext(
         domain=ctx_doc.get("domain"),
         problem_statement=ctx_doc.get("problem_statement"),
@@ -72,12 +71,22 @@ async def run_workflow_and_stream(
         stale_agents=ctx_doc.get("stale_agents", []),
     )
 
-    initial_state = WorkflowState(
-        project_id=project_id,
-        raw_user_message=raw_user_message,
-        chat_history=history,
-        project_context=context,
-    )
+    # ── Build initial state dict (TypedDict style) ─────────────────────────────
+    initial_state: dict = {
+        "project_id": project_id,
+        "raw_user_message": raw_user_message,
+        "chat_history": history,
+        "project_context": context,
+        "uploaded_file_summaries": [],
+        "current_agent": None,
+        "agents_executed": [],
+        "agent_outputs": {},
+        "routing_decision": None,
+        "status": "running",
+        "error_message": None,
+        "total_input_tokens": 0,
+        "total_output_tokens": 0,
+    }
 
     # ── Create workflow run record ─────────────────────────────────────────────
     run_doc = {
@@ -97,56 +106,82 @@ async def run_workflow_and_stream(
 
     try:
         # ── Stream graph execution ─────────────────────────────────────────────
-        prev_agents = set()
-        final_state: WorkflowState | None = None
-        
+        # We accumulate state across all node outputs.
+        # Each chunk from astream is: {node_name: partial_state_dict}
+        # LangGraph has already merged these into the running state,
+        # but we track them ourselves too for SSE events and final persistence.
+        accumulated_agent_outputs: dict = {}
+        accumulated_agents_executed: list = []
+        announced_agents: set = set()
+        final_status = "completed"
+        final_routing_decision = None
+        final_project_context = context
+
         graph = get_graph()
         config = {"configurable": {"thread_id": str(project_id)}}
 
         async for chunk in graph.astream(initial_state, config=config):
-            # chunk is a dict of {node_name: state_update}
+            # chunk: {node_name: state_update_dict}
             for node_name, state_update in chunk.items():
-                if node_name not in prev_agents:
-                    prev_agents.add(node_name)
+                if not isinstance(state_update, dict):
+                    continue
+
+                # Announce agent start (first time we see a node)
+                if node_name not in announced_agents:
+                    announced_agents.add(node_name)
                     yield _sse({"type": "agent_start", "agent": node_name})
 
-                # Merge update into a running state representation
-                if isinstance(state_update, dict):
-                    # Check for clarification pause
-                    if (
-                        state_update.get("routing_decision") == "awaiting_input"
-                        or state_update.get("status") == "awaiting_input"
-                    ):
+                # Merge agent_outputs (the key cross-node accumulation)
+                if "agent_outputs" in state_update:
+                    accumulated_agent_outputs.update(state_update["agent_outputs"])
+
+                # Merge agents_executed list
+                if "agents_executed" in state_update:
+                    for a in state_update["agents_executed"]:
+                        if a not in accumulated_agents_executed:
+                            accumulated_agents_executed.append(a)
+
+                # Track routing and status
+                if "routing_decision" in state_update:
+                    final_routing_decision = state_update["routing_decision"]
+
+                if "status" in state_update:
+                    final_status = state_update["status"]
+
+                # Track latest project context
+                if "project_context" in state_update and state_update["project_context"] is not None:
+                    final_project_context = state_update["project_context"]
+
+                # Announce clarification pause
+                if (
+                    state_update.get("routing_decision") == "awaiting_input"
+                    or state_update.get("status") == "awaiting_input"
+                ):
+                    questions = (
+                        state_update.get("agent_outputs", {})
+                        .get("clarification", {})
+                        .get("clarification_questions", [])
+                    )
+                    # Also check accumulated
+                    if not questions:
                         questions = (
-                            state_update.get("agent_outputs", {})
+                            accumulated_agent_outputs
                             .get("clarification", {})
                             .get("clarification_questions", [])
                         )
-                        yield _sse({"type": "clarification", "questions": questions})
+                    yield _sse({"type": "clarification", "questions": questions})
 
-                    # Announce agent completion with its output keys
-                    outputs = state_update.get("agent_outputs", {})
-                    if outputs:
-                        for agent_key in outputs:
-                            if agent_key not in prev_agents:
-                                yield _sse({"type": "agent_complete", "agent": agent_key})
-
-                final_state = state_update  # track latest
+                # Announce agent completion for new agent outputs
+                for agent_key in state_update.get("agent_outputs", {}):
+                    if agent_key not in announced_agents:
+                        announced_agents.add(agent_key)
+                        yield _sse({"type": "agent_complete", "agent": agent_key})
 
         # ── Persist outputs ────────────────────────────────────────────────────
-        if final_state and isinstance(final_state, dict):
-            agent_outputs = final_state.get("agent_outputs", {})
-            workflow_status = final_state.get("status", "completed")
-            agents_run = final_state.get("agents_executed", list(prev_agents))
-            updated_context = final_state.get("project_context")
-        else:
-            agent_outputs = {}
-            workflow_status = "completed"
-            agents_run = list(prev_agents)
-            updated_context = None
+        report_agents = ["prd", "feasibility", "roi", "roadmap"]
 
-        # Save each agent output
-        for agent_name, output in agent_outputs.items():
+        # Save each agent output to agent_outputs collection
+        for agent_name, output in accumulated_agent_outputs.items():
             await db.agent_outputs.insert_one(
                 {
                     "workflow_run_id": run_id,
@@ -157,64 +192,73 @@ async def run_workflow_and_stream(
                 }
             )
 
-        # Persist reports to generated_reports + report_versions
-        report_agents = ["prd", "feasibility", "roi", "roadmap"]
+        # Upsert reports into generated_reports + report_versions
+        completed_reports = []
         for report_type in report_agents:
-            if report_type in agent_outputs:
+            if report_type in accumulated_agent_outputs:
                 await _upsert_report(
-                    db, project_id, report_type, agent_outputs[report_type], run_id
+                    db, project_id, report_type, accumulated_agent_outputs[report_type], run_id
+                )
+                completed_reports.append(report_type)
+
+        # Update project context in MongoDB
+        if final_project_context is not None:
+            if hasattr(final_project_context, "model_dump"):
+                ctx_update = final_project_context.model_dump()
+            elif isinstance(final_project_context, dict):
+                ctx_update = final_project_context
+            else:
+                ctx_update = None
+
+            if ctx_update:
+                await db.projects.update_one(
+                    {"_id": ObjectId(project_id)},
+                    {
+                        "$set": {
+                            "context_object": ctx_update,
+                            "updated_at": datetime.now(UTC),
+                        }
+                    },
                 )
 
-        # Update project context
-        if updated_context:
-            ctx = updated_context if isinstance(updated_context, dict) else updated_context.model_dump()
-            await db.projects.update_one(
-                {"_id": ObjectId(project_id)},
-                {
-                    "$set": {
-                        "context_object": ctx,
-                        "updated_at": datetime.now(UTC),
-                    }
-                },
-            )
-
-        # Update workflow run
+        # Update workflow run record
         duration_ms = int((datetime.now(UTC) - started_at).total_seconds() * 1000)
         await db.ai_workflow_runs.update_one(
             {"_id": run_id},
             {
                 "$set": {
-                    "status": workflow_status,
-                    "agents_executed": agents_run,
+                    "status": final_status,
+                    "agents_executed": accumulated_agents_executed,
                     "duration_ms": duration_ms,
                     "updated_at": datetime.now(UTC),
                 }
             },
         )
 
-        # Persist assistant message
-        completed_reports = [k for k in agent_outputs if k in report_agents]
-        summary = _build_summary(agent_outputs)
-        await db.chat_messages.insert_one(
-            {
-                "chat_session_id": (await db.chat_sessions.find_one({"project_id": ObjectId(project_id)}))["_id"],
-                "project_id": ObjectId(project_id),
-                "role": "assistant",
-                "content": summary,
-                "message_type": "agent_result",
-                "file_refs": [],
-                "metadata": {
-                    "workflow_run_id": str(run_id),
-                    "reports_generated": completed_reports,
-                },
-                "created_at": datetime.now(UTC),
-            }
-        )
+        # Persist assistant summary message to chat
+        summary = _build_summary(accumulated_agent_outputs)
+        chat_session = await db.chat_sessions.find_one({"project_id": ObjectId(project_id)})
+        if chat_session:
+            await db.chat_messages.insert_one(
+                {
+                    "chat_session_id": chat_session["_id"],
+                    "project_id": ObjectId(project_id),
+                    "role": "assistant",
+                    "content": summary,
+                    "message_type": "agent_result",
+                    "file_refs": [],
+                    "metadata": {
+                        "workflow_run_id": str(run_id),
+                        "reports_generated": completed_reports,
+                    },
+                    "created_at": datetime.now(UTC),
+                }
+            )
 
         yield _sse(
             {
                 "type": "workflow_complete",
-                "status": workflow_status,
+                "status": final_status,
                 "reports": completed_reports,
                 "run_id": str(run_id),
             }
@@ -277,14 +321,14 @@ async def _upsert_report(db, project_id: str, report_type: str, content: dict, r
 
 def _build_summary(agent_outputs: dict) -> str:
     """Build a human-readable assistant message summarising what was generated."""
-    parts: list[str] = []
     if "clarification" in agent_outputs:
         clar = agent_outputs["clarification"]
         if not clar.get("sufficient_context", True):
-            questions = clar.get("clarification_questions", [])
+            questions = clar.get("clarification_questions") or []
             q_str = "\n".join(f"{i+1}. {q}" for i, q in enumerate(questions))
             return f"I need a bit more information before I can generate your reports:\n\n{q_str}"
 
+    parts: list[str] = []
     if "prd" in agent_outputs:
         parts.append("✅ **Product Requirements Document** generated")
     if "feasibility" in agent_outputs:

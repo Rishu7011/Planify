@@ -14,8 +14,8 @@ from typing import Any, Dict
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.llm import get_llm
-from app.agents.state import WorkflowState
 from app.schemas.agents import ROIOutput
+from app.schemas.context import ProjectContext
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ Budget Constraint: {budget}
 Team Size: {team_size}
 Timeline: {timeline}
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object — no markdown fences:
 {{
   "development_cost_range": "$X–$Y (e.g., $80K–$150K for 3 engineers × 6 months)",
   "infrastructure_cost_estimate": "$X/month at MVP scale",
@@ -70,40 +70,74 @@ IMPORTANT rules:
 )
 
 
-async def roi_agent(state: WorkflowState) -> Dict[str, Any]:
+def _strip_fences(text: str) -> str:
+    """Strip markdown code fences from LLM output."""
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:] if lines[0].startswith("```") else lines
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    return text
+
+
+async def roi_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """LangGraph node: generate financial model and ROI scenarios."""
-    if "prd" not in state.agent_outputs or "feasibility" not in state.agent_outputs:
-        logger.warning("[roi_agent] Missing PRD or feasibility — skipping")
+    existing_outputs = state.get("agent_outputs") or {}
+
+    if "prd" not in existing_outputs or "feasibility" not in existing_outputs:
+        logger.warning("[roi_agent] Missing PRD or feasibility outputs — skipping")
         return {}
 
     llm = get_llm()
-    prd = state.agent_outputs["prd"]
-    feasibility = state.agent_outputs["feasibility"]
-    context = state.project_context
+    prd = existing_outputs["prd"]
+    feasibility = existing_outputs["feasibility"]
+
+    raw_context = state.get("project_context")
+    if isinstance(raw_context, dict):
+        context = ProjectContext(**raw_context)
+    elif raw_context is not None:
+        context = raw_context
+    else:
+        context = ProjectContext()
+
     constraints = context.constraints
+    if hasattr(constraints, "budget"):
+        budget = constraints.budget or "Not specified"
+        team_size = str(constraints.team_size) if constraints.team_size else "Not specified"
+        timeline = constraints.timeline or "Not specified"
+    elif isinstance(constraints, dict):
+        budget = constraints.get("budget") or "Not specified"
+        team_size = str(constraints.get("team_size", "")) or "Not specified"
+        timeline = constraints.get("timeline") or "Not specified"
+    else:
+        budget = team_size = timeline = "Not specified"
 
     messages = _PROMPT.format_messages(
         domain=context.domain or "unknown",
         complexity=feasibility.get("complexity_signal", "medium"),
         mvp=prd.get("mvp_definition", "Not defined"),
-        budget=constraints.budget or "Not specified",
-        team_size=str(constraints.team_size) if constraints.team_size else "Not specified",
-        timeline=constraints.timeline or "Not specified",
+        budget=budget,
+        team_size=team_size,
+        timeline=timeline,
     )
 
-    logger.info("[roi_agent] Generating financial model")
+    logger.info("[roi_agent] Generating financial model for project %s", state.get("project_id"))
     response = await llm.ainvoke(messages)
 
     try:
-        content = response.content.strip().lstrip("```json").rstrip("```").strip()
+        content = _strip_fences(response.content)
         data = json.loads(content)
         output = ROIOutput(**data)
     except Exception as exc:
         logger.error("[roi_agent] Parse failed: %s", exc)
         raise ValueError(f"ROI parse failed: {exc}") from exc
 
+    existing_executed = state.get("agents_executed") or []
+
     return {
-        "agent_outputs": {**state.agent_outputs, "roi": output.model_dump()},
-        "agents_executed": [*state.agents_executed, "roi_agent"],
+        "agent_outputs": {**existing_outputs, "roi": output.model_dump()},
+        "agents_executed": [*existing_executed, "roi_agent"],
         "current_agent": "roi",
     }

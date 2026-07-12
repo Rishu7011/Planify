@@ -12,8 +12,8 @@ from typing import Any, Dict
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.llm import get_llm
-from app.agents.state import WorkflowState
 from app.schemas.agents import PRDOutput
+from app.schemas.context import ProjectContext
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ Target Audience: {audience}
 Known Facts: {known_facts}
 Constraints: {constraints}
 
-Create a full PRD. Return ONLY a valid JSON object matching this exact schema:
+Create a full PRD. Return ONLY a valid JSON object — no markdown fences, no extra text:
 {{
   "overview": {{"title": "...", "content": "2-3 sentence high-level description"}},
   "problem_statement": {{"title": "...", "content": "detailed problem + why it matters"}},
@@ -62,37 +62,61 @@ CRITICAL rules:
 )
 
 
-async def prd_agent(state: WorkflowState) -> Dict[str, Any]:
+def _strip_fences(text: str) -> str:
+    """Strip markdown code fences from LLM output."""
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:] if lines[0].startswith("```") else lines
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    return text
+
+
+async def prd_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """LangGraph node: generate a comprehensive Product Requirements Document."""
     llm = get_llm(temperature=0.3)
-    context = state.project_context
+
+    project_id = state.get("project_id", "unknown")
+
+    raw_context = state.get("project_context")
+    if isinstance(raw_context, dict):
+        context = ProjectContext(**raw_context)
+    elif raw_context is not None:
+        context = raw_context
+    else:
+        context = ProjectContext()
+
+    constraints = context.constraints
+    constraints_dict = constraints.model_dump() if hasattr(constraints, "model_dump") else (constraints or {})
+
+    known_facts = context.known_facts or []
 
     messages = _PROMPT.format_messages(
         domain=context.domain or "Not specified",
         problem=context.problem_statement or "Not fully defined",
         audience=context.target_audience or "TBD",
-        known_facts="\n- ".join(context.known_facts) if context.known_facts else "None provided",
-        constraints=json.dumps(context.constraints.model_dump()) if context.constraints else "{}",
+        known_facts="\n- ".join(known_facts) if known_facts else "None provided",
+        constraints=json.dumps(constraints_dict),
     )
 
-    logger.info("[prd_agent] Generating PRD for project %s", state.project_id)
+    logger.info("[prd_agent] Generating PRD for project %s", project_id)
     response = await llm.ainvoke(messages)
 
     try:
-        # Strip markdown fences if present
-        content = response.content.strip()
-        if content.startswith("```"):
-            content = content.split("```")[1]
-            if content.startswith("json"):
-                content = content[4:]
+        content = _strip_fences(response.content)
         data = json.loads(content)
         output = PRDOutput(**data)
     except Exception as exc:
         logger.error("[prd_agent] Parse failed: %s\nRaw: %s", exc, response.content[:500])
         raise ValueError(f"PRD agent output parsing failed: {exc}") from exc
 
+    existing_outputs = state.get("agent_outputs") or {}
+    existing_executed = state.get("agents_executed") or []
+
     return {
-        "agent_outputs": {**state.agent_outputs, "prd": output.model_dump()},
-        "agents_executed": [*state.agents_executed, "prd_agent"],
+        "agent_outputs": {**existing_outputs, "prd": output.model_dump()},
+        "agents_executed": [*existing_executed, "prd_agent"],
         "current_agent": "prd",
     }

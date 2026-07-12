@@ -1,15 +1,11 @@
+import React from 'react';
 
-import React from 'react'
-
-const layout =  async ({children}: {children:React.ReactNode}) => {
-  
+const Layout = async ({ children }: { children: React.ReactNode }) => {
   return (
-    <main className='min-h-screen text-gray-600'>
-        <div className='container py-10'>
-            {children}
-        </div>
-    </main>
-  )
-}
+    <div className="min-h-screen text-[#e1e2ec] bg-[#090B14] font-sans antialiased selection:bg-[#aec6ff]/20 selection:text-[#aec6ff]">
+      {children}
+    </div>
+  );
+};
 
-export default layout
+export default Layout;

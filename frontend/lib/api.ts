@@ -49,6 +49,27 @@ export async function apiFetch<T>(
   return text ? (JSON.parse(text) as T) : (undefined as unknown as T);
 }
 
+/**
+ * Convenience api object — mirrors the apiFetch signature with HTTP method helpers.
+ *
+ * Usage:
+ *   api.get<User[]>("/api/users", { accessToken: token })
+ *   api.post<Project>("/api/projects", { body: JSON.stringify(data), accessToken: token })
+ */
+export const api = {
+  get: <T>(path: string, options: RequestInit & { accessToken?: string } = {}) =>
+    apiFetch<T>(path, { ...options, method: "GET" }),
+
+  post: <T>(path: string, options: RequestInit & { accessToken?: string } = {}) =>
+    apiFetch<T>(path, { ...options, method: "POST" }),
+
+  put: <T>(path: string, options: RequestInit & { accessToken?: string } = {}) =>
+    apiFetch<T>(path, { ...options, method: "PUT" }),
+
+  delete: <T>(path: string, options: RequestInit & { accessToken?: string } = {}) =>
+    apiFetch<T>(path, { ...options, method: "DELETE" }),
+};
+
 /** Convenience: stream SSE response from a POST endpoint. */
 export async function apiStream(
   path: string,
