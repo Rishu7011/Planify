@@ -147,6 +147,16 @@ export const DISCOVERY_META: AgentMeta = {
 export function getAgentMeta(agent?: string | null): AgentMeta {
   if (!agent) return FALLBACK_META;
   if (agent === "discovery") return DISCOVERY_META;
+
+  // LangGraph node names emitted before chat_service mapping (legacy / direct)
+  const nodeAliases: Record<string, AgentKey> = {
+    conversation_understanding: "input_understanding",
+    project_workflow: "clarification",
+    report_generator: "final_report",
+  };
+  const aliased = nodeAliases[agent];
+  if (aliased) return AGENT_META[aliased];
+
   const key = agent as AgentKey;
   return AGENT_META[key] ?? { ...FALLBACK_META, short: agent.replace(/_/g, " ") };
 }

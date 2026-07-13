@@ -7,10 +7,14 @@ and generated reports to MongoDB.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Any, AsyncGenerator
+
+from starlette.requests import Request
 
 from bson import ObjectId
 from langchain_core.messages import AIMessage, HumanMessage
@@ -40,6 +44,46 @@ NODE_AGENT_LABELS: dict[str, str] = {
     "project_workflow": "project_workflow",
     "report_generator": "report_generator",
 }
+
+# LangGraph node names → frontend workspace agent keys (see frontend/agents.ts)
+REPORT_TYPE_TO_FRONTEND_AGENT: dict[str, str] = {
+    "PRD": "prd",
+    "TECHNICAL_ARCHITECTURE": "technical_architecture",
+    "MARKET_RESEARCH": "market_research",
+    "COMPETITOR_ANALYSIS": "competitor_analysis",
+    "ROI": "roi",
+    "HR_PLANNING": "hr_planning",
+    "RISK_ANALYSIS": "risk_analysis",
+    "ROADMAP": "roadmap",
+    "FINAL_REPORT": "final_report",
+}
+
+
+def _frontend_agent_for_node(
+    node_name: str,
+    metadata: dict[str, Any],
+    state_update: dict[str, Any],
+) -> str:
+    """Map LangGraph node output to the agent key the frontend UI understands."""
+    merged = {**metadata, **(state_update.get("metadata") or {})}
+
+    if node_name == "conversation_understanding":
+        return "input_understanding"
+
+    if node_name == "project_workflow":
+        if merged.get("needs_clarification"):
+            return "clarification"
+        if merged.get("project_action") == "REPORT_REQUEST":
+            return "quality_validation"
+        return "input_understanding"
+
+    if node_name == "report_generator":
+        report_type = merged.get("last_generated_report")
+        if report_type:
+            return REPORT_TYPE_TO_FRONTEND_AGENT.get(report_type, report_type.lower())
+        return "final_report"
+
+    return NODE_AGENT_LABELS.get(node_name, node_name)
 
 
 def _sse(payload: dict[str, Any]) -> str:
@@ -72,6 +116,49 @@ def _default_discovery_options(question: str) -> list[str]:
         "Ready to define MVP scope",
         "Need help prioritizing features",
     ]
+
+
+def _extract_clarification_questions(
+    assistant_content: str | None,
+    project_context: dict[str, Any],
+    *,
+    needs_clarification: bool,
+) -> list[str]:
+    """Derive discovery/clarification questions for the frontend options panel."""
+    if not needs_clarification:
+        return []
+
+    questions = [q.strip() for q in (project_context.get("missing_information") or []) if q and q.strip()]
+    if questions:
+        return questions[:3]
+
+    if not assistant_content:
+        return []
+
+    numbered = re.findall(r"^\s*\d+[\.\)]\s+(.+\?)\s*$", assistant_content, re.MULTILINE)
+    if numbered:
+        return [q.strip() for q in numbered[:3]]
+
+    bullet_lines = [
+        ln.strip("•- ").strip()
+        for ln in assistant_content.split("\n")
+        if ln.strip().startswith(("•", "-")) and "?" in ln
+    ]
+    if bullet_lines:
+        return bullet_lines[:3]
+
+    sentences = re.findall(r"[^?\n]{10,}\?", assistant_content)
+    if sentences:
+        return [s.strip() for s in sentences[:3]]
+
+    return []
+
+
+async def _persist_project_context(db, project_id: str, context: dict[str, Any]) -> None:
+    await db.projects.update_one(
+        {"_id": ObjectId(project_id)},
+        {"$set": {"context_object": context, "updated_at": datetime.now(UTC)}},
+    )
 
 
 def _build_report_content(report_type: str, markdown: str) -> dict[str, Any]:
@@ -121,10 +208,30 @@ async def _upsert_report(
         await db.generated_reports.insert_one(report_update)
 
 
+async def _emit_content_deltas(
+    text: str,
+    *,
+    already_streamed: int,
+    chunk_size: int = 24,
+) -> AsyncGenerator[tuple[str, int], None]:
+    """Yield SSE payloads for newly available assistant text, then the new offset."""
+    if len(text) <= already_streamed:
+        return
+
+    remainder = text[already_streamed:]
+    for i in range(0, len(remainder), chunk_size):
+        delta = remainder[i : i + chunk_size]
+        already_streamed += len(delta)
+        yield _sse({"type": "content_delta", "delta": delta}), already_streamed
+        await asyncio.sleep(0)
+
+
 async def run_workflow_and_stream(
     project_id: str,
     message_id: str,
     project_doc: dict,
+    *,
+    request: Request | None = None,
 ) -> AsyncGenerator[str, None]:
     db = get_database()
 
@@ -176,23 +283,25 @@ async def run_workflow_and_stream(
     final_metadata: dict[str, Any] = {}
     final_context = project_context
     assistant_content: str | None = None
+    streamed_content_len = 0
+    message_started = False
     completed_reports: list[str] = []
     agents_executed: list[str] = []
+    last_frontend_agent: str | None = None
     routing_decision: str | None = None
+    cancelled = False
 
     try:
         config = {"configurable": {"thread_id": project_id}}
 
         async for chunk in workflow_graph.astream(state_input, config=config):
+            if request is not None and await request.is_disconnected():
+                cancelled = True
+                break
+
             for node_name, state_update in chunk.items():
                 if not isinstance(state_update, dict):
                     continue
-
-                agent_label = NODE_AGENT_LABELS.get(node_name, node_name)
-                if node_name not in announced_nodes:
-                    announced_nodes.add(node_name)
-                    agents_executed.append(agent_label)
-                    yield _sse({"type": "agent_start", "agent": agent_label})
 
                 if "metadata" in state_update:
                     final_metadata.update(state_update["metadata"])
@@ -204,21 +313,32 @@ async def run_workflow_and_stream(
                 ai_text = _extract_ai_content(state_update)
                 if ai_text:
                     assistant_content = ai_text
+                    if not message_started:
+                        message_started = True
+                        yield _sse({"type": "message_start"})
+                    async for payload, streamed_content_len in _emit_content_deltas(
+                        ai_text,
+                        already_streamed=streamed_content_len,
+                    ):
+                        yield payload
+
+                frontend_agent = _frontend_agent_for_node(
+                    node_name, final_metadata, state_update
+                )
+                last_frontend_agent = frontend_agent
+
+                if node_name not in announced_nodes:
+                    announced_nodes.add(node_name)
+                    agents_executed.append(frontend_agent)
+                    yield _sse({"type": "agent_start", "agent": frontend_agent})
 
                 if node_name == "project_workflow":
                     needs_clarification = final_metadata.get("needs_clarification", False)
-                    questions = state_update.get("metadata", {}).get("needs_clarification")
-                    clarification_questions = []
-
-                    if needs_clarification:
-                        clarification_questions = final_context.get("missing_information") or []
-                        if not clarification_questions and assistant_content:
-                            lines = [
-                                ln.strip("•- ").strip()
-                                for ln in assistant_content.split("\n")
-                                if ln.strip().startswith(("•", "-", "1.", "2.", "3."))
-                            ]
-                            clarification_questions = lines[:3]
+                    clarification_questions = _extract_clarification_questions(
+                        assistant_content,
+                        final_context,
+                        needs_clarification=needs_clarification,
+                    )
 
                     if needs_clarification and clarification_questions:
                         question = clarification_questions[0]
@@ -229,6 +349,7 @@ async def run_workflow_and_stream(
                         )
                         pending = {"question": question, "options": options}
                         final_context["pending_discovery"] = pending
+                        await _persist_project_context(db, project_id, final_context)
 
                         yield _sse(
                             {
@@ -258,7 +379,21 @@ async def run_workflow_and_stream(
                         if api_type not in completed_reports:
                             completed_reports.append(api_type)
 
-                yield _sse({"type": "agent_complete", "agent": agent_label})
+                yield _sse({"type": "agent_complete", "agent": frontend_agent})
+
+        if cancelled:
+            await db.ai_workflow_runs.update_one(
+                {"_id": run_id},
+                {
+                    "$set": {
+                        "status": "cancelled",
+                        "agents_executed": agents_executed,
+                        "updated_at": datetime.now(UTC),
+                    }
+                },
+            )
+            yield _sse({"type": "cancelled"})
+            return
 
         if routing_decision == "GENERAL_CONVERSATION" and assistant_content:
             await _persist_assistant_message(
@@ -288,6 +423,7 @@ async def run_workflow_and_stream(
                 "project_action": final_metadata.get("project_action"),
                 "discovery_complete": final_metadata.get("discovery_complete", False),
                 "reports_generated": completed_reports,
+                "agent": last_frontend_agent,
             }
             await _persist_assistant_message(
                 db,

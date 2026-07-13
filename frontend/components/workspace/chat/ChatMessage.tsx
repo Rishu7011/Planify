@@ -28,13 +28,14 @@ interface Props {
   message: ChatMessageData;
   projectId: string;
   agentMeta?: AgentMeta | null;
+  streaming?: boolean;
 }
 
-export function ChatMessage({ message, projectId, agentMeta }: Props) {
+export function ChatMessage({ message, projectId, agentMeta, streaming }: Props) {
   const isUser = message.role === "user";
   const content = message.content?.trim() ?? "";
 
-  if (!isUser && !content) return null;
+  if (!isUser && !content && !streaming) return null;
 
   const bubbleWidth =
     "w-full max-w-[92%] sm:max-w-[min(78%,42rem)]";
@@ -99,6 +100,12 @@ export function ChatMessage({ message, projectId, agentMeta }: Props) {
         ) : null}
 
         <ChatMarkdown content={content} />
+        {streaming && (
+          <span
+            className="ml-0.5 inline-block h-[1.1em] w-0.5 animate-pulse bg-[#AEC6FF] align-text-bottom"
+            aria-hidden
+          />
+        )}
 
         {!!message.metadata?.reports_generated?.length && (
           <div className="mt-4 grid grid-cols-1 gap-2 border-t border-white/[0.06] pt-4 sm:grid-cols-2">

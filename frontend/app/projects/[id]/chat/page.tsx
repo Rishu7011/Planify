@@ -60,6 +60,8 @@ interface MemoryItem {
 
 type WorkflowEventType =
   | "stream_start"
+  | "message_start"
+  | "content_delta"
   | "agent_start"
   | "agent_complete"
   | "clarification"
@@ -68,6 +70,7 @@ type WorkflowEventType =
   | "discovery_complete"
   | "workflow_complete"
   | "conversation_complete"
+  | "cancelled"
   | "error";
 
 interface WorkflowEvent {
@@ -80,6 +83,7 @@ interface WorkflowEvent {
   reports?: string[];
   message?: string;
   acknowledgment?: string;
+  delta?: string;
 }
 
 function isWorkflowEvent(value: unknown): value is WorkflowEvent {
@@ -106,6 +110,23 @@ function getMemoryTone(color?: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Streaming assistant placeholder (ChatGPT-style live response)
+// ---------------------------------------------------------------------------
+
+const STREAMING_MSG_ID = "__streaming__";
+
+function createStreamingMessage(agent?: string): Message {
+  return {
+    id: STREAMING_MSG_ID,
+    role: "assistant",
+    content: "",
+    message_type: "text",
+    created_at: new Date().toISOString(),
+    metadata: agent ? { agent, streaming: true } : { streaming: true },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -118,6 +139,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
   const [clarificationQuestions, setClarificationQuestions] = useState<string[]>([]);
   const [discoveryQuestion, setDiscoveryQuestion] = useState<{
@@ -151,6 +173,7 @@ export default function ChatPage() {
   const { scrollRef, bottomRef, showScrollButton, scrollToBottom } = useChatScroll([
     messages,
     loading,
+    streaming,
     activeAgent,
     clarificationQuestions,
     discoveryQuestion,
@@ -162,7 +185,13 @@ export default function ChatPage() {
   const mountedRef = useRef(true);
 
   const applyChatHistory = useCallback((data: ChatHistoryResponse) => {
-    setMessages(data.messages);
+    setMessages((prev) => {
+      const streamingMsg = prev.find((m) => m.id === STREAMING_MSG_ID);
+      if (sendingRef.current && streamingMsg) {
+        return [...data.messages, streamingMsg];
+      }
+      return data.messages;
+    });
     if (data.pending_discovery?.question) {
       setDiscoveryQuestion({
         question: data.pending_discovery.question,
@@ -180,7 +209,8 @@ export default function ChatPage() {
             !m.content.includes("• ")
         );
       setDiscoveryAcknowledgment(ackMsg?.content?.trim() || null);
-    } else {
+    } else if (!sendingRef.current) {
+      // Don't wipe an in-flight discovery panel while the SSE stream is still open.
       setDiscoveryQuestion(null);
       setDiscoveryAcknowledgment(null);
     }
@@ -216,28 +246,39 @@ export default function ChatPage() {
     [accessToken, projectId, applyChatHistory]
   );
 
-  const appendAssistantMessage = useCallback((content: string, messageType = "text") => {
-    const trimmed = content.trim();
-    if (!trimmed) return;
-
+  const ensureStreamingMessage = useCallback((agent?: string) => {
     setMessages((prev) => {
-      const alreadyShown = prev.some(
-        (m) => m.role === "assistant" && m.content.trim() === trimmed
-      );
-      if (alreadyShown) return prev;
-
-      return [
-        ...prev,
-        {
-          id: `asst-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          role: "assistant",
-          content: trimmed,
-          message_type: messageType,
-          created_at: new Date().toISOString(),
-        },
-      ];
+      if (prev.some((m) => m.id === STREAMING_MSG_ID)) return prev;
+      return [...prev, createStreamingMessage(agent)];
     });
+    setStreaming(true);
   }, []);
+
+  const appendContentDelta = useCallback((delta: string) => {
+    if (!delta) return;
+    setMessages((prev) => {
+      const hasStreaming = prev.some((m) => m.id === STREAMING_MSG_ID);
+      const base = hasStreaming ? prev : [...prev, createStreamingMessage()];
+      return base.map((m) =>
+        m.id === STREAMING_MSG_ID ? { ...m, content: m.content + delta } : m
+      );
+    });
+    setStreaming(true);
+  }, []);
+
+  const removeStreamingMessage = useCallback(() => {
+    setMessages((prev) => prev.filter((m) => m.id !== STREAMING_MSG_ID));
+    setStreaming(false);
+  }, []);
+
+  const stopGeneration = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    removeStreamingMessage();
+    sendingRef.current = false;
+    setLoading(false);
+    setActiveAgent(null);
+  }, [removeStreamingMessage]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -254,6 +295,20 @@ export default function ChatPage() {
       /* ignore */
     }
   }, []);
+
+  // Pick up refine prompts from the reports workspace
+  useEffect(() => {
+    try {
+      const key = `planify-pending-prompt-${projectId}`;
+      const pending = sessionStorage.getItem(key);
+      if (pending?.trim()) {
+        sessionStorage.removeItem(key);
+        setInput(pending.trim());
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [projectId]);
 
   useEffect(() => {
     try {
@@ -303,13 +358,17 @@ export default function ChatPage() {
 
   const sendMessage = useCallback(
     async (content: string, opts?: { keepClarificationVisible?: boolean; keepDiscoveryVisible?: boolean }) => {
-      if (!content.trim() || sendingRef.current || !accessToken) return;
+      if (!content.trim() || !accessToken) return;
+
+      // Interrupt any in-flight generation (ChatGPT-style).
+      if (sendingRef.current) {
+        abortRef.current?.abort();
+      }
 
       const streamGen = ++streamGenRef.current;
       sendingRef.current = true;
       setErrorBanner(null);
 
-      abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
 
@@ -326,9 +385,13 @@ export default function ChatPage() {
         created_at: new Date().toISOString(),
       };
 
-      setMessages((prev) => [...prev, userMsg]);
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== STREAMING_MSG_ID),
+        userMsg,
+      ]);
       setInput("");
       setLoading(true);
+      setStreaming(false);
       if (!opts?.keepClarificationVisible) {
         setClarificationQuestions([]);
       }
@@ -344,12 +407,18 @@ export default function ChatPage() {
 
         receivedEvent = true;
 
-        if (event.type === "agent_start" && event.agent) {
+        if (event.type === "message_start") {
+          ensureStreamingMessage(event.agent);
+        } else if (event.type === "content_delta" && event.delta) {
+          appendContentDelta(event.delta);
+        } else if (event.type === "agent_start" && event.agent) {
           setDiscoveryQuestion(null);
           setDiscoveryAcknowledgment(null);
           setActiveAgent(event.agent);
+          ensureStreamingMessage(event.agent);
         } else if (event.type === "discovery_question" && event.question) {
           const ack = (event.acknowledgment || event.message || "").trim();
+          removeStreamingMessage();
           setDiscoveryQuestion({
             question: event.question,
             options: event.options ?? [],
@@ -361,19 +430,22 @@ export default function ChatPage() {
           setDiscoveryAcknowledgment(null);
         } else if (event.type === "discovery_turn_complete") {
           setActiveAgent(null);
-          const refreshed = await refreshMessages();
-          if (!refreshed?.pending_discovery?.question && mountedRef.current) {
-            setErrorBanner(
-              "Discovery did not return a question. Check that GOOGLE_API_KEY or MISTRAL_API_KEY is set in backend/.env, then try again."
-            );
-          }
+          // Mid-discovery turn — the assistant reply arrives via conversation_complete.
+          // No options panel is expected when the model replies in plain text.
+          await refreshMessages();
         } else if (event.type === "clarification") {
           setActiveAgent(null);
           if (event.questions?.length) {
             setClarificationQuestions(event.questions);
           }
           if (event.message) {
-            appendAssistantMessage(event.message);
+            ensureStreamingMessage("clarification");
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === STREAMING_MSG_ID ? { ...m, content: event.message! } : m
+              )
+            );
+            setStreaming(true);
           }
         } else if (
           event.type === "workflow_complete" ||
@@ -388,14 +460,24 @@ export default function ChatPage() {
             setReportsGenerated(event.reports);
           }
           if (event.message) {
-            appendAssistantMessage(event.message);
+            ensureStreamingMessage();
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === STREAMING_MSG_ID ? { ...m, content: event.message! } : m
+              )
+            );
           }
           const updated = await refreshMessages();
+          removeStreamingMessage();
           if (!updated && mountedRef.current) {
             setErrorBanner(
               "Response saved, but the latest messages couldn't be loaded. Refresh to see them."
             );
           }
+        } else if (event.type === "cancelled") {
+          setActiveAgent(null);
+          removeStreamingMessage();
+          await refreshMessages();
         } else if (event.type === "error") {
           throw new Error(event.message || "The workflow reported an error.");
         }
@@ -453,6 +535,7 @@ export default function ChatPage() {
       } catch (err: any) {
         if (err?.name === "AbortError") {
           if (streamGen === streamGenRef.current) {
+            removeStreamingMessage();
             await refreshMessages();
           }
           return;
@@ -461,6 +544,7 @@ export default function ChatPage() {
 
         if (streamGen !== streamGenRef.current) return;
 
+        removeStreamingMessage();
         const recovered = await refreshMessages();
         if (!recovered && mountedRef.current) {
           setMessages((prev) => [
@@ -481,11 +565,21 @@ export default function ChatPage() {
       } finally {
         if (streamGen === streamGenRef.current) {
           sendingRef.current = false;
-          if (mountedRef.current) setLoading(false);
+          if (mountedRef.current) {
+            setLoading(false);
+            setStreaming(false);
+          }
         }
       }
     },
-    [accessToken, projectId, appendAssistantMessage, refreshMessages]
+    [
+      accessToken,
+      projectId,
+      ensureStreamingMessage,
+      appendContentDelta,
+      removeStreamingMessage,
+      refreshMessages,
+    ]
   );
 
   const handleShare = useCallback(async () => {
@@ -532,6 +626,7 @@ export default function ChatPage() {
 
   const visibleMessages = messages.filter((m) => {
     if (m.role === "user") return true;
+    if (m.id === STREAMING_MSG_ID) return true;
     if (!m.content?.trim()) return false;
     // Discovery panel owns the active question + acknowledgment
     if (discoveryQuestion && m.message_type === "discovery") {
@@ -540,7 +635,7 @@ export default function ChatPage() {
     return true;
   });
 
-  const showThinking = loading && !activeAgent;
+  const showThinking = loading && !activeAgent && !streaming;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#090B14] text-[#F7F8FC]">
@@ -892,6 +987,7 @@ export default function ChatPage() {
                       : msg.message_type === "discovery"
                       ? getAgentMeta("discovery")
                       : null;
+                    const isStreamingMsg = msg.id === STREAMING_MSG_ID;
 
                     return (
                       <ChatMessage
@@ -899,6 +995,7 @@ export default function ChatPage() {
                         message={msg}
                         projectId={projectId}
                         agentMeta={agentMeta}
+                        streaming={isStreamingMsg && streaming}
                       />
                     );
                   })}
@@ -944,7 +1041,9 @@ export default function ChatPage() {
               value={input}
               onChange={setInput}
               onSend={() => sendMessage(input)}
+              onStop={stopGeneration}
               loading={loading}
+              streaming={streaming}
             />
           </div>
         </main>

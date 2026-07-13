@@ -54,6 +54,7 @@ async def send_message(request: Request, project_id: str, body: SendMessageReque
             project_id=project_id,
             message_id=str(msg_result.inserted_id),
             project_doc=project,
+            request=request,
         ),
         media_type="text/event-stream",
         headers={
