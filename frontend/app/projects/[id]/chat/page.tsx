@@ -7,22 +7,26 @@ import Link from "next/link";
 import { apiFetch, apiStream } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { WorkspaceClarificationPanel } from "@/components/workspace/WorkspaceClarificationPanel";
-
-// ---------------------------------------------------------------------------
-// Tailwind-only reusable style fragments
-// ---------------------------------------------------------------------------
-
-const GLASS_PANEL =
-  "bg-white/[0.03] backdrop-blur-md border border-white/[0.08]";
-
-const CUSTOM_SCROLLBAR =
-  "[&::-webkit-scrollbar]:w-1 " +
-  "[&::-webkit-scrollbar-track]:bg-transparent " +
-  "[&::-webkit-scrollbar-thumb]:bg-white/10 " +
-  "[&::-webkit-scrollbar-thumb]:rounded-[10px]";
-
-const TRANSITION =
-  "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]";
+import { DiscoveryOptionsPanel } from "@/components/workspace/DiscoveryOptionsPanel";
+import { ChatMessage } from "@/components/workspace/chat/ChatMessage";
+import { ChatComposer } from "@/components/workspace/chat/ChatComposer";
+import { ThinkingIndicator } from "@/components/workspace/chat/ThinkingIndicator";
+import { ScrollToBottomButton } from "@/components/workspace/chat/ScrollToBottomButton";
+import {
+  GLASS_PANEL,
+  CUSTOM_SCROLLBAR,
+  TRANSITION,
+  FADE_UP,
+} from "@/components/workspace/chat/constants";
+import {
+  AGENT_ORDER,
+  AGENT_META,
+  SIDEBAR_STAGES,
+  getAgentMeta,
+  isAgentKey,
+  type AgentKey,
+} from "@/components/workspace/chat/agents";
+import { useChatScroll } from "@/hooks/useChatScroll";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,6 +45,11 @@ interface Message {
   };
 }
 
+interface ChatHistoryResponse {
+  messages: Message[];
+  pending_discovery?: { question: string; options: string[] } | null;
+}
+
 interface MemoryItem {
   id: string;
   name: string;
@@ -50,9 +59,13 @@ interface MemoryItem {
 }
 
 type WorkflowEventType =
+  | "stream_start"
   | "agent_start"
   | "agent_complete"
   | "clarification"
+  | "discovery_question"
+  | "discovery_turn_complete"
+  | "discovery_complete"
   | "workflow_complete"
   | "conversation_complete"
   | "error";
@@ -61,9 +74,12 @@ interface WorkflowEvent {
   type: WorkflowEventType;
   agent?: string;
   questions?: string[];
+  question?: string;
+  options?: string[];
   status?: string;
   reports?: string[];
   message?: string;
+  acknowledgment?: string;
 }
 
 function isWorkflowEvent(value: unknown): value is WorkflowEvent {
@@ -73,85 +89,7 @@ function isWorkflowEvent(value: unknown): value is WorkflowEvent {
 }
 
 // ---------------------------------------------------------------------------
-// Static config
-// ---------------------------------------------------------------------------
-
-const AGENT_ORDER = [
-  "input_understanding",
-  "clarification",
-  "prd",
-  "feasibility",
-  "roi",
-  "roadmap",
-  "final_report",
-] as const;
-
-type AgentKey = (typeof AGENT_ORDER)[number];
-
-const AGENT_META: Record<
-  AgentKey,
-  { label: string; short: string; icon: string; iconBg: string; iconColor: string }
-> = {
-  input_understanding: {
-    label: "Understanding your idea...",
-    short: "Understand",
-    icon: "psychology",
-    iconBg: "bg-blue-500/20",
-    iconColor: "text-[#AEC6FF]",
-  },
-  clarification: {
-    label: "Checking for missing context...",
-    short: "Clarify",
-    icon: "help_center",
-    iconBg: "bg-purple-500/20",
-    iconColor: "text-purple-400",
-  },
-  prd: {
-    label: "Writing Product Requirements Document...",
-    short: "PRD Generation",
-    icon: "description",
-    iconBg: "bg-blue-500/20",
-    iconColor: "text-blue-400",
-  },
-  feasibility: {
-    label: "Assessing technical feasibility...",
-    short: "Technical Arch",
-    icon: "database",
-    iconBg: "bg-purple-500/20",
-    iconColor: "text-purple-400",
-  },
-  roi: {
-    label: "Financial modeling & ROI analysis...",
-    short: "ROI Model",
-    icon: "calculate",
-    iconBg: "bg-amber-500/20",
-    iconColor: "text-amber-400",
-  },
-  roadmap: {
-    label: "Building project execution roadmap...",
-    short: "Roadmap",
-    icon: "account_tree",
-    iconBg: "bg-emerald-500/20",
-    iconColor: "text-emerald-400",
-  },
-  final_report: {
-    label: "Assembling final report bundle...",
-    short: "Final Report",
-    icon: "task_alt",
-    iconBg: "bg-emerald-500/20",
-    iconColor: "text-emerald-400",
-  },
-};
-
-const SIDEBAR_STAGES: { key: AgentKey; label: string }[] = [
-  { key: "input_understanding", label: "Understand" },
-  { key: "prd", label: "PRD Generation" },
-  { key: "feasibility", label: "Technical Arch" },
-  { key: "roi", label: "ROI Model" },
-];
-
-// ---------------------------------------------------------------------------
-// Helpers
+// Static config — see @/components/workspace/chat/agents.ts
 // ---------------------------------------------------------------------------
 
 function getMemoryTone(color?: string) {
@@ -180,8 +118,13 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [activeAgent, setActiveAgent] = useState<AgentKey | null>(null);
+  const [activeAgent, setActiveAgent] = useState<string | null>(null);
   const [clarificationQuestions, setClarificationQuestions] = useState<string[]>([]);
+  const [discoveryQuestion, setDiscoveryQuestion] = useState<{
+    question: string;
+    options: string[];
+  } | null>(null);
+  const [discoveryAcknowledgment, setDiscoveryAcknowledgment] = useState<string | null>(null);
   const [reportsReady, setReportsReady] = useState(false);
   const [reportsGenerated, setReportsGenerated] = useState<string[]>([]);
   const [project, setProject] = useState<{
@@ -198,24 +141,127 @@ export default function ChatPage() {
   const [sidebarOpenMobile, setSidebarOpenMobile] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const accessToken = (session?.user as any)?.accessToken;
+
+  const activeAgentMeta = activeAgent ? getAgentMeta(activeAgent) : null;
+
+  const thinkingLabel =
+    activeAgentMeta?.label ?? (loading ? "Thinking" : undefined);
+
+  const { scrollRef, bottomRef, showScrollButton, scrollToBottom } = useChatScroll([
+    messages,
+    loading,
+    activeAgent,
+    clarificationQuestions,
+    discoveryQuestion,
+  ]);
 
   const sendingRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const streamGenRef = useRef(0);
   const mountedRef = useRef(true);
+
+  const applyChatHistory = useCallback((data: ChatHistoryResponse) => {
+    setMessages(data.messages);
+    if (data.pending_discovery?.question) {
+      setDiscoveryQuestion({
+        question: data.pending_discovery.question,
+        options: data.pending_discovery.options ?? [],
+      });
+      const pendingQ = data.pending_discovery.question.toLowerCase();
+      const ackMsg = [...data.messages]
+        .reverse()
+        .find(
+          (m) =>
+            m.role === "assistant" &&
+            m.message_type === "discovery" &&
+            m.content?.trim() &&
+            !m.content.toLowerCase().includes(pendingQ) &&
+            !m.content.includes("• ")
+        );
+      setDiscoveryAcknowledgment(ackMsg?.content?.trim() || null);
+    } else {
+      setDiscoveryQuestion(null);
+      setDiscoveryAcknowledgment(null);
+    }
+    const lastMsg = data.messages[data.messages.length - 1];
+    if (lastMsg?.metadata?.reports_generated?.length) {
+      setReportsReady(true);
+      setReportsGenerated(lastMsg.metadata.reports_generated);
+    }
+  }, []);
+
+  const refreshMessages = useCallback(
+    async (retries = 2): Promise<ChatHistoryResponse | null> => {
+      if (!accessToken) return null;
+
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const data = await apiFetch<ChatHistoryResponse>(
+            `/api/projects/${projectId}/chat/messages`,
+            { accessToken }
+          );
+          if (!mountedRef.current) return data;
+          applyChatHistory(data);
+          return data;
+        } catch (refreshErr) {
+          console.error(`Failed to refresh messages (attempt ${attempt + 1})`, refreshErr);
+          if (attempt < retries) {
+            await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+          }
+        }
+      }
+      return null;
+    },
+    [accessToken, projectId, applyChatHistory]
+  );
+
+  const appendAssistantMessage = useCallback((content: string, messageType = "text") => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    setMessages((prev) => {
+      const alreadyShown = prev.some(
+        (m) => m.role === "assistant" && m.content.trim() === trimmed
+      );
+      if (alreadyShown) return prev;
+
+      return [
+        ...prev,
+        {
+          id: `asst-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          role: "assistant",
+          content: trimmed,
+          message_type: messageType,
+          created_at: new Date().toISOString(),
+        },
+      ];
+    });
+  }, []);
 
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      abortRef.current?.abort();
     };
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, activeAgent, clarificationQuestions]);
+    try {
+      const saved = localStorage.getItem("planify-sidebar-collapsed");
+      if (saved === "true") setSidebarCollapsed(true);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("planify-sidebar-collapsed", String(sidebarCollapsed));
+    } catch {
+      /* ignore */
+    }
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
     if (!session || !accessToken) return;
@@ -239,17 +285,12 @@ export default function ChatPage() {
 
     const fetchMessages = async () => {
       try {
-        const data = await apiFetch<Message[]>(
+        const data = await apiFetch<ChatHistoryResponse>(
           `/api/projects/${projectId}/chat/messages`,
           { accessToken }
         );
         if (!mountedRef.current) return;
-        setMessages(data);
-        const lastMsg = data[data.length - 1];
-        if (lastMsg?.metadata?.reports_generated?.length) {
-          setReportsReady(true);
-          setReportsGenerated(lastMsg.metadata.reports_generated);
-        }
+        applyChatHistory(data);
       } catch (err) {
         console.error("Failed to load messages", err);
         if (mountedRef.current) setErrorBanner("Couldn't load chat history.");
@@ -258,12 +299,13 @@ export default function ChatPage() {
 
     fetchProject();
     fetchMessages();
-  }, [session, accessToken, projectId]);
+  }, [session, accessToken, projectId, applyChatHistory]);
 
   const sendMessage = useCallback(
-    async (content: string, opts?: { keepClarificationVisible?: boolean }) => {
+    async (content: string, opts?: { keepClarificationVisible?: boolean; keepDiscoveryVisible?: boolean }) => {
       if (!content.trim() || sendingRef.current || !accessToken) return;
 
+      const streamGen = ++streamGenRef.current;
       sendingRef.current = true;
       setErrorBanner(null);
 
@@ -290,6 +332,74 @@ export default function ChatPage() {
       if (!opts?.keepClarificationVisible) {
         setClarificationQuestions([]);
       }
+      if (!opts?.keepDiscoveryVisible) {
+        setDiscoveryQuestion(null);
+        setDiscoveryAcknowledgment(null);
+      }
+
+      let receivedEvent = false;
+
+      const handleEvent = async (event: WorkflowEvent) => {
+        if (streamGen !== streamGenRef.current) return;
+
+        receivedEvent = true;
+
+        if (event.type === "agent_start" && event.agent) {
+          setDiscoveryQuestion(null);
+          setDiscoveryAcknowledgment(null);
+          setActiveAgent(event.agent);
+        } else if (event.type === "discovery_question" && event.question) {
+          const ack = (event.acknowledgment || event.message || "").trim();
+          setDiscoveryQuestion({
+            question: event.question,
+            options: event.options ?? [],
+          });
+          setDiscoveryAcknowledgment(ack || null);
+          setActiveAgent(null);
+        } else if (event.type === "discovery_complete") {
+          setDiscoveryQuestion(null);
+          setDiscoveryAcknowledgment(null);
+        } else if (event.type === "discovery_turn_complete") {
+          setActiveAgent(null);
+          const refreshed = await refreshMessages();
+          if (!refreshed?.pending_discovery?.question && mountedRef.current) {
+            setErrorBanner(
+              "Discovery did not return a question. Check that GOOGLE_API_KEY or MISTRAL_API_KEY is set in backend/.env, then try again."
+            );
+          }
+        } else if (event.type === "clarification") {
+          setActiveAgent(null);
+          if (event.questions?.length) {
+            setClarificationQuestions(event.questions);
+          }
+          if (event.message) {
+            appendAssistantMessage(event.message);
+          }
+        } else if (
+          event.type === "workflow_complete" ||
+          event.type === "conversation_complete"
+        ) {
+          setActiveAgent(null);
+          setClarificationQuestions([]);
+          setDiscoveryQuestion(null);
+          setDiscoveryAcknowledgment(null);
+          if (event.reports?.length) {
+            setReportsReady(true);
+            setReportsGenerated(event.reports);
+          }
+          if (event.message) {
+            appendAssistantMessage(event.message);
+          }
+          const updated = await refreshMessages();
+          if (!updated && mountedRef.current) {
+            setErrorBanner(
+              "Response saved, but the latest messages couldn't be loaded. Refresh to see them."
+            );
+          }
+        } else if (event.type === "error") {
+          throw new Error(event.message || "The workflow reported an error.");
+        }
+      };
 
       try {
         const res = await apiStream(
@@ -309,7 +419,6 @@ export default function ChatPage() {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          if (!mountedRef.current) break;
 
           buffer += decoder.decode(value, { stream: true });
 
@@ -334,69 +443,49 @@ export default function ChatPage() {
               continue;
             }
 
-            const event = parsed;
-
-            if (event.type === "agent_start" && event.agent) {
-              setActiveAgent(event.agent as AgentKey);
-            } else if (event.type === "clarification" && event.questions?.length) {
-              setClarificationQuestions(event.questions);
-              setActiveAgent(null);
-            } else if (
-              event.type === "workflow_complete" ||
-              event.type === "conversation_complete"
-            ) {
-              setActiveAgent(null);
-              setClarificationQuestions([]);
-              if (event.reports?.length) {
-                setReportsReady(true);
-                setReportsGenerated(event.reports);
-              }
-
-              try {
-                const updated = await apiFetch<Message[]>(
-                  `/api/projects/${projectId}/chat/messages`,
-                  { accessToken }
-                );
-                if (!mountedRef.current) return;
-                setMessages(updated);
-                const lastMeta = updated[updated.length - 1]?.metadata;
-                if (lastMeta?.reports_generated?.length) {
-                  setReportsGenerated(lastMeta.reports_generated);
-                }
-              } catch (refreshErr) {
-                console.error("Failed to refresh messages after completion", refreshErr);
-                setErrorBanner(
-                  "Workflow finished, but the latest messages couldn't be loaded. Refresh to see them."
-                );
-              }
-            } else if (event.type === "error") {
-              throw new Error(event.message || "The workflow reported an error.");
-            }
+            await handleEvent(parsed);
           }
         }
-      } catch (err: any) {
-        if (err?.name === "AbortError") return;
-        console.error("sendMessage stream error", err);
-        if (!mountedRef.current) return;
 
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `err-${Date.now()}`,
-            role: "assistant",
-            content: `Something went wrong: ${err.message || "Unknown error"}. Please try again.`,
-            message_type: "text",
-            created_at: new Date().toISOString(),
-          },
-        ]);
+        if (streamGen === streamGenRef.current && !receivedEvent) {
+          await refreshMessages();
+        }
+      } catch (err: any) {
+        if (err?.name === "AbortError") {
+          if (streamGen === streamGenRef.current) {
+            await refreshMessages();
+          }
+          return;
+        }
+        console.error("sendMessage stream error", err);
+
+        if (streamGen !== streamGenRef.current) return;
+
+        const recovered = await refreshMessages();
+        if (!recovered && mountedRef.current) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `err-${Date.now()}`,
+              role: "assistant",
+              content: `Something went wrong: ${err.message || "Unknown error"}. Please try again.`,
+              message_type: "text",
+              created_at: new Date().toISOString(),
+            },
+          ]);
+        }
         setActiveAgent(null);
         setClarificationQuestions([]);
+        setDiscoveryQuestion(null);
+        setDiscoveryAcknowledgment(null);
       } finally {
-        sendingRef.current = false;
-        if (mountedRef.current) setLoading(false);
+        if (streamGen === streamGenRef.current) {
+          sendingRef.current = false;
+          if (mountedRef.current) setLoading(false);
+        }
       }
     },
-    [accessToken, projectId]
+    [accessToken, projectId, appendAssistantMessage, refreshMessages]
   );
 
   const handleShare = useCallback(async () => {
@@ -412,14 +501,15 @@ export default function ChatPage() {
 
   const completedAgents: string[] = reportsReady
     ? [...AGENT_ORDER]
-    : activeAgent
+    : activeAgent && isAgentKey(activeAgent)
     ? (() => {
         const idx = AGENT_ORDER.indexOf(activeAgent);
         return idx > 0 ? AGENT_ORDER.slice(0, idx) : [];
       })()
     : [];
 
-  const activeAgentIndex = activeAgent ? AGENT_ORDER.indexOf(activeAgent) : -1;
+  const activeAgentIndex =
+    activeAgent && isAgentKey(activeAgent) ? AGENT_ORDER.indexOf(activeAgent) : -1;
 
   const progressPct = reportsReady
     ? 100
@@ -429,6 +519,28 @@ export default function ChatPage() {
 
   const contextDesktopOpen = contextOpen;
   const sidebarWidth = sidebarCollapsed ? "md:w-[72px]" : "md:w-[240px]";
+
+  const stageLabel = reportsReady
+    ? "Complete"
+    : activeAgent
+    ? getAgentMeta(activeAgent).short
+    : discoveryQuestion
+    ? "Discovery"
+    : loading
+    ? "Thinking"
+    : "Idle";
+
+  const visibleMessages = messages.filter((m) => {
+    if (m.role === "user") return true;
+    if (!m.content?.trim()) return false;
+    // Discovery panel owns the active question + acknowledgment
+    if (discoveryQuestion && m.message_type === "discovery") {
+      return false;
+    }
+    return true;
+  });
+
+  const showThinking = loading && !activeAgent;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#090B14] text-[#F7F8FC]">
@@ -459,11 +571,7 @@ export default function ChatPage() {
             </span>
             <span className="ml-2 whitespace-nowrap rounded bg-[#AEC6FF]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#AEC6FF]">
               Stage:{" "}
-              {activeAgent
-                ? AGENT_META[activeAgent]?.short
-                : reportsReady
-                ? "Complete"
-                : "Idle"}
+              {stageLabel}
             </span>
           </div>
         </div>
@@ -528,19 +636,19 @@ export default function ChatPage() {
         </div>
       )}
 
-      <div className="relative flex flex-1 overflow-hidden">
+      <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside
           className={[
             "group z-50 flex h-full shrink-0 flex-col overflow-hidden border-r border-white/[0.08] bg-[#090B14]",
             TRANSITION,
-            "fixed left-0 top-16 md:top-16 bottom-10 md:bottom-0 md:h-[calc(100vh-4rem)]",
-            "w-[240px] md:relative md:top-0 md:bottom-auto md:h-full",
+            "fixed inset-y-0 left-0 top-16 z-50 w-[min(85vw,240px)] md:relative md:top-0 md:h-full md:translate-x-0",
             sidebarOpenMobile ? "translate-x-0" : "-translate-x-full md:translate-x-0",
             sidebarWidth,
           ].join(" ")}
+          aria-label="Workspace sidebar"
         >
-          <div className={`flex-1 space-y-8 overflow-y-auto p-4 ${CUSTOM_SCROLLBAR}`}>
+          <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 ${CUSTOM_SCROLLBAR}`}>
             <div>
               <div
                 className={`mb-4 flex items-center gap-2 px-2 ${
@@ -626,7 +734,9 @@ export default function ChatPage() {
               <div className="space-y-1">
                 {SIDEBAR_STAGES.map((stage) => {
                   const isDone = completedAgents.includes(stage.key) || reportsReady;
-                  const isActive = activeAgent === stage.key;
+                  const isActive =
+                    activeAgent === stage.key ||
+                    (stage.key === "input_understanding" && !!discoveryQuestion);
 
                   return (
                     <div
@@ -660,7 +770,7 @@ export default function ChatPage() {
             </div>
           </div>
 
-          <div className="border-t border-white/[0.08] p-4">
+          <div className="shrink-0 border-t border-white/[0.08] p-4">
             <button
               className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/5 text-sm font-medium transition-all hover:bg-white/10"
               onClick={() => router.push("/dashboard")}
@@ -678,53 +788,65 @@ export default function ChatPage() {
           />
         )}
 
-        {/* Main */}
-        <main className="relative flex min-w-0 flex-1 flex-col bg-[#0F1220]">
+        {/* Main conversation */}
+        <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#0F1220]">
           <div
-            className={`flex-1 space-y-12 overflow-y-auto px-4 py-8 pb-48 md:px-8 lg:px-12 ${CUSTOM_SCROLLBAR}`}
+            ref={scrollRef}
+            className={`min-h-0 flex-1 overflow-y-auto overscroll-contain ${CUSTOM_SCROLLBAR} selection:bg-[#AEC6FF]/25 selection:text-[#F7F8FC]`}
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+            aria-label="Chat messages"
           >
-            <div className="mx-auto max-w-4xl space-y-12">
-              {messages.length === 0 && !loading && (
-                <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+            <div className="mx-auto w-full max-w-4xl space-y-4 px-4 py-6 md:space-y-5 md:px-8 md:py-8">
+              {visibleMessages.length === 0 && !loading && (
+                <motion.div
+                  {...FADE_UP}
+                  className="flex flex-col items-center justify-center gap-4 py-20 text-center md:py-28"
+                >
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/5 text-[#7C869A]">
-                    <span className="material-symbols-outlined text-2xl">
-                      chat_bubble
-                    </span>
+                    <span className="material-symbols-outlined text-2xl">chat_bubble</span>
                   </div>
-                  <h2 className="text-lg font-semibold">Describe your project idea</h2>
-                  <p className="max-w-md text-sm text-[#B4BCCB]">
-                    Explain what you want to build. Our AI agents will collaborate
-                    to generate a PRD, Feasibility, ROI Model, and Roadmap.
+                  <h2 className="text-lg font-semibold text-[#F7F8FC]">Describe your project idea</h2>
+                  <p className="max-w-md text-sm leading-relaxed text-[#B4BCCB]">
+                    Explain what you want to build. Planify AI will run structured discovery,
+                    then generate PRD, architecture, market research, and execution planning.
                   </p>
-                </div>
+                </motion.div>
               )}
 
-              {/* AI Status Banner */}
-              {activeAgent && (
-                <div className={`${GLASS_PANEL} relative overflow-hidden rounded-[1.25rem] p-6`}>
+              {activeAgent && activeAgentMeta && (
+                <motion.div
+                  {...FADE_UP}
+                  className={`${GLASS_PANEL} relative overflow-hidden rounded-2xl p-4 md:p-5`}
+                >
                   <div className="pointer-events-none absolute inset-0 animate-pulse bg-gradient-to-r from-[#AEC6FF]/5 to-transparent" />
 
-                  <div className="relative mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                  <div className="relative mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-4">
-                      <div className="flex -space-x-3">
-                        {AGENT_ORDER.slice(
-                          Math.max(activeAgentIndex - 1, 0),
-                          activeAgentIndex + 2
-                        ).map((a) => (
-                          <div
-                            key={a}
-                            className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#151A2B] ${AGENT_META[a].iconBg} ${AGENT_META[a].iconColor}`}
-                          >
-                            <span className="material-symbols-outlined text-xl">
-                              {AGENT_META[a].icon}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                      {activeAgent && isAgentKey(activeAgent) && (
+                        <div className="flex -space-x-3">
+                          {AGENT_ORDER.slice(
+                            Math.max(activeAgentIndex - 1, 0),
+                            activeAgentIndex + 2
+                          ).map((a) => (
+                            <div
+                              key={a}
+                              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#151A2B] ${AGENT_META[a].iconBg} ${AGENT_META[a].iconColor}`}
+                            >
+                              <span className="material-symbols-outlined text-xl">
+                                {AGENT_META[a].icon}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       <div>
                         <h3 className="flex items-center gap-2 text-base font-semibold md:text-lg">
-                          {Math.min(activeAgentIndex + 1, 3)} AI Agents Collaborating
+                          {activeAgentIndex >= 0
+                            ? `${Math.min(activeAgentIndex + 1, AGENT_ORDER.length)} of ${AGENT_ORDER.length} agents`
+                            : "AI agents working"}
                           <span className="flex gap-1">
                             <span className="h-1 w-1 rounded-full bg-[#AEC6FF] animate-pulse" />
                             <span className="h-1 w-1 rounded-full bg-[#AEC6FF] animate-pulse [animation-delay:200ms]" />
@@ -732,7 +854,7 @@ export default function ChatPage() {
                           </span>
                         </h3>
                         <p className="mt-1 text-xs text-[#7C869A]">
-                          {AGENT_META[activeAgent]?.label}
+                          {activeAgentMeta.label}
                         </p>
                       </div>
                     </div>
@@ -744,190 +866,101 @@ export default function ChatPage() {
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#7C869A]">
                         {reportsReady
                           ? "Workflow complete"
-                          : `Step ${Math.max(activeAgentIndex + 1, 1)} of ${AGENT_ORDER.length}`}
+                          : activeAgentIndex >= 0
+                          ? `Step ${activeAgentIndex + 1} of ${AGENT_ORDER.length}`
+                          : "In progress"}
                       </p>
                     </div>
                   </div>
 
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/5">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#AEC6FF] to-[#6B5CFF] transition-all duration-1000"
-                      style={{ width: `${progressPct}%` }}
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                    <motion.div
+                      className="h-full rounded-full bg-gradient-to-r from-[#AEC6FF] to-[#6B5CFF]"
+                      initial={false}
+                      animate={{ width: `${progressPct}%` }}
+                      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                     />
                   </div>
-                </div>
+                </motion.div>
               )}
 
-              {/* Timeline */}
-              <div className="space-y-8">
-                <AnimatePresence initial={false}>
-                  {messages.map((msg) => {
-                    const isUser = msg.role === "user";
+              <div className="flex flex-col gap-4 md:gap-5">
+                <AnimatePresence initial={false} mode="popLayout">
+                  {visibleMessages.map((msg) => {
                     const agentMeta = msg.metadata?.agent
-                      ? AGENT_META[msg.metadata.agent as AgentKey]
+                      ? getAgentMeta(String(msg.metadata.agent))
+                      : msg.message_type === "discovery"
+                      ? getAgentMeta("discovery")
                       : null;
 
                     return (
-                      <motion.div
+                      <ChatMessage
                         key={msg.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                        className={isUser ? "flex justify-end pl-12" : "flex gap-4 pr-12"}
-                      >
-                        {isUser ? (
-                          <div className="max-w-2xl rounded-2xl rounded-tr-none border border-[#AEC6FF]/20 bg-[#AEC6FF]/10 p-5 shadow-lg">
-                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#F7F8FC] md:text-base">
-                              {msg.content}
-                            </p>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-[#151A2B] shadow-inner">
-                              <span
-                                className={`material-symbols-outlined text-2xl ${
-                                  agentMeta?.iconColor || "text-[#AEC6FF]"
-                                }`}
-                                style={{ fontVariationSettings: "'FILL' 1" }}
-                              >
-                                {agentMeta?.icon || "robot_2"}
-                              </span>
-                            </div>
-
-                            <div className="min-w-0 flex-1 space-y-6">
-                              <div className="rounded-2xl rounded-tl-none border border-white/[0.08] bg-[#151A2B] p-5 shadow-sm transition-colors hover:bg-[#1B2136]">
-                                {agentMeta && (
-                                  <div className="mb-4 flex items-center gap-2">
-                                    <span
-                                      className={`text-[10px] font-bold uppercase tracking-widest ${agentMeta.iconColor}`}
-                                    >
-                                      {agentMeta.short}
-                                    </span>
-                                    <span className="h-1 w-1 rounded-full bg-[#7C869A]" />
-                                    <span className="flex items-center gap-1 text-xs text-emerald-400">
-                                      <span className="material-symbols-outlined text-xs">
-                                        check_circle
-                                      </span>
-                                      Validated
-                                    </span>
-                                  </div>
-                                )}
-
-                                <p className="mb-6 whitespace-pre-wrap text-sm leading-relaxed text-[#B4BCCB] md:text-base">
-                                  {msg.content}
-                                </p>
-
-                                {!!msg.metadata?.reports_generated?.length && (
-                                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    {msg.metadata.reports_generated.map((r) => (
-                                      <Link
-                                        key={r}
-                                        href={`/projects/${projectId}/reports`}
-                                        className="group flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/5 p-4 transition-all hover:border-[#AEC6FF]/50"
-                                      >
-                                        <div className="flex items-center gap-3">
-                                          <span className="material-symbols-outlined text-emerald-400">
-                                            task_alt
-                                          </span>
-                                          <span className="text-xs font-medium">
-                                            {r.toUpperCase()}
-                                          </span>
-                                        </div>
-                                        <span className="material-symbols-outlined text-sm text-[#7C869A] transition-colors group-hover:text-[#AEC6FF]">
-                                          open_in_new
-                                        </span>
-                                      </Link>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </motion.div>
+                        message={msg}
+                        projectId={projectId}
+                        agentMeta={agentMeta}
+                      />
                     );
                   })}
                 </AnimatePresence>
 
-                {clarificationQuestions.length > 0 && (
-                  <div className="pl-0 sm:pl-14">
-                    <WorkspaceClarificationPanel
-                      questions={clarificationQuestions}
-                      onSubmit={(combinedAnswer) => {
-                        sendMessage(combinedAnswer, { keepClarificationVisible: true });
-                      }}
-                      loading={loading}
-                    />
-                  </div>
+                {showThinking && (
+                  <ThinkingIndicator label={thinkingLabel} />
                 )}
 
-                <div ref={messagesEndRef} />
+                {discoveryQuestion && (
+                  <DiscoveryOptionsPanel
+                    question={discoveryQuestion.question}
+                    options={discoveryQuestion.options}
+                    acknowledgment={discoveryAcknowledgment}
+                    onSelect={(option) => {
+                      sendMessage(option, { keepDiscoveryVisible: true });
+                    }}
+                    loading={loading}
+                  />
+                )}
+
+                {clarificationQuestions.length > 0 && !discoveryQuestion && (
+                  <WorkspaceClarificationPanel
+                    questions={clarificationQuestions}
+                    onSubmit={(combinedAnswer) => {
+                      sendMessage(combinedAnswer, { keepClarificationVisible: true });
+                    }}
+                    loading={loading}
+                  />
+                )}
+
+                <div ref={bottomRef} className="h-px shrink-0" aria-hidden />
               </div>
             </div>
           </div>
 
-          {/* Composer */}
-          <div className="pointer-events-none absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0F1220] via-[#0F1220]/95 to-transparent p-4 md:p-8">
-            <div className="pointer-events-auto mx-auto max-w-4xl">
-              <div className={`${GLASS_PANEL} flex items-center gap-2 rounded-2xl p-2 shadow-2xl`}>
-                <button
-                  type="button"
-                  className="shrink-0 p-3 text-[#7C869A] transition-colors hover:text-[#F7F8FC]"
-                  aria-label="Attach file"
-                >
-                  <span className="material-symbols-outlined">attach_file</span>
-                </button>
-
-                <input
-                  className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#F7F8FC] placeholder:text-[#7C869A] focus:ring-0 md:text-base"
-                  placeholder="Type @ to mention an agent or ask a question..."
-                  type="text"
-                  value={input}
-                  disabled={loading}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage(input);
-                    }
-                  }}
-                />
-
-                <div className="flex shrink-0 items-center gap-1 px-2">
-                  <button
-                    type="button"
-                    className="hidden p-2 text-[#7C869A] transition-colors hover:text-[#F7F8FC] sm:block"
-                    aria-label="Voice input"
-                  >
-                    <span className="material-symbols-outlined">mic</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#AEC6FF] text-[#090B14] shadow-lg shadow-[#AEC6FF]/20 transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 md:h-12 md:w-12"
-                    onClick={() => sendMessage(input)}
-                    disabled={loading || !input.trim()}
-                    aria-label="Send message"
-                  >
-                    <span className="material-symbols-outlined">send</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div className="relative shrink-0 border-t border-white/[0.06] bg-[#0F1220]/90 px-4 py-3 backdrop-blur-xl md:px-8 md:py-4">
+            <ScrollToBottomButton
+              visible={showScrollButton}
+              onClick={() => scrollToBottom("smooth")}
+            />
+            <ChatComposer
+              value={input}
+              onChange={setInput}
+              onSend={() => sendMessage(input)}
+              loading={loading}
+            />
           </div>
         </main>
 
         {/* Context panel */}
         <aside
           className={[
-            "z-50 flex h-full shrink-0 flex-col overflow-hidden bg-[#090B14]",
+            "z-50 flex h-full min-h-0 shrink-0 flex-col overflow-hidden bg-[#090B14]",
             TRANSITION,
-            "fixed right-0 top-0 lg:relative",
+            "fixed inset-y-0 right-0 top-16 md:relative md:top-0 md:h-full",
             contextOpen
-              ? "w-80 translate-x-0 border-l border-white/[0.08]"
+              ? "w-[min(85vw,320px)] translate-x-0 border-l border-white/[0.08]"
               : "pointer-events-none w-0 translate-x-full border-l-0 lg:pointer-events-auto lg:translate-x-0",
             contextDesktopOpen ? "lg:w-80 lg:border-l lg:border-white/[0.08]" : "lg:w-0 lg:border-l-0",
           ].join(" ")}
+          aria-label="Project context"
         >
           <div className="flex items-center justify-between border-b border-white/[0.08] p-6 lg:hidden">
             <h4 className="text-xs font-bold uppercase tracking-widest text-[#F7F8FC]">
@@ -941,13 +974,19 @@ export default function ChatPage() {
             </button>
           </div>
 
-          <div className={`flex-1 space-y-10 overflow-y-auto p-6 ${CUSTOM_SCROLLBAR}`}>
+          <div className={`min-h-0 flex-1 space-y-8 overflow-y-auto overscroll-contain p-6 ${CUSTOM_SCROLLBAR}`}>
             <div>
-              <h4 className="mb-6 text-[10px] font-bold uppercase tracking-widest text-[#7C869A]">
+              <h4 className="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#7C869A]">
                 Project Context
               </h4>
 
-              <div className={`${GLASS_PANEL} space-y-6 rounded-2xl p-5`}>
+              <motion.div
+                layout
+                className={`${GLASS_PANEL} space-y-4 rounded-2xl p-5`}
+                initial={false}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              >
                 <div>
                   <label className="mb-2 block text-[10px] font-bold uppercase text-[#7C869A]">
                     Objective
@@ -976,7 +1015,7 @@ export default function ChatPage() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <div>
@@ -995,9 +1034,13 @@ export default function ChatPage() {
                     const tone = getMemoryTone(item.color);
 
                     return (
-                      <div
+                      <motion.div
                         key={item.id}
-                        className="group flex cursor-pointer items-center gap-3 rounded-xl border border-white/[0.08] bg-white/5 p-3 transition-all hover:bg-white/10"
+                        layout
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="group flex cursor-pointer items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-3 transition-colors hover:border-white/[0.12] hover:bg-white/[0.08]"
                       >
                         <div
                           className={`flex h-9 w-9 items-center justify-center rounded-lg ${tone.bg} ${tone.text}`}
@@ -1012,7 +1055,7 @@ export default function ChatPage() {
                             {item.detail}
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })
                 ) : (
@@ -1034,6 +1077,7 @@ export default function ChatPage() {
                 {AGENT_ORDER.filter((a) => completedAgents.includes(a) || a === activeAgent).map(
                   (a) => {
                     const isActive = a === activeAgent;
+                    const meta = AGENT_META[a];
 
                     return (
                       <div key={a} className="relative flex gap-4">
@@ -1049,7 +1093,7 @@ export default function ChatPage() {
 
                         <div>
                           <p className="text-xs text-[#F7F8FC]">
-                            {AGENT_META[a]?.short || a}
+                            {meta?.short || a}
                           </p>
                           <p className="mt-0.5 text-[10px] text-[#7C869A]">
                             {isActive ? "In progress" : "Complete"}
