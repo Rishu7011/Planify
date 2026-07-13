@@ -74,7 +74,8 @@ export const api = {
 export async function apiStream(
   path: string,
   body: object,
-  accessToken: string
+  accessToken: string,
+  options?: RequestInit
 ): Promise<Response> {
   return fetch(`${API_BASE}${path}`, {
     method: "POST",
@@ -83,5 +84,6 @@ export async function apiStream(
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(body),
+    ...options,
   });
 }

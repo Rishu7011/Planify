@@ -8,7 +8,9 @@ import { useSearchParams } from 'next/navigation';
 function LoginForm() {
   const searchParams = useSearchParams();
   const errorParam = searchParams.get('error');
-  
+  // Respect the callbackUrl set by the proxy middleware (e.g. /dashboard)
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
@@ -28,7 +30,7 @@ function LoginForm() {
       const res = await signIn('email', {
         email,
         redirect: false,
-        callbackUrl: '/',
+        callbackUrl,
       });
 
       if (res?.error) {
@@ -44,7 +46,7 @@ function LoginForm() {
   };
 
   const handleGoogleSignIn = () => {
-    signIn('google', { callbackUrl: '/' });
+    signIn('google', { callbackUrl });
   };
 
   return (

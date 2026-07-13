@@ -4,41 +4,37 @@
  * Protects /dashboard and /projects/* routes.
  * Unauthenticated users are redirected to /login.
  *
- * Uses jose (already bundled with next-auth) for JWT verification in Edge Runtime.
- * next-auth/middleware is NOT used because it requires Node.js runtime.
- *
- * Token flow: the NextAuth session callback encodes a JWT and stores it in the
- * "next-auth.session-token" cookie. We verify the JWT's presence here.
- * Full cryptographic verification is done by FastAPI for API calls.
+ * Uses next-auth/jwt getToken() — the official edge-compatible way to verify
+ * NextAuth JWE-encrypted session tokens without needing Node.js runtime.
  */
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-export function proxy(request: NextRequest) {
-  // Check for next-auth session cookie (both secure and non-secure variants)
-  const sessionCookie =
-    request.cookies.get("next-auth.session-token")?.value ||
-    request.cookies.get("__Secure-next-auth.session-token")?.value;
-
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // If no session cookie found, redirect to login
-  if (!sessionCookie) {
+  // getToken decrypts the JWE session cookie using NEXTAUTH_SECRET
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  // No valid session → redirect to login
+  if (!token) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Session cookie present — allow the request through.
-  // The actual JWT validation happens server-side in getServerSession()
-  // and in the FastAPI auth middleware for API calls.
+  // Valid session — pass through
   return NextResponse.next();
 }
 
 /**
  * matcher — routes this proxy applies to.
- * Explicitly protects /dashboard and /projects/*, everything else is public.
+ * Explicitly protects /dashboard and /projects/* — everything else is public.
  */
 export const config = {
   matcher: [
@@ -46,3 +42,4 @@ export const config = {
     "/projects/:path*",
   ],
 };
+

@@ -1,13 +1,35 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // GSAP refs
+  // API States
+  const [projects, setProjects] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [runs, setRuns] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // New Project Form States
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [modalError, setModalError] = useState("");
+
+  // GSAP Refs
   const sidebarRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const welcomeRef = useRef<HTMLElement>(null);
@@ -15,20 +37,54 @@ export default function DashboardPage() {
   const projectCardsRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
+  const accessToken = (session?.user as any)?.accessToken;
+
+  // ── Redirect Unauthenticated Users (Fallback) ─────────────────────────────
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  // ── Fetch Dashboard Data ───────────────────────────────────────────────────
+  const fetchData = useCallback(async () => {
+    if (status !== "authenticated" || !accessToken) return;
+    setLoadingData(true);
+    setApiError(null);
+    try {
+      const [projectsData, statsData, runsData] = await Promise.all([
+        apiFetch<any[]>("/api/projects", { accessToken }),
+        apiFetch<any>("/api/dashboard/stats", { accessToken }),
+        apiFetch<any[]>("/api/dashboard/runs", { accessToken }),
+      ]);
+      setProjects(projectsData || []);
+      setStats(statsData || null);
+      setRuns(runsData || []);
+    } catch (err: any) {
+      console.error("[Dashboard] Failed to fetch data:", err);
+      setApiError(err.detail || "Cannot reach the backend — make sure it is running on port 8000.");
+    } finally {
+      setLoadingData(false);
+    }
+  }, [status, accessToken]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // ── GSAP Layout Animations on Mount ───────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
-    let ctx: ReturnType<import("gsap").default["context"]> | null = null;
+    let ctx: any = null;
 
     const init = async () => {
       const gsap = (await import("gsap")).default;
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
       gsap.registerPlugin(ScrollTrigger);
 
-      
       if (cancelled) return;
 
       ctx = gsap.context(() => {
-        
         const mm = gsap.matchMedia();
         mm.add("(min-width: 1024px)", () => {
           if (sidebarRef.current) {
@@ -65,48 +121,6 @@ export default function DashboardPage() {
           });
         }
 
-        // AI Command Center
-        if (commandCenterRef.current) {
-          gsap.from(commandCenterRef.current, {
-            y: 40,
-            opacity: 0,
-            duration: 0.7,
-            ease: "power2.out",
-            delay: 0.55,
-          });
-
-          // Animate progress bars
-          commandCenterRef.current
-            .querySelectorAll<HTMLElement>("[data-progress]")
-            .forEach((bar) => {
-              const target = bar.dataset.progress ?? "0";
-              gsap.fromTo(
-                bar,
-                { width: "0%" },
-                { width: `${target}%`, duration: 1.4, ease: "power2.out", delay: 1 }
-              );
-            });
-        }
-
-        // Project cards stagger
-        if (projectCardsRef.current) {
-          gsap.from(
-            projectCardsRef.current.querySelectorAll<HTMLElement>(".proj-card"),
-            {
-              y: 32,
-              opacity: 0,
-              duration: 0.55,
-              stagger: 0.14,
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: projectCardsRef.current,
-                start: "top 88%",
-                toggleActions: "play none none none",
-              },
-            }
-          );
-        }
-
         // Right panel
         if (rightPanelRef.current) {
           gsap.from(rightPanelRef.current, {
@@ -127,15 +141,165 @@ export default function DashboardPage() {
     };
   }, []);
 
+  // ── GSAP Dynamic Data Animations ───────────────────────────────────────────
+  useEffect(() => {
+    if (loadingData) return;
+
+    let ctx: any = null;
+
+    const initAnims = async () => {
+      const gsap = (await import("gsap")).default;
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      gsap.registerPlugin(ScrollTrigger);
+
+      ctx = gsap.context(() => {
+        // AI Activity Monitor / Command Center fade-in
+        if (commandCenterRef.current) {
+          gsap.fromTo(
+            commandCenterRef.current,
+            { y: 30, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }
+          );
+
+          // Animate progress bars if present
+          commandCenterRef.current
+            .querySelectorAll<HTMLElement>("[data-progress]")
+            .forEach((bar) => {
+              const target = bar.dataset.progress ?? "0";
+              gsap.fromTo(
+                bar,
+                { width: "0%" },
+                { width: `${target}%`, duration: 1.4, ease: "power2.out", delay: 0.4 }
+              );
+            });
+        }
+
+        // Project cards stagger
+        if (projectCardsRef.current) {
+          const cards = projectCardsRef.current.querySelectorAll<HTMLElement>(".proj-card");
+          if (cards.length > 0) {
+            gsap.from(cards, {
+              y: 32,
+              opacity: 0,
+              duration: 0.55,
+              stagger: 0.14,
+              ease: "power2.out",
+            });
+          }
+        }
+      });
+    };
+
+    initAnims();
+    return () => ctx?.revert();
+  }, [loadingData]);
+
+  // ── Handle Project Creation ───────────────────────────────────────────────
+  const handleCreateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !accessToken) return;
+
+    setCreating(true);
+    setModalError("");
+
+    try {
+      const res = await apiFetch<{ project_id: string; chat_session_id: string }>(
+        "/api/projects",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            title: newTitle.trim(),
+            description: newDescription.trim(),
+          }),
+          accessToken,
+        }
+      );
+
+      if (res.project_id) {
+        // Redirect directly to the project chat interface
+        router.push(`/projects/${res.project_id}/chat`);
+      } else {
+        setModalError("Failed to resolve project identifier.");
+      }
+    } catch (err: any) {
+      console.error("[Dashboard] Project creation error:", err);
+      setModalError(err.detail || "An unexpected error occurred while creating the project.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // ── Handle Project Deletion ───────────────────────────────────────────────
+  const handleDeleteProject = async (projectId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!accessToken || deletingId) return;
+    setDeletingId(projectId);
+    try {
+      await apiFetch(`/api/projects/${projectId}`, {
+        method: "DELETE",
+        accessToken,
+      });
+      // Optimistic update — remove from local state
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+    } catch (err: any) {
+      console.error("[Dashboard] Delete error:", err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // ── Helper: Initials calculation ──────────────────────────────────────────
+  const getUserInitials = () => {
+    const name = session?.user?.name;
+    if (name) {
+      const parts = name.split(" ");
+      if (parts.length > 1) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      return name.slice(0, 2).toUpperCase();
+    }
+    const email = session?.user?.email;
+    if (email) return email.slice(0, 2).toUpperCase();
+    return "US";
+  };
+
+  const initials = getUserInitials();
   const sidebarWidth = sidebarCollapsed ? "72px" : "240px";
   const closeMobileSidebar = () => setSidebarOpen(false);
+
+  // Derived: filter projects client-side by search query
+  const filteredProjects = searchQuery.trim()
+    ? projects.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (p.description || "").toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : projects;
+
+  // ── Session Loading View ───────────────────────────────────────────────────
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-[#090B14] flex flex-col items-center justify-center relative overflow-hidden">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block');
+          .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+        `}</style>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[80px]" />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center shadow-lg animate-pulse mb-4 z-10">
+          <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
+        </div>
+        <p className="text-sm font-semibold text-[#7C869A] animate-pulse z-10">Initializing workspace...</p>
+      </div>
+    );
+  }
 
   return (
     <div
       className="flex min-h-screen bg-[#090B14] text-[#F7F8FC] overflow-x-hidden"
       style={{ fontFamily: "'Geist', sans-serif", ["--sidebar-width" as string]: sidebarWidth }}
     >
-      {/* Material Symbols */}
+      {/* Styles */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block');
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -178,12 +342,6 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Desktop collapse/expand toggle.
-              Collapsed: stacked below the logo, centered, so it never gets
-              squeezed out of the 72px-wide row (the bug in the screenshot —
-              logo + toggle side by side don't fit, so the toggle silently
-              disappeared and there was no way back to the expanded view).
-              Expanded: sits to the right of the logo as before. */}
           <button
             onClick={() => setSidebarCollapsed((p) => !p)}
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -199,8 +357,6 @@ export default function DashboardPage() {
             </svg>
           </button>
 
-          {/* Mobile close button (collapse is a desktop-only concept, so this
-              never has to share space with it). */}
           <button
             onClick={closeMobileSidebar}
             aria-label="Close sidebar"
@@ -214,7 +370,8 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-y-auto no-scrollbar py-6">
           <div className="px-3 mb-6">
             <button
-              className={`w-full h-11 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-3 group ${sidebarCollapsed ? "justify-center px-0" : "justify-start px-4"}`}
+              onClick={() => setModalOpen(true)}
+              className={`w-full h-11 rounded-xl bg-[#aec6ff]/10 hover:bg-[#aec6ff]/20 text-[#aec6ff] border border-[#aec6ff]/20 text-sm font-semibold transition-all flex items-center gap-3 group ${sidebarCollapsed ? "justify-center px-0" : "justify-start px-4"}`}
             >
               <span className="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform shrink-0">add</span>
               {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">New Project</span>}
@@ -264,18 +421,25 @@ export default function DashboardPage() {
             </Link>
           ))}
 
-          {/* User profile */}
+          {/* User profile & Logout */}
           <div className={`mt-4 p-2 bg-white/5 rounded-xl flex items-center gap-3 border border-white/5 overflow-hidden ${sidebarCollapsed ? "justify-center" : ""}`}>
-            <div className="w-8 h-8 rounded-lg bg-[#1d1f26] flex items-center justify-center text-xs font-bold shrink-0">OJ</div>
+            <div className="w-8 h-8 rounded-lg bg-[#aec6ff]/10 text-[#aec6ff] flex items-center justify-center text-xs font-bold shrink-0">
+              {initials}
+            </div>
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0 fade-text">
-                <p className="text-xs font-bold truncate">Olivia Jensen</p>
+                <p className="text-xs font-bold truncate">{session?.user?.name || session?.user?.email || "User"}</p>
                 <p className="text-[10px] text-[#7C869A] truncate">Admin Plan</p>
               </div>
             )}
             {!sidebarCollapsed && (
-              <button aria-label="Account options" className="shrink-0 fade-text">
-                <span className="material-symbols-outlined text-[#7C869A] text-sm">more_vert</span>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                aria-label="Sign out"
+                title="Sign Out"
+                className="shrink-0 p-1 rounded-lg text-[#7C869A] hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">logout</span>
               </button>
             )}
           </div>
@@ -291,7 +455,6 @@ export default function DashboardPage() {
         >
           <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1">
-              {/* Mobile hamburger */}
               <button
                 onClick={() => setSidebarOpen((p) => !p)}
                 aria-label={sidebarOpen ? "Close menu" : "Open menu"}
@@ -300,7 +463,6 @@ export default function DashboardPage() {
               >
                 <span className="material-symbols-outlined">{sidebarOpen ? "close" : "menu"}</span>
               </button>
-              {/* Breadcrumb */}
               <div className="hidden sm:flex items-center gap-2 text-sm text-[#7C869A]">
                 <span className="hover:text-[#F7F8FC] cursor-pointer transition-colors">Dashboard</span>
                 <span className="material-symbols-outlined text-xs">chevron_right</span>
@@ -309,7 +471,6 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Search */}
               <div className="hidden md:flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 gap-2 w-64 focus-within:border-[#aec6ff]/50 transition-all">
                 <span className="material-symbols-outlined text-sm text-[#7C869A]">search</span>
                 <input
@@ -317,17 +478,17 @@ export default function DashboardPage() {
                   placeholder="Search projects..."
                   type="text"
                   aria-label="Search projects"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <span className="text-[10px] bg-white/10 px-1 rounded text-[#7C869A]">⌘K</span>
               </div>
 
-              {/* Notifications */}
               <button aria-label="Notifications" className="w-9 h-9 flex items-center justify-center rounded-lg text-[#7C869A] hover:text-[#F7F8FC] hover:bg-white/5 transition-colors relative">
                 <span className="material-symbols-outlined">notifications</span>
                 <span className="absolute top-2 right-2 w-2 h-2 bg-[#aec6ff] rounded-full border-2 border-[#090B14]" />
               </button>
 
-              {/* Upgrade */}
               <button className="bg-[#508eff] text-[#00275e] px-4 h-9 rounded-lg text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#508eff]/10">
                 Upgrade
               </button>
@@ -336,30 +497,85 @@ export default function DashboardPage() {
         </header>
 
         {/* ── Main Body ────────────────────────────────────────── */}
-        <div className="p-6 sm:p-8 md:p-10 max-w-[1440px] mx-auto w-full">
-
+        <div className="p-6 sm:p-8 md:p-10 max-w-[1440px] mx-auto w-full flex-1">
           {/* Greeting */}
           <section ref={welcomeRef} className="mb-10">
-            <h1 className="text-3xl font-bold text-[#F7F8FC] tracking-tight mb-2">Welcome back, Olivia.</h1>
-            <p className="text-[#B4BCCB] font-medium">
-              Your <span className="text-[#aec6ff]">AI team</span> processed 14 documents today. 3 workflows are currently active.
-            </p>
+            <h1 className="text-3xl font-bold text-[#F7F8FC] tracking-tight mb-2">
+              Welcome back, {session?.user?.name?.split(" ")[0] || "User"}.
+            </h1>
+            {loadingData ? (
+              <div className="h-5 w-64 bg-white/5 rounded animate-pulse" />
+            ) : (
+              <p className="text-[#B4BCCB] font-medium">
+                Your <span className="text-[#aec6ff]">AI team</span> has compiled {stats?.total_reports || 0} reports across {stats?.total_projects || 0} active projects.
+              </p>
+            )}
           </section>
+
+          {/* ── Error Banner ───────────────────────────────────────────────── */}
+          {apiError && (
+            <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3">
+              <span className="material-symbols-outlined text-rose-400 shrink-0">wifi_off</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-rose-400">Backend Unavailable</p>
+                <p className="text-xs text-[#7C869A] mt-0.5 truncate">{apiError}</p>
+              </div>
+              <button
+                onClick={fetchData}
+                className="shrink-0 text-xs font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-rose-500/10 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">refresh</span>
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* ── KPI Stats Row ─────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            {[
+              { icon: "folder_copy", label: "Active Projects", value: stats?.total_projects ?? 0, color: "#4F8DFF" },
+              { icon: "description", label: "Reports Generated", value: stats?.total_reports ?? 0, color: "#8E6BFF" },
+              { icon: "cyclone", label: "AI Workflow Runs", value: stats?.total_ai_runs ?? 0, color: "#34D399" },
+            ].map(({ icon, label, value, color }) => (
+              <div
+                key={label}
+                className="bg-[#151A2B] border border-white/[0.08] rounded-2xl p-5 flex items-center gap-4 hover:border-white/20 transition-all group"
+              >
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
+                  style={{ background: `${color}18` }}
+                >
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ color, fontVariationSettings: "'FILL' 1" }}
+                  >
+                    {icon}
+                  </span>
+                </div>
+                <div>
+                  {loadingData ? (
+                    <div className="h-7 w-14 bg-white/5 rounded-lg animate-pulse mb-1" />
+                  ) : (
+                    <p className="text-2xl font-bold text-[#F7F8FC] tabular-nums">{value}</p>
+                  )}
+                  <p className="text-xs text-[#7C869A] font-semibold mt-0.5">{label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
 
           {/* Dashboard Grid */}
           <div className="grid grid-cols-12 gap-8">
-
             {/* Left Content */}
             <div className="col-span-12 xl:col-span-9 space-y-8">
-
-              {/* AI Command Center */}
+              {/* AI Command Center / Activity Monitor */}
               <div ref={commandCenterRef} className="bg-[#151A2B] p-6 rounded-2xl border border-white/[0.08] relative overflow-hidden">
                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#aec6ff]/5 blur-[60px] rounded-full pointer-events-none" />
 
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-[#8E6BFF]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-                    <h2 className="text-lg font-bold">AI Command Center</h2>
+                    <h2 className="text-lg font-bold">AI Activity Monitor</h2>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-1 bg-[#34D399]/10 border border-[#34D399]/20 rounded-full">
                     <span className="flex h-1.5 w-1.5 rounded-full bg-[#34D399] pulse-dot" />
@@ -367,145 +583,239 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Agent 1 */}
-                  <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between group">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <span className="material-symbols-outlined text-blue-400 text-sm">query_stats</span>
-                        </div>
-                        <span className="text-xs font-bold">Market Research</span>
-                      </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#34D399]/20 text-[#34D399] uppercase font-bold">Active</span>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-[10px] text-[#7C869A] font-bold uppercase">
-                        <span>Scanning...</span><span>84%</span>
-                      </div>
-                      <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
-                        <div className="bg-blue-500 h-full rounded-full" data-progress="84" style={{ width: "0%" }} />
-                      </div>
-                    </div>
+                {loadingData ? (
+                  <div className="space-y-4">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="h-16 bg-white/5 rounded-xl border border-white/5 animate-pulse" />
+                    ))}
                   </div>
+                ) : runs.length === 0 ? (
+                  // Default mock fallback on empty runs
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between group">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-blue-400 text-sm">query_stats</span>
+                          </div>
+                          <span className="text-xs font-bold">Market Research</span>
+                        </div>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#34D399]/20 text-[#34D399] uppercase font-bold">Active</span>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-[10px] text-[#7C869A] font-bold uppercase">
+                          <span>Scanning...</span><span>84%</span>
+                        </div>
+                        <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                          <div className="bg-blue-500 h-full rounded-full" data-progress="84" style={{ width: "0%" }} />
+                        </div>
+                      </div>
+                    </div>
 
-                  {/* Agent 2 */}
-                  <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between group">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <span className="material-symbols-outlined text-purple-400 text-sm">architecture</span>
+                    <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between group">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-purple-400 text-sm">architecture</span>
+                          </div>
+                          <span className="text-xs font-bold">Tech Architect</span>
                         </div>
-                        <span className="text-xs font-bold">Tech Architect</span>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#aec6ff]/20 text-[#aec6ff] uppercase font-bold">Syncing</span>
                       </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#aec6ff]/20 text-[#aec6ff] uppercase font-bold">Syncing</span>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-[10px] text-[#7C869A] font-bold uppercase">
+                          <span>Validating...</span><span>42%</span>
+                        </div>
+                        <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                          <div className="bg-purple-500 h-full rounded-full" data-progress="42" style={{ width: "0%" }} />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-[10px] text-[#7C869A] font-bold uppercase">
-                        <span>Validating...</span><span>42%</span>
-                      </div>
-                      <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
-                        <div className="bg-purple-500 h-full rounded-full" data-progress="42" style={{ width: "0%" }} />
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Agent 3 */}
-                  <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between group">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <span className="material-symbols-outlined text-amber-400 text-sm">payments</span>
+                    <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between group">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-amber-400 text-sm">payments</span>
+                          </div>
+                          <span className="text-xs font-bold">ROI Agent</span>
                         </div>
-                        <span className="text-xs font-bold">ROI Agent</span>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#7C869A]/20 text-[#7C869A] uppercase font-bold">Idle</span>
                       </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#7C869A]/20 text-[#7C869A] uppercase font-bold">Idle</span>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-[10px] text-[#7C869A] font-bold uppercase">
-                        <span>Waiting...</span><span>0%</span>
-                      </div>
-                      <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
-                        <div className="bg-amber-500 h-full rounded-full" data-progress="0" style={{ width: "0%" }} />
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-[10px] text-[#7C869A] font-bold uppercase">
+                          <span>Waiting...</span><span>0%</span>
+                        </div>
+                        <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                          <div className="bg-amber-500 h-full rounded-full" data-progress="0" style={{ width: "0%" }} />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-4">
+                    {runs.slice(0, 3).map((run) => {
+                      const statusColors: Record<string, string> = {
+                        completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                        running: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                        failed: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                        unknown: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+                      };
+                      const colorClass = statusColors[run.status] || statusColors.unknown;
+
+                      return (
+                        <div key={run.run_id} className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-lg bg-[#8E6BFF]/10 flex items-center justify-center">
+                              <span className="material-symbols-outlined text-[#8E6BFF]">cyclone</span>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-bold">{run.project_title}</h4>
+                                <span className={`text-[9px] px-2 py-0.5 rounded-full border uppercase font-bold ${colorClass}`}>
+                                  {run.status}
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#7C869A] mt-0.5">
+                                Agents executed: {run.agents_executed?.length > 0 ? run.agents_executed.join(" → ") : "None yet"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-6 text-xs font-bold text-[#7C869A]">
+                            <div>
+                              <span className="text-[10px] text-[#7C869A] block uppercase font-bold">Duration</span>
+                              <span className="text-[#F7F8FC]">{(run.duration_ms / 1000).toFixed(1)}s</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-[#7C869A] block uppercase font-bold">Triggered</span>
+                              <span className="text-[#F7F8FC]">
+                                {run.created_at ? new Date(run.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Active Projects */}
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold">Active Projects</h2>
-                  <button className="text-sm font-semibold text-[#aec6ff] hover:underline underline-offset-4">View all projects</button>
+                  <button onClick={() => setModalOpen(true)} className="text-sm font-semibold text-[#aec6ff] hover:underline underline-offset-4">
+                    Create project
+                  </button>
                 </div>
 
-                <div ref={projectCardsRef} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                  {/* Card 1 */}
-                  <div className="proj-card bg-[#151A2B] border border-white/[0.08] rounded-2xl p-6 hover:border-white/20 transition-all flex flex-col group cursor-pointer">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <span className="material-symbols-outlined text-blue-400 text-xl">account_balance</span>
-                        </div>
-                        <div>
-                          <h3 className="text-base font-bold truncate max-w-[180px]">Fintech Super App</h3>
-                          <p className="text-[10px] text-[#7C869A] uppercase tracking-widest font-bold">Updated 2h ago</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-tight block">Analyzing</span>
-                        <span className="text-sm font-bold text-[#F7F8FC]">84%</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-[#7C869A] mb-6 line-clamp-1">Enterprise-grade wealth management platform integration.</p>
-                    <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
-                      <div className="flex -space-x-2">
-                        {["JD", "SK"].map((init) => (
-                          <div key={init} className="w-7 h-7 rounded-full border-2 border-[#151A2B] bg-[#191b22] flex items-center justify-center text-[9px] font-bold">{init}</div>
-                        ))}
-                        <div className="w-7 h-7 rounded-full border-2 border-[#151A2B] bg-[#508eff] text-[#00275e] flex items-center justify-center text-[9px] font-bold">+3</div>
-                      </div>
-                      <button className="text-[10px] font-bold text-[#7C869A] hover:text-[#F7F8FC] uppercase tracking-widest transition-colors">Details</button>
-                    </div>
+                {loadingData ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="h-44 bg-white/5 rounded-2xl border border-white/5 animate-pulse" />
+                    ))}
                   </div>
-
-                  {/* Card 2 */}
-                  <div className="proj-card bg-[#151A2B] border border-white/[0.08] rounded-2xl p-6 hover:border-white/20 transition-all flex flex-col group cursor-pointer">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <span className="material-symbols-outlined text-purple-400 text-xl">shopping_bag</span>
-                        </div>
-                        <div>
-                          <h3 className="text-base font-bold truncate max-w-[180px]">B2B Marketplace</h3>
-                          <p className="text-[10px] text-[#7C869A] uppercase tracking-widest font-bold">Updated 5h ago</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] font-bold text-[#aec6ff] uppercase tracking-tight block">PRD Syncing</span>
-                        <span className="text-sm font-bold text-[#F7F8FC]">42%</span>
-                      </div>
+                ) : projects.length === 0 ? (
+                  // Empty state — no projects created yet
+                  <div className="bg-[#151A2B] border border-white/[0.08] rounded-2xl p-8 text-center flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                      <span className="material-symbols-outlined text-[#7C869A] text-2xl">folder</span>
                     </div>
-                    <p className="text-sm text-[#7C869A] mb-6 line-clamp-1">Global distribution network portal for industrial components.</p>
-                    <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
-                      <div className="flex -space-x-2">
-                        {["ML", "AB"].map((init) => (
-                          <div key={init} className="w-7 h-7 rounded-full border-2 border-[#151A2B] bg-[#191b22] flex items-center justify-center text-[9px] font-bold">{init}</div>
-                        ))}
-                      </div>
-                      <button className="text-[10px] font-bold text-[#7C869A] hover:text-[#F7F8FC] uppercase tracking-widest transition-colors">Details</button>
-                    </div>
+                    <h3 className="font-bold text-base mb-1">No projects yet</h3>
+                    <p className="text-xs text-[#7C869A] mb-6 max-w-sm">Create a new project to start collaborating with AI agents on requirements, feasibility, roadmaps, and financial models.</p>
+                    <button
+                      onClick={() => setModalOpen(true)}
+                      className="px-4 py-2 bg-[#aec6ff] text-[#00275e] text-xs font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all uppercase tracking-wider"
+                    >
+                      Create Project
+                    </button>
                   </div>
-                </div>
+                ) : filteredProjects.length === 0 ? (
+                  // Empty search results
+                  <div className="bg-[#151A2B] border border-white/[0.08] rounded-2xl p-8 text-center flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                      <span className="material-symbols-outlined text-[#7C869A] text-2xl">search_off</span>
+                    </div>
+                    <h3 className="font-bold text-base mb-1">No results for &ldquo;{searchQuery}&rdquo;</h3>
+                    <p className="text-xs text-[#7C869A]">Try a different search term.</p>
+                  </div>
+                ) : (
+                  <div ref={projectCardsRef} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {filteredProjects.map((project) => {
+                      const timeAgo = () => {
+                        try {
+                          const updated = new Date(project.updated_at);
+                          const diffMs = Date.now() - updated.getTime();
+                          const diffMin = Math.floor(diffMs / 60000);
+                          if (diffMin < 1) return "Just now";
+                          if (diffMin < 60) return `${diffMin}m ago`;
+                          const diffHrs = Math.floor(diffMin / 60);
+                          if (diffHrs < 24) return `${diffHrs}h ago`;
+                          const diffDays = Math.floor(diffHrs / 24);
+                          return `${diffDays}d ago`;
+                        } catch {
+                          return "Recently";
+                        }
+                      };
+
+                      return (
+                        <Link
+                          key={project.id}
+                          href={`/projects/${project.id}/chat`}
+                          className="proj-card bg-[#151A2B] border border-white/[0.08] rounded-2xl p-6 hover:border-white/20 transition-all flex flex-col group cursor-pointer relative"
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                <span className="material-symbols-outlined text-blue-400 text-xl">folder</span>
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="text-base font-bold truncate max-w-[160px]">{project.title}</h3>
+                                <p className="text-[10px] text-[#7C869A] uppercase tracking-widest font-bold">Updated {timeAgo()}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[10px] font-bold text-[#aec6ff] uppercase tracking-tight">
+                                {project.status || "active"}
+                              </span>
+                              {/* Delete button — visible on hover */}
+                              <button
+                                onClick={(e) => handleDeleteProject(project.id, e)}
+                                disabled={deletingId === project.id}
+                                aria-label={`Archive project ${project.title}`}
+                                title="Archive project"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 rounded-lg flex items-center justify-center text-[#7C869A] hover:text-rose-400 hover:bg-rose-500/10"
+                              >
+                                {deletingId === project.id ? (
+                                  <div className="h-3 w-3 border border-rose-400/30 border-t-rose-400 rounded-full animate-spin" />
+                                ) : (
+                                  <span className="material-symbols-outlined text-sm">delete</span>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-[#7C869A] mb-6 line-clamp-1">
+                            {project.description || "No description provided."}
+                          </p>
+                          <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                            <div className="flex -space-x-2">
+                              <div className="w-7 h-7 rounded-full border-2 border-[#151A2B] bg-[#191b22] flex items-center justify-center text-[9px] font-bold">AI</div>
+                            </div>
+                            <span className="text-[10px] font-bold text-[#7C869A] group-hover:text-[#F7F8FC] uppercase tracking-widest transition-colors flex items-center gap-1">
+                              Enter Workspace <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Right Sidebar */}
             <div ref={rightPanelRef} className="col-span-12 xl:col-span-3 space-y-8">
               <div className="bg-[#151A2B] rounded-2xl border border-white/[0.08] p-6 sticky top-24">
-
                 {/* AI Assistant header */}
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-[1.5px]">
@@ -517,38 +827,57 @@ export default function DashboardPage() {
                     <h3 className="font-bold text-sm">AI Assistant</h3>
                     <div className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
-                      <span className="text-[10px] text-[#7C869A] font-bold uppercase">Learning</span>
+                      <span className="text-[10px] text-[#7C869A] font-bold uppercase">Ready</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-6">
+                  {/* Recent Generated Artifacts */}
+                  {stats?.recent_reports?.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] font-bold text-[#7C869A] uppercase tracking-widest mb-4">Recent Reports</h4>
+                      <div className="space-y-4">
+                        {stats.recent_reports.map((rep: any) => (
+                          <Link
+                            key={rep.report_id}
+                            href={`/projects/${rep.project_id}/reports`}
+                            className="flex gap-3 items-start group cursor-pointer"
+                          >
+                            <div className="w-6 h-6 rounded bg-emerald-500/10 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+                              <span className="material-symbols-outlined text-emerald-400 text-[14px]">description</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-[#B4BCCB] font-bold leading-relaxed group-hover:text-[#F7F8FC] transition-colors truncate">
+                                {rep.project_title}
+                              </p>
+                              <p className="text-[10px] text-[#7C869A] uppercase font-bold mt-0.5">
+                                {rep.report_type} &middot; v{rep.version}
+                              </p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Suggestions */}
                   <div>
-                    <h4 className="text-[10px] font-bold text-[#7C869A] uppercase tracking-widest mb-4">Suggestions</h4>
+                    <h4 className="text-[10px] font-bold text-[#7C869A] uppercase tracking-widest mb-4">AI Tips</h4>
                     <div className="space-y-4">
                       <div className="flex gap-3 items-start group cursor-pointer">
                         <div className="w-6 h-6 rounded bg-[#aec6ff]/10 flex items-center justify-center shrink-0 group-hover:bg-[#aec6ff]/20 transition-colors">
                           <span className="material-symbols-outlined text-[#aec6ff] text-[14px]">lightbulb</span>
                         </div>
                         <p className="text-xs text-[#B4BCCB] leading-relaxed group-hover:text-[#F7F8FC] transition-colors">
-                          Review the &ldquo;User Security&rdquo; section in Fintech PRD.
-                        </p>
-                      </div>
-                      <div className="flex gap-3 items-start group cursor-pointer">
-                        <div className="w-6 h-6 rounded bg-purple-500/10 flex items-center justify-center shrink-0 group-hover:bg-purple-500/20 transition-colors">
-                          <span className="material-symbols-outlined text-purple-400 text-[14px]">auto_graph</span>
-                        </div>
-                        <p className="text-xs text-[#B4BCCB] leading-relaxed group-hover:text-[#F7F8FC] transition-colors">
-                          Market data shift in &ldquo;Industrial Logistics&rdquo; detected.
+                          Need a roadmap or financial projection? Click on a project to run AI Agents.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* CTA */}
-                  <button className="w-full py-3.5 bg-[#aec6ff] text-[#00275e] font-bold text-[10px] rounded-xl hover:shadow-[0_0_20px_rgba(79,141,255,0.3)] transition-all uppercase tracking-widest mt-4">
-                    Ask AI Anything
+                  <button onClick={() => setModalOpen(true)} className="w-full py-3.5 bg-[#aec6ff] text-[#00275e] font-bold text-[10px] rounded-xl hover:shadow-[0_0_20px_rgba(79,141,255,0.3)] transition-all uppercase tracking-widest mt-4">
+                    New Project
                   </button>
                 </div>
               </div>
@@ -560,7 +889,7 @@ export default function DashboardPage() {
         <footer className="mt-auto border-t border-white/[0.08] bg-[#090B14]/50 py-10 px-8 flex flex-col md:flex-row justify-between items-center gap-6 text-[11px] font-bold text-[#7C869A] uppercase tracking-widest">
           <div className="flex items-center gap-4">
             <span className="opacity-40 font-bold text-xs">PLANIFY AI</span>
-            <p>© 2024 Planify AI. Engineered for Excellence.</p>
+            <p>© 2026 Planify AI. Engineered for Excellence.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8">
             {["Privacy", "Terms", "Security", "Status"].map((item) => (
@@ -570,12 +899,101 @@ export default function DashboardPage() {
         </footer>
       </main>
 
+      {/* ── Create Project Modal ───────────────────────────────── */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
+          <div className="bg-[#151A2B] border border-white/10 rounded-3xl w-full max-w-lg p-6 sm:p-8 shadow-[0_0_80px_rgba(79,141,255,0.15)] animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-[#F7F8FC]">Create New Project</h3>
+              <button
+                onClick={() => {
+                  setModalOpen(false);
+                  setModalError("");
+                  setNewTitle("");
+                  setNewDescription("");
+                }}
+                className="p-1 rounded-lg text-[#7C869A] hover:text-[#F7F8FC] hover:bg-white/5 transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {modalError && (
+              <div className="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold">
+                {modalError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateProject} className="space-y-6">
+              <div>
+                <label htmlFor="modal-title" className="block text-xs font-semibold text-[#7C869A] uppercase tracking-wider mb-2">
+                  Project Title
+                </label>
+                <input
+                  type="text"
+                  id="modal-title"
+                  required
+                  disabled={creating}
+                  placeholder="e.g. Fintech Super App"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 focus:border-[#aec6ff]/50 rounded-xl py-3 px-4 text-sm text-white placeholder-gray-500 outline-none transition duration-200"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="modal-desc" className="block text-xs font-semibold text-[#7C869A] uppercase tracking-wider mb-2">
+                  Description
+                </label>
+                <textarea
+                  id="modal-desc"
+                  disabled={creating}
+                  rows={4}
+                  placeholder="Describe the target audience, problem statement, key constraints, and requirements..."
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 focus:border-[#aec6ff]/50 rounded-xl py-3 px-4 text-sm text-white placeholder-gray-500 outline-none transition duration-200 resize-none"
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  disabled={creating}
+                  onClick={() => {
+                    setModalOpen(false);
+                    setModalError("");
+                    setNewTitle("");
+                    setNewDescription("");
+                  }}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs rounded-xl transition duration-200 uppercase tracking-wider border border-white/10"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="flex-1 py-3 bg-[#aec6ff] text-[#00275e] font-semibold text-xs rounded-xl transition duration-200 uppercase tracking-wider hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {creating ? (
+                    <div className="h-4 w-4 border-2 border-[#00275e]/20 border-t-[#00275e] rounded-full animate-spin" />
+                  ) : (
+                    <span>Create Project</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ── Mobile Overlay ─────────────────────────────────────── */}
       <div
         onClick={closeMobileSidebar}
         aria-hidden="true"
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden transition-opacity duration-300 ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden transition-opacity duration-300 ${
+          sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
       />
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────── */}
@@ -586,7 +1004,11 @@ export default function DashboardPage() {
         <button aria-label="Projects" className="text-[#7C869A]">
           <span className="material-symbols-outlined">folder</span>
         </button>
-        <button aria-label="AI Workspace" className="w-12 h-12 -mt-10 rounded-full bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center text-white shadow-xl ring-4 ring-[#090B14]">
+        <button
+          onClick={() => setModalOpen(true)}
+          aria-label="AI Workspace"
+          className="w-12 h-12 -mt-10 rounded-full bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center text-white shadow-xl ring-4 ring-[#090B14]"
+        >
           <span className="material-symbols-outlined">bolt</span>
         </button>
         <button aria-label="Team" className="text-[#7C869A]">

@@ -1,56 +1,18 @@
 [project]
-name = "planify-backend"
+name = "backend"
 version = "0.1.0"
-description = "Planify — AI Project Intelligence Platform, FastAPI backend"
+description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
-    "fastapi>=0.139.0",
-    "motor>=3.7.1",
-    "pydantic>=2.13.4",
-    "pydantic-settings>=2.14.2",
-    "pyjwt>=2.13.0",
-    "pymongo>=4.17.0",
-    "python-dotenv>=1.2.2",
-    "python-json-logger>=4.1.0",
-    "python-multipart>=0.0.32",
-    "uvicorn[standard]>=0.51.0",
-    # ── AI / LangGraph ──────────────────────────────────────────
-    "langgraph>=0.2.0",
-    "langchain-core>=0.3.0",
+    "langchain-core>=1.4.9",
     "langchain-google-genai>=2.0.0",
     "langchain-mistralai>=0.2.0",
-    "ollama>=0.3.0",
-    # ── Export ─────────────────────────────────────────────────
-    "weasyprint>=62.0",
-    "python-docx>=1.1.0",
-    "jinja2>=3.1.0",
-    "markdown>=3.6",
     "langchain-ollama>=1.1.0",
+    "langgraph>=1.2.9",
+    "langgraph-checkpoint-mongodb>=0.4.0",
+    "motor>=3.6.0",
+    "pydantic>=2.13.4",
+    "pymongo[srv]>=4.10.0",
+    "python-dotenv>=1.2.2",
 ]
-
-[dependency-groups]
-dev = [
-    "httpx>=0.28.1",
-    "pytest>=9.1.1",
-    "pytest-asyncio>=1.4.0",
-    "black>=24.0.0",
-    "mypy>=1.10.0",
-]
-
-[tool.black]
-line-length = 100
-target-version = ["py311"]
-
-[tool.mypy]
-python_version = "3.11"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-ignore_missing_imports = true
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-

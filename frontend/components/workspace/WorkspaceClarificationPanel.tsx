@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface Props {
   questions: string[];
@@ -11,6 +11,10 @@ interface Props {
 export function WorkspaceClarificationPanel({ questions, onSubmit, loading }: Props) {
   const [answers, setAnswers] = useState<string[]>(Array(questions.length).fill(""));
   const firstRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    firstRef.current?.focus();
+  }, []);
 
   const handleChange = (i: number, val: string) => {
     const next = [...answers];
@@ -64,6 +68,12 @@ export function WorkspaceClarificationPanel({ questions, onSubmit, loading }: Pr
           </div>
         ))}
       </div>
+
+      {anyAnswered && !allAnswered && !loading && (
+        <div className="w-clarification-hint">
+          Unanswered questions will be marked as skipped.
+        </div>
+      )}
 
       <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
         <button
