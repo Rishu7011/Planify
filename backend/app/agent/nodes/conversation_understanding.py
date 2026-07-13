@@ -23,25 +23,43 @@ from app.agent.llm import get_structured_llm
 from app.agent.prompts import conversation_understanding_prompt
 from app.agent.schemas import ConversationCategory, ConversationUnderstandingOutput
 from app.agent.state import WorkflowState
+from app.agent.web_search import is_light_message
 
 # Build the structured-output chain once at import time.
-# get_structured_llm() uses json_mode for Gemini (avoids the empty-tool-call
-# error) and adds automatic retry for all providers.
 _conversation_understanding_chain = (
     conversation_understanding_prompt
     | get_structured_llm(ConversationUnderstandingOutput)
 )
 
+_ACTIVE_PROJECT_KEYS = (
+    "project_name",
+    "idea",
+    "problem_statement",
+    "target_users",
+    "goals",
+    "reports",
+)
+
+
+def _has_active_project(project_context: dict | None) -> bool:
+    """True when enough project context already exists that a follow-up
+    should never reset back to a generic greeting."""
+    if not project_context:
+        return False
+    for key in _ACTIVE_PROJECT_KEYS:
+        value = project_context.get(key)
+        if isinstance(value, str) and value.strip():
+            return True
+        if isinstance(value, list) and any(str(item).strip() for item in value):
+            return True
+    return False
+
 
 def conversation_understanding_node(state: WorkflowState) -> dict:
-    """Classifies the user's message and routes / responds accordingly.
-
-    Returns a partial state update (LangGraph merges this into the full
-    state). `conversation_history` uses the `add_messages` reducer, so we
-    only need to return the *new* messages, not the full list.
-    """
+    """Classifies the user's message and routes / responds accordingly."""
     user_input = state["user_input"]
     history = state.get("conversation_history", [])
+    project_context = state.get("project_context") or {}
 
     result: ConversationUnderstandingOutput = _conversation_understanding_chain.invoke(
         {
@@ -50,23 +68,52 @@ def conversation_understanding_node(state: WorkflowState) -> dict:
         }
     )
 
+    category = result.category
+    reasoning = result.reasoning
+    confidence = result.confidence
+
+    # Keep pure greetings ("hi") as GENERAL_CONVERSATION even mid-project —
+    # forcing the full project_workflow + web search made "hi" take 30s+.
+    # Only override for *substantive* follow-ups when a project is active.
+    if (
+        category == ConversationCategory.GENERAL_CONVERSATION
+        and _has_active_project(project_context)
+        and not is_light_message(user_input)
+    ):
+        category = ConversationCategory.PROJECT
+        reasoning = (
+            f"Overridden to PROJECT because active project_context exists. "
+            f"Original classification: {result.category.value} — {result.reasoning}"
+        )
+        confidence = max(confidence, 0.9)
+
     new_messages: list = [HumanMessage(content=user_input)]
 
     metadata_update = {
         **state.get("metadata", {}),
-        "routing_decision": result.category.value,
-        "routing_confidence": result.confidence,
-        "routing_reasoning": result.reasoning,
+        "routing_decision": category.value,
+        "routing_confidence": confidence,
+        "routing_reasoning": reasoning,
     }
 
-    if result.category == ConversationCategory.GENERAL_CONVERSATION:
+    if category == ConversationCategory.GENERAL_CONVERSATION:
         reply = result.response or (
             "Hey there! 👋 I'm your AI Project Guide. I'd love to help you design, "
             "analyze, and build your next big idea! What are you thinking of creating today?"
         )
+        if _has_active_project(project_context) and is_light_message(user_input):
+            name = (
+                (project_context.get("project_name") or "").strip()
+                or (project_context.get("idea") or "").strip()
+                or "your project"
+            )
+            reply = (
+                f"Hey! 👋 Ready to continue on **{name}**? "
+                "Tell me more details, ask for ideas, or say “generate the PRD” when you want a doc."
+            )
+
         new_messages.append(AIMessage(content=reply))
-        
-        # Persist general conversation turn to the database
+
         session_id = state.get("metadata", {}).get("session_id", "default")
         try:
             conversation_repo.append_turn(
@@ -74,9 +121,9 @@ def conversation_understanding_node(state: WorkflowState) -> dict:
                 user_input=user_input,
                 ai_response=reply,
                 metadata={
-                    "project_action":    "GENERAL_CONVERSATION",
-                    "confidence":        result.confidence,
-                    "reasoning":         result.reasoning,
+                    "project_action": "GENERAL_CONVERSATION",
+                    "confidence": confidence,
+                    "reasoning": reasoning,
                 },
             )
         except Exception as db_err:
@@ -87,8 +134,6 @@ def conversation_understanding_node(state: WorkflowState) -> dict:
             "metadata": metadata_update,
         }
 
-    # PROJECT category: no reply is generated here. The Project Workflow
-    # node(s) will take over from here to analyze/respond.
     return {
         "conversation_history": new_messages,
         "metadata": metadata_update,

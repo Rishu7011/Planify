@@ -70,6 +70,22 @@ export const authOptions: AuthOptions = {
 
   callbacks: {
     /**
+     * Always land authenticated users on an in-app route.
+     * Blocks open redirects to external hosts.
+     */
+    async redirect({ url, baseUrl }) {
+      const { DEFAULT_LOGIN_REDIRECT, safeCallbackUrl } = await import("./routes");
+      if (url.startsWith("/")) {
+        return `${baseUrl}${safeCallbackUrl(url)}`;
+      }
+      if (url.startsWith(baseUrl)) {
+        const path = url.slice(baseUrl.length) || DEFAULT_LOGIN_REDIRECT;
+        return `${baseUrl}${safeCallbackUrl(path)}`;
+      }
+      return `${baseUrl}${DEFAULT_LOGIN_REDIRECT}`;
+    },
+
+    /**
      * jwt — runs on every token creation/refresh.
      * Stores user id, email, and name in the token so they survive across requests.
      */

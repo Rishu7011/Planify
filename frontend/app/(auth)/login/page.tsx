@@ -1,15 +1,26 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
+import React, { useEffect, useState, Suspense } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { Sparkles, Mail, ArrowRight } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+
+import {
+  DEFAULT_LOGIN_REDIRECT,
+  ROUTES,
+  safeCallbackUrl,
+} from '@/lib/routes';
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const { status } = useSession();
   const errorParam = searchParams.get('error');
-  // Respect the callbackUrl set by the proxy middleware (e.g. /dashboard)
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = safeCallbackUrl(
+    searchParams.get('callbackUrl'),
+    DEFAULT_LOGIN_REDIRECT,
+  );
 
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,10 +29,17 @@ function LoginForm() {
     errorParam ? "An error occurred during authentication. Please try again." : null
   );
 
+  // Proxy also handles this; client redirect covers race after soft nav.
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace(callbackUrl);
+    }
+  }, [status, callbackUrl, router]);
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    
+
     setIsLoading(true);
     setError(null);
     setIsSent(false);
@@ -38,7 +56,7 @@ function LoginForm() {
       } else {
         setIsSent(true);
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
@@ -49,43 +67,46 @@ function LoginForm() {
     signIn('google', { callbackUrl });
   };
 
+  if (status === 'authenticated' || status === 'loading') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050816] text-white gap-3">
+        <div className="h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-gray-400">
+          {status === 'authenticated' ? 'Taking you to your dashboard…' : 'Checking session…'}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-[#050816] text-white px-4 overflow-hidden">
-      {/* Background glow effects */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
-      
-      {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
       <div className="w-full max-w-md z-10">
-        {/* Card wrapper */}
         <div className="bg-[#0b0e22]/65 backdrop-blur-2xl border border-white/10 rounded-[32px] p-8 shadow-[0_0_80px_rgba(124,58,237,0.15)] md:p-10">
-          
-          {/* Logo / Header */}
           <div className="flex flex-col items-center mb-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-purple-500/30 mb-4">
+            <Link href={ROUTES.home} className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-purple-500/30 mb-4">
               <Sparkles className="h-7 w-7 text-white" />
-            </div>
+            </Link>
             <h1 className="text-3xl font-bold text-center">
-              PlanGenie{' '}
+              Planify{' '}
               <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                 AI
               </span>
             </h1>
             <p className="text-gray-400 text-sm mt-2 text-center">
-              Sign in to build and manage your project planning artifacts
+              Sign in to open your dashboard and continue building
             </p>
           </div>
 
-          {/* Error display */}
           {error && (
-            <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center animate-pulse">
+            <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
               {error}
             </div>
           )}
 
-          {/* Success / Magic Link Sent Message */}
           {isSent ? (
             <div className="text-center py-6">
               <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-4">
@@ -93,10 +114,10 @@ function LoginForm() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Check your email</h3>
               <p className="text-gray-400 text-sm px-4">
-                A sign-in link has been sent to <span className="text-white font-medium">{email}</span>. Click the link in the email to log in instantly.
+                A sign-in link has been sent to <span className="text-white font-medium">{email}</span>. After you click it, you&apos;ll land on your dashboard.
               </p>
-              <button 
-                onClick={() => setIsSent(false)} 
+              <button
+                onClick={() => setIsSent(false)}
                 className="mt-6 text-sm text-purple-400 hover:text-purple-300 underline underline-offset-4"
               >
                 Use a different email
@@ -104,13 +125,11 @@ function LoginForm() {
             </div>
           ) : (
             <>
-              {/* Google OAuth Login Button */}
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
                 className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 active:scale-[0.98] rounded-xl py-3 px-4 font-medium transition duration-200 cursor-pointer"
               >
-                {/* SVG Google Logo */}
                 <svg className="h-5 w-5" viewBox="0 0 24 24" width="24" height="24">
                   <path
                     fill="#EA4335"
@@ -120,14 +139,12 @@ function LoginForm() {
                 <span>Continue with Google</span>
               </button>
 
-              {/* Divider */}
               <div className="relative flex py-5 items-center">
                 <div className="flex-grow border-t border-white/10"></div>
                 <span className="flex-shrink mx-4 text-gray-500 text-xs uppercase tracking-wider font-semibold">Or</span>
                 <div className="flex-grow border-t border-white/10"></div>
               </div>
 
-              {/* Email Form */}
               <form onSubmit={handleEmailSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="email" className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
@@ -171,6 +188,11 @@ function LoginForm() {
             </>
           )}
 
+          <p className="mt-8 text-center text-xs text-gray-500">
+            <Link href={ROUTES.home} className="hover:text-gray-300 underline underline-offset-4">
+              Back to home
+            </Link>
+          </p>
         </div>
       </div>
     </div>

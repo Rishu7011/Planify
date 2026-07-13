@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { ProjectsView } from "@/components/dashboard/ProjectsView";
+import { ROUTES } from "@/lib/routes";
+
+type NavView = "dashboard" | "projects";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -12,6 +16,7 @@ export default function DashboardPage() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activeNav, setActiveNav] = useState<NavView>("dashboard");
 
   // API States
   const [projects, setProjects] = useState<any[]>([]);
@@ -42,7 +47,7 @@ export default function DashboardPage() {
   // ── Redirect Unauthenticated Users (Fallback) ─────────────────────────────
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.replace("/login?callbackUrl=%2Fdashboard");
     }
   }, [status, router]);
 
@@ -268,6 +273,18 @@ export default function DashboardPage() {
   const sidebarWidth = sidebarCollapsed ? "72px" : "240px";
   const closeMobileSidebar = () => setSidebarOpen(false);
 
+  const goToView = (view: NavView) => {
+    setActiveNav(view);
+    closeMobileSidebar();
+  };
+
+  const navItemClass = (active: boolean) =>
+    `flex items-center gap-3 rounded-xl transition-colors text-sm ${
+      active
+        ? "bg-[#aec6ff]/10 text-[#aec6ff] font-medium"
+        : "text-[#7C869A] hover:bg-white/5 hover:text-[#F7F8FC]"
+    } ${sidebarCollapsed ? "justify-center py-2.5 px-0" : "px-4 py-2.5"}`;
+
   // Derived: filter projects client-side by search query
   const filteredProjects = searchQuery.trim()
     ? projects.filter(
@@ -379,30 +396,45 @@ export default function DashboardPage() {
           </div>
 
           <nav className="px-2 space-y-1">
-            <Link
-              href="#"
-              onClick={closeMobileSidebar}
-              className={`flex items-center gap-3 bg-[#aec6ff]/10 text-[#aec6ff] rounded-xl font-medium text-sm ${sidebarCollapsed ? "justify-center py-2.5 px-0" : "px-4 py-2.5"}`}
+            <button
+              type="button"
+              onClick={() => goToView("dashboard")}
+              className={`w-full ${navItemClass(activeNav === "dashboard")}`}
             >
               <span className="material-symbols-outlined text-[20px] shrink-0">dashboard</span>
               {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">Dashboard</span>}
-            </Link>
+            </button>
+            <button
+              type="button"
+              onClick={() => goToView("projects")}
+              className={`w-full ${navItemClass(activeNav === "projects")}`}
+            >
+              <span className="material-symbols-outlined text-[20px] shrink-0">folder_copy</span>
+              {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">Projects</span>}
+            </button>
             {[
-              { icon: "folder_copy", label: "Projects" },
               { icon: "bolt", label: "AI Workspace" },
               { icon: "inventory_2", label: "Assets" },
               { icon: "group", label: "Team" },
               { icon: "insights", label: "Analytics" },
             ].map(({ icon, label }) => (
-              <Link
+              <button
                 key={label}
-                href="#"
+                type="button"
                 onClick={closeMobileSidebar}
-                className={`flex items-center gap-3 text-[#7C869A] hover:bg-white/5 hover:text-[#F7F8FC] rounded-xl transition-colors text-sm ${sidebarCollapsed ? "justify-center py-2.5 px-0" : "px-4 py-2.5"}`}
+                title="Coming soon"
+                className={`w-full ${navItemClass(false)} opacity-60 cursor-default`}
               >
                 <span className="material-symbols-outlined text-[20px] shrink-0">{icon}</span>
-                {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">{label}</span>}
-              </Link>
+                {!sidebarCollapsed && (
+                  <span className="fade-text whitespace-nowrap flex-1 text-left">{label}</span>
+                )}
+                {!sidebarCollapsed && (
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-[#7C869A]/80">
+                    Soon
+                  </span>
+                )}
+              </button>
             ))}
           </nav>
         </div>
@@ -434,7 +466,7 @@ export default function DashboardPage() {
             )}
             {!sidebarCollapsed && (
               <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => signOut({ callbackUrl: ROUTES.home })}
                 aria-label="Sign out"
                 title="Sign Out"
                 className="shrink-0 p-1 rounded-lg text-[#7C869A] hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
@@ -464,9 +496,17 @@ export default function DashboardPage() {
                 <span className="material-symbols-outlined">{sidebarOpen ? "close" : "menu"}</span>
               </button>
               <div className="hidden sm:flex items-center gap-2 text-sm text-[#7C869A]">
-                <span className="hover:text-[#F7F8FC] cursor-pointer transition-colors">Dashboard</span>
+                <button
+                  type="button"
+                  onClick={() => goToView("dashboard")}
+                  className="hover:text-[#F7F8FC] transition-colors"
+                >
+                  Dashboard
+                </button>
                 <span className="material-symbols-outlined text-xs">chevron_right</span>
-                <span className="text-[#F7F8FC] font-medium">Control Center</span>
+                <span className="text-[#F7F8FC] font-medium">
+                  {activeNav === "projects" ? "Projects" : "Control Center"}
+                </span>
               </div>
             </div>
 
@@ -497,21 +537,7 @@ export default function DashboardPage() {
         </header>
 
         {/* ── Main Body ────────────────────────────────────────── */}
-        <div className="p-6 sm:p-8 md:p-10 max-w-[1440px] mx-auto w-full flex-1">
-          {/* Greeting */}
-          <section ref={welcomeRef} className="mb-10">
-            <h1 className="text-3xl font-bold text-[#F7F8FC] tracking-tight mb-2">
-              Welcome back, {session?.user?.name?.split(" ")[0] || "User"}.
-            </h1>
-            {loadingData ? (
-              <div className="h-5 w-64 bg-white/5 rounded animate-pulse" />
-            ) : (
-              <p className="text-[#B4BCCB] font-medium">
-                Your <span className="text-[#aec6ff]">AI team</span> has compiled {stats?.total_reports || 0} reports across {stats?.total_projects || 0} active projects.
-              </p>
-            )}
-          </section>
-
+        <div className="p-6 sm:p-8 md:p-10 max-w-[1440px] mx-auto w-full flex-1 pb-24 lg:pb-10">
           {/* ── Error Banner ───────────────────────────────────────────────── */}
           {apiError && (
             <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3">
@@ -529,6 +555,32 @@ export default function DashboardPage() {
               </button>
             </div>
           )}
+
+          {activeNav === "projects" ? (
+            <ProjectsView
+              projects={projects}
+              loading={loadingData}
+              deletingId={deletingId}
+              onCreate={() => setModalOpen(true)}
+              onDelete={handleDeleteProject}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
+          ) : (
+          <>
+          {/* Greeting */}
+          <section ref={welcomeRef} className="mb-10">
+            <h1 className="text-3xl font-bold text-[#F7F8FC] tracking-tight mb-2">
+              Welcome back, {session?.user?.name?.split(" ")[0] || "User"}.
+            </h1>
+            {loadingData ? (
+              <div className="h-5 w-64 bg-white/5 rounded animate-pulse" />
+            ) : (
+              <p className="text-[#B4BCCB] font-medium">
+                Your <span className="text-[#aec6ff]">AI team</span> has compiled {stats?.total_reports || 0} reports across {stats?.total_projects || 0} active projects.
+              </p>
+            )}
+          </section>
 
           {/* ── KPI Stats Row ─────────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
@@ -702,11 +754,24 @@ export default function DashboardPage() {
 
               {/* Active Projects */}
               <div>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-6 gap-3">
                   <h2 className="text-xl font-bold">Active Projects</h2>
-                  <button onClick={() => setModalOpen(true)} className="text-sm font-semibold text-[#aec6ff] hover:underline underline-offset-4">
-                    Create project
-                  </button>
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => goToView("projects")}
+                      className="text-sm font-semibold text-[#7C869A] hover:text-[#F7F8FC] transition-colors"
+                    >
+                      View all
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModalOpen(true)}
+                      className="text-sm font-semibold text-[#aec6ff] hover:underline underline-offset-4"
+                    >
+                      Create project
+                    </button>
+                  </div>
                 </div>
 
                 {loadingData ? (
@@ -883,6 +948,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+          </>
+          )}
         </div>
 
         {/* Footer */}
@@ -998,23 +1065,53 @@ export default function DashboardPage() {
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────── */}
       <nav aria-label="Primary" className="lg:hidden fixed bottom-0 left-0 w-full bg-[#0F1220] border-t border-white/10 flex justify-around items-center h-16 z-[70] px-4 backdrop-blur-2xl">
-        <button aria-label="Dashboard" className="text-[#aec6ff]">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
+        <button
+          type="button"
+          aria-label="Dashboard"
+          aria-current={activeNav === "dashboard" ? "page" : undefined}
+          onClick={() => goToView("dashboard")}
+          className={activeNav === "dashboard" ? "text-[#aec6ff]" : "text-[#7C869A]"}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={
+              activeNav === "dashboard"
+                ? { fontVariationSettings: "'FILL' 1" }
+                : undefined
+            }
+          >
+            dashboard
+          </span>
         </button>
-        <button aria-label="Projects" className="text-[#7C869A]">
-          <span className="material-symbols-outlined">folder</span>
+        <button
+          type="button"
+          aria-label="Projects"
+          aria-current={activeNav === "projects" ? "page" : undefined}
+          onClick={() => goToView("projects")}
+          className={activeNav === "projects" ? "text-[#aec6ff]" : "text-[#7C869A]"}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={
+              activeNav === "projects"
+                ? { fontVariationSettings: "'FILL' 1" }
+                : undefined
+            }
+          >
+            folder_copy
+          </span>
         </button>
         <button
           onClick={() => setModalOpen(true)}
-          aria-label="AI Workspace"
+          aria-label="New project"
           className="w-12 h-12 -mt-10 rounded-full bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center text-white shadow-xl ring-4 ring-[#090B14]"
         >
-          <span className="material-symbols-outlined">bolt</span>
+          <span className="material-symbols-outlined">add</span>
         </button>
-        <button aria-label="Team" className="text-[#7C869A]">
+        <button type="button" aria-label="Team" className="text-[#7C869A] opacity-50" title="Coming soon">
           <span className="material-symbols-outlined">group</span>
         </button>
-        <button aria-label="Settings" className="text-[#7C869A]">
+        <button type="button" aria-label="Settings" className="text-[#7C869A] opacity-50" title="Coming soon">
           <span className="material-symbols-outlined">settings</span>
         </button>
       </nav>

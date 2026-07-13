@@ -109,7 +109,97 @@ def _extract_ai_content(state_update: dict) -> str | None:
     return None
 
 
+# Field-name fallbacks used when the LLM puts labels in missing_information
+# instead of real questions / multiple-choice options.
+_FIELD_QUESTIONS: dict[str, str] = {
+    "budget": "What budget range are you targeting for this project?",
+    "timeline": "What timeline are you aiming for (MVP and launch)?",
+    "technology stack": "Any preferred technology stack or platform constraints?",
+    "technology_stack": "Any preferred technology stack or platform constraints?",
+    "target users": "Who are the primary users of this product?",
+    "target_users": "Who are the primary users of this product?",
+    "problem statement": "What specific problem does this product solve?",
+    "problem_statement": "What specific problem does this product solve?",
+    "goals": "What are the top goals or success metrics for the first release?",
+    "features": "Which core features matter most for the MVP?",
+}
+
+_FIELD_OPTIONS: dict[str, list[str]] = {
+    "budget": [
+        "Under $10k — bootstrap / MVP",
+        "$10k–$50k — small funded build",
+        "$50k–$200k — serious product team",
+        "Not sure yet — help me estimate",
+    ],
+    "timeline": [
+        "4–8 weeks for an MVP",
+        "3–6 months",
+        "6–12 months",
+        "Flexible — prioritize quality",
+    ],
+    "technology stack": [
+        "Mobile-first (iOS / Android / React Native / Flutter)",
+        "Web app (React / Next.js)",
+        "No strong preference — recommend a stack",
+        "Reuse existing in-house stack",
+    ],
+    "technology_stack": [
+        "Mobile-first (iOS / Android / React Native / Flutter)",
+        "Web app (React / Next.js)",
+        "No strong preference — recommend a stack",
+        "Reuse existing in-house stack",
+    ],
+    "target users": [
+        "Retail / consumer crypto users",
+        "Day traders / power users",
+        "Businesses / institutions",
+        "Still exploring — help me define them",
+    ],
+    "target_users": [
+        "Retail / consumer crypto users",
+        "Day traders / power users",
+        "Businesses / institutions",
+        "Still exploring — help me define them",
+    ],
+    "problem statement": [
+        "Fragmented tools — charts and trading are split",
+        "High fees / opaque commissions",
+        "Hard for beginners to get started",
+        "Still refining the problem",
+    ],
+    "problem_statement": [
+        "Fragmented tools — charts and trading are split",
+        "High fees / opaque commissions",
+        "Hard for beginners to get started",
+        "Still refining the problem",
+    ],
+}
+
+
+def _normalize_field_key(text: str) -> str:
+    return re.sub(r"[\s_]+", " ", (text or "").strip().lower())
+
+
+def _looks_like_field_label(text: str) -> bool:
+    """True for short labels like 'Budget' rather than real questions."""
+    cleaned = (text or "").strip()
+    if not cleaned or "?" in cleaned:
+        return False
+    words = cleaned.split()
+    return len(words) <= 4 and len(cleaned) <= 40
+
+
+def _question_from_label(label: str) -> str:
+    key = _normalize_field_key(label)
+    return _FIELD_QUESTIONS.get(key, f"Can you share more about your {label.strip()}?")
+
+
 def _default_discovery_options(question: str) -> list[str]:
+    key = _normalize_field_key(question)
+    # Match by known field keys contained in the question text
+    for field_key, options in _FIELD_OPTIONS.items():
+        if field_key in key or key in field_key:
+            return list(options)
     return [
         "Early-stage idea — still exploring",
         "Have a clear problem to solve",
@@ -123,35 +213,72 @@ def _extract_clarification_questions(
     project_context: dict[str, Any],
     *,
     needs_clarification: bool,
+    metadata: dict[str, Any] | None = None,
 ) -> list[str]:
-    """Derive discovery/clarification questions for the frontend options panel."""
+    """Derive discovery/clarification questions for the frontend options panel.
+
+    Prefer real LLM clarification_questions. Never treat raw field labels
+    (Budget / Timeline) as multiple-choice answer options.
+    """
     if not needs_clarification:
         return []
 
-    questions = [q.strip() for q in (project_context.get("missing_information") or []) if q and q.strip()]
-    if questions:
-        return questions[:3]
-
-    if not assistant_content:
-        return []
-
-    numbered = re.findall(r"^\s*\d+[\.\)]\s+(.+\?)\s*$", assistant_content, re.MULTILINE)
-    if numbered:
-        return [q.strip() for q in numbered[:3]]
-
-    bullet_lines = [
-        ln.strip("•- ").strip()
-        for ln in assistant_content.split("\n")
-        if ln.strip().startswith(("•", "-")) and "?" in ln
+    meta = metadata or {}
+    from_llm = [
+        q.strip()
+        for q in (meta.get("clarification_questions") or [])
+        if q and str(q).strip()
     ]
-    if bullet_lines:
-        return bullet_lines[:3]
+    if from_llm:
+        return [
+            _question_from_label(q) if _looks_like_field_label(q) else q
+            for q in from_llm[:3]
+        ]
 
-    sentences = re.findall(r"[^?\n]{10,}\?", assistant_content)
-    if sentences:
-        return [s.strip() for s in sentences[:3]]
+    if assistant_content:
+        numbered = re.findall(
+            r"^\s*\d+[\.\)]\s+(.+\?)\s*$", assistant_content, re.MULTILINE
+        )
+        if numbered:
+            return [q.strip() for q in numbered[:3]]
+
+        bullet_lines = [
+            ln.strip("•- ").strip()
+            for ln in assistant_content.split("\n")
+            if ln.strip().startswith(("•", "-")) and "?" in ln
+        ]
+        if bullet_lines:
+            return bullet_lines[:3]
+
+        sentences = re.findall(r"[^?\n]{10,}\?", assistant_content)
+        if sentences:
+            return [s.strip() for s in sentences[:3]]
+
+    missing = [
+        q.strip()
+        for q in (project_context.get("missing_information") or [])
+        if q and str(q).strip()
+    ]
+    if missing:
+        return [_question_from_label(q) for q in missing[:3]]
 
     return []
+
+
+def _discovery_options_for_question(
+    question: str,
+    remaining_questions: list[str],
+) -> list[str]:
+    """Build selectable answers for a discovery question.
+
+    Remaining clarification items are other *questions*, not answer options —
+    never dump them into the options list.
+    """
+    options = _default_discovery_options(question)
+    if remaining_questions and all(_looks_like_field_label(q) for q in remaining_questions):
+        # Field labels are not options; keep the curated defaults.
+        return options
+    return options
 
 
 async def _persist_project_context(db, project_id: str, context: dict[str, Any]) -> None:
@@ -241,11 +368,14 @@ async def run_workflow_and_stream(
         .to_list(None)
     )
     raw_user_message = chat_messages[-1]["content"] if chat_messages else ""
-    history = _messages_to_history(chat_messages)
+    history = _messages_to_history(chat_messages[-MAX_HISTORY:])
     project_context = dict(project_doc.get("context_object") or {})
 
-    is_first_turn = len(chat_messages) <= 1
-    if is_first_turn:
+    # Always rehydrate project_context from Mongo so follow-up turns never lose
+    # active-project awareness (checkpoint alone has been unreliable here).
+    # Only seed conversation_history on the first turn — later turns use the
+    # LangGraph checkpointer + add_messages reducer to avoid duplicates.
+    if len(chat_messages) <= 1:
         state_input: dict[str, Any] = build_initial_state(raw_user_message)
         state_input["conversation_history"] = history
         state_input["project_context"] = project_context
@@ -256,6 +386,7 @@ async def run_workflow_and_stream(
     else:
         state_input = {
             "user_input": raw_user_message,
+            "project_context": project_context,
             "metadata": {
                 "session_id": project_id,
                 "project_id": project_id,
@@ -338,14 +469,14 @@ async def run_workflow_and_stream(
                         assistant_content,
                         final_context,
                         needs_clarification=needs_clarification,
+                        metadata=final_metadata,
                     )
 
                     if needs_clarification and clarification_questions:
                         question = clarification_questions[0]
-                        options = (
-                            clarification_questions[1:4]
-                            if len(clarification_questions) > 1
-                            else _default_discovery_options(question)
+                        options = _discovery_options_for_question(
+                            question,
+                            clarification_questions[1:4],
                         )
                         pending = {"question": question, "options": options}
                         final_context["pending_discovery"] = pending
@@ -368,8 +499,13 @@ async def run_workflow_and_stream(
                             }
                         )
                     elif not final_metadata.get("discovery_complete", False):
+                        # Clear stale pending_discovery labels from earlier buggy turns.
+                        if final_context.pop("pending_discovery", None) is not None:
+                            await _persist_project_context(db, project_id, final_context)
                         yield _sse({"type": "discovery_turn_complete"})
                     else:
+                        if final_context.pop("pending_discovery", None) is not None:
+                            await _persist_project_context(db, project_id, final_context)
                         yield _sse({"type": "discovery_complete"})
 
                 if node_name == "report_generator":

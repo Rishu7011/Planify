@@ -13,8 +13,21 @@ from app.agent.schemas import ConversationCategory
 from app.agent.state import WorkflowState
 
 # ── node name constants ───────────────────────────────────────────────────────
-PROJECT_WORKFLOW_NODE   = "project_workflow"
-REPORT_GENERATOR_NODE   = "report_generator"
+PROJECT_WORKFLOW_NODE = "project_workflow"
+REPORT_GENERATOR_NODE = "report_generator"
+
+# Only these queue items should invoke report_generator.
+REPORT_WORKFLOWS = {
+    "PRD",
+    "TECHNICAL_ARCHITECTURE",
+    "MARKET_RESEARCH",
+    "COMPETITOR_ANALYSIS",
+    "ROI",
+    "HR_PLANNING",
+    "RISK_ANALYSIS",
+    "ROADMAP",
+    "FINAL_REPORT",
+}
 
 
 def route_after_conversation_understanding(state: WorkflowState) -> str:
@@ -26,39 +39,38 @@ def route_after_conversation_understanding(state: WorkflowState) -> str:
 
 
 def route_after_project_workflow(state: WorkflowState) -> str:
-    """Routes based entirely on what the LLM decided in next_workflows.
+    """Routes to report_generator only for real report workflow names.
 
-    Safeguard: If project discovery is incomplete (discovery_complete is False)
-    and the user has not explicitly requested a report (project_action is not
-    REPORT_REQUEST), we do not allow routing to report_generator.
+    Non-report queue items (PROJECT_INITIALIZATION, CLARIFICATION, etc.)
+    must never invoke the report generator.
+
+    Explicit REPORT_REQUEST always proceeds when a real report is queued
+    (project_workflow guards ensure discovery is complete enough).
     """
     metadata = state.get("metadata", {})
     next_workflows = metadata.get("next_workflows", [])
     discovery_complete = metadata.get("discovery_complete", False)
     project_action = metadata.get("project_action")
+    # Fallback: if context already satisfies discovery, allow reports.
+    project_context = state.get("project_context") or {}
+    if project_context.get("discovery_complete"):
+        discovery_complete = True
 
-    # Set of workflows that generate reports
-    report_workflows = {
-        "PRD",
-        "TECHNICAL_ARCHITECTURE",
-        "MARKET_RESEARCH",
-        "COMPETITOR_ANALYSIS",
-        "ROI",
-        "HR_PLANNING",
-        "RISK_ANALYSIS",
-        "ROADMAP",
-        "FINAL_REPORT",
-    }
-
-    # Route to report_generator for any meaningful workflow the LLM chose.
     for workflow in next_workflows:
-        if workflow and workflow != "NO_ACTION":
-            # If discovery is not complete and this is a report workflow,
-            # only allow it if the user explicitly requested it.
-            if workflow in report_workflows:
-                if not discovery_complete and project_action != "REPORT_REQUEST":
-                    print(f"[router] Safeguard: Blocked report generation for {workflow} because discovery is incomplete.")
-                    continue
-            return REPORT_GENERATOR_NODE
+        if not workflow or workflow == "NO_ACTION":
+            continue
+        if workflow not in REPORT_WORKFLOWS:
+            print(
+                f"[router] Ignoring non-report workflow '{workflow}' "
+                "(not routed to report_generator)."
+            )
+            continue
+        if not discovery_complete and project_action != "REPORT_REQUEST":
+            print(
+                f"[router] Safeguard: Blocked report generation for {workflow} "
+                "because discovery is incomplete."
+            )
+            continue
+        return REPORT_GENERATOR_NODE
 
     return END

@@ -179,11 +179,11 @@ class ProjectWorkflowOutput(BaseModel):
     discovery_complete:      bool          = Field(
         default=False,
         description=(
-            "True ONLY when all critical discovery fields are known: problem_statement, "
-            "target_users, and at least one core goal or feature. "
-            "False during the initial discovery conversation. "
-            "This flag gates report generation — reports must NOT be generated while False "
-            "unless the user explicitly requests one with REPORT_REQUEST."
+            "True when enough is known to proceed: (idea OR problem_statement) AND "
+            "(target_users OR at least one goal/feature). "
+            "Budget, timeline, tech stack, scale, and language are OPTIONAL — never "
+            "keep this False just because those are missing. "
+            "Reports may still generate on REPORT_REQUEST with labeled recommendations."
         ),
     )
     stale_outputs:           list[str]     = Field(
@@ -210,18 +210,24 @@ class ProjectWorkflowOutput(BaseModel):
             "(2) Report workflows are ONLY allowed when project_action=REPORT_REQUEST "
             "(user explicitly asked for a report) OR when discovery_complete=True AND the "
             "workflow planner has scheduled it. "
-            "(3) PROJECT_QUERY turns always get [NO_ACTION]."
+            "(3) PROJECT_QUERY turns always get [NO_ACTION]. "
+            "(4) For REPORT_REQUEST, queue ONLY the matching report type "
+            "(e.g. TECHNICAL_ARCHITECTURE) — never PROJECT_INITIALIZATION, "
+            "PROJECT_UPDATE, CLARIFICATION, or a kitchen-sink list of every report."
         ),
     )
     assistant_response:      str           = Field(
         ...,
         description=(
-            "The reply shown to the user. "
-            "NEW_PROJECT / CONTINUE_PROJECT → acknowledge the idea, summarize understanding, "
-            "ask 2–3 intelligent follow-up questions (never generate reports). "
-            "PROJECT_QUERY → answer directly from project_context. "
-            "REPORT_REQUEST with sufficient info → confirm report will be generated. "
-            "REPORT_REQUEST with missing info → explain what is missing, ask concise questions. "
+            "The reply shown to the user. Be a helpful critic and idea partner, not a yes-man. "
+            "Evaluate technology-stack fit: if React Native/Expo is wrong for a web-first "
+            "product, say so and recommend Next.js + Express + NextAuth + Python/FastAPI (or "
+            "whatever fits); keep user-stated stack and add recommendation. "
+            "NEW_PROJECT / CONTINUE_PROJECT → acknowledge, push back on weak budget/tags/scope/"
+            "mismatched stack, propose 2–3 project-specific ideas, summarize, ask ≤3 follow-ups "
+            "if needed. "
+            "PROJECT_QUERY → answer from context; honest judgment on budgets/tags/stack. "
+            "REPORT_REQUEST → confirm generation (User-stated vs Recommendation for stack/budget). "
             "needs_clarification=True → numbered list of ≤3 targeted questions."
         ),
     )

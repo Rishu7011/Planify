@@ -16,8 +16,9 @@ Responsibilities
    - Select downstream next_workflows
    - Compose the assistant_response shown to the user
 3. Deep-merge updated_context into state["project_context"] (additive, never lossy).
-4. Persist project snapshot + conversation turn to MongoDB Atlas.
-5. Return partial state update — LangGraph merges it automatically.
+4. Apply deterministic guards (discovery_complete, report request, no re-asks).
+5. Persist project snapshot + conversation turn to MongoDB Atlas.
+6. Return partial state update — LangGraph merges it automatically.
 
 This node NEVER generates PRDs, roadmaps, ROI, market research, or
 technical architecture. Those belong to downstream specialist agents.
@@ -27,13 +28,16 @@ from __future__ import annotations
 
 import json
 
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, BaseMessage
 
 from app.agent.db import conversation_repo, project_repo
 from app.agent.llm import get_structured_llm
 from app.agent.prompts import project_workflow_prompt
+from app.agent.router import REPORT_WORKFLOWS
 from app.agent.schemas import ProjectWorkflowOutput
 from app.agent.state import WorkflowState
+from app.agent.web_search import gather_web_intel, should_run_web_search
+from app.agent.workflow_guards import apply_workflow_guards
 
 # ── build the structured-output chain once at import time ────────────────────
 _chain = (
@@ -72,38 +76,61 @@ def _deep_merge(existing: dict, patch: dict) -> dict:
     return merged
 
 
+def _history_text(history: list) -> str:
+    parts: list[str] = []
+    for msg in history or []:
+        if isinstance(msg, BaseMessage):
+            parts.append(str(msg.content or ""))
+        elif isinstance(msg, dict):
+            parts.append(str(msg.get("content") or ""))
+        else:
+            parts.append(str(msg))
+    return "\n".join(parts)
+
+
 def project_workflow_node(state: WorkflowState) -> dict:
     """Full Project Workflow Agent.
 
-    Reads project_context → invokes LLM → merges context → persists to
-    MongoDB Atlas → returns state update.
+    Reads project_context → invokes LLM → merges context → applies guards →
+    persists to MongoDB Atlas → returns state update.
     """
-    user_input      = state["user_input"]
-    history         = state.get("conversation_history", [])
+    user_input = state["user_input"]
+    history = state.get("conversation_history", [])
     project_context = state.get("project_context") or {}
-    session_id      = state.get("metadata", {}).get("session_id", "default")
+    session_id = state.get("metadata", {}).get("session_id", "default")
 
-    # Serialize existing context as readable JSON for the prompt.
     context_str = (
         json.dumps(project_context, indent=2)
         if project_context
         else "None — no project has been initialized yet."
     )
 
-    # ── invoke the LLM chain ─────────────────────────────────────────────────
+    # DuckDuckGo only when the user needs fresh market/idea intel — not for "hi".
+    if should_run_web_search(user_input, project_context):
+        try:
+            web_intel = gather_web_intel(
+                user_input=user_input,
+                project_context=project_context,
+                max_queries=1,
+            )
+        except Exception as search_err:
+            print(f"[project_workflow] web search skipped: {search_err}")
+            web_intel = "(No web intel gathered.)"
+    else:
+        web_intel = "(Web search skipped — not needed for this message.)"
+
     result: ProjectWorkflowOutput = _chain.invoke(
         {
-            "user_input":           user_input,
+            "user_input": user_input,
             "conversation_history": history,
-            "project_context":      context_str,
+            "project_context": context_str,
+            "web_intel": web_intel,
         }
     )
 
-    # ── merge context (additive, never lossy) ────────────────────────────────
-    patch         = result.updated_context.model_dump()
+    patch = result.updated_context.model_dump()
     merged_context = _deep_merge(project_context, patch)
 
-    # Propagate stale_outputs from this turn into the accumulated context.
     if result.stale_outputs:
         existing_stale = merged_context.get("stale_outputs") or []
         for item in result.stale_outputs:
@@ -111,68 +138,88 @@ def project_workflow_node(state: WorkflowState) -> dict:
                 existing_stale.append(item)
         merged_context["stale_outputs"] = existing_stale
 
-    # ── persist to MongoDB Atlas ─────────────────────────────────────────────
+    clarification_questions = [
+        q.strip() for q in (result.clarification_questions or []) if q and q.strip()
+    ][:3]
+    if not clarification_questions and result.needs_clarification:
+        clarification_questions = [
+            q.strip()
+            for q in (merged_context.get("missing_information") or [])
+            if q and q.strip()
+        ][:3]
+
+    guarded = apply_workflow_guards(
+        user_input=user_input,
+        merged_context=merged_context,
+        project_action=result.project_action,
+        next_workflows=result.next_workflows,
+        needs_clarification=result.needs_clarification,
+        clarification_questions=clarification_questions,
+        discovery_complete=result.discovery_complete,
+        assistant_response=result.assistant_response,
+        history_text=_history_text(history),
+    )
+
+    merged_context = guarded["merged_context"]
+    project_action = guarded["project_action"]
+    next_workflows = guarded["next_workflows"]
+    needs_clarification = guarded["needs_clarification"]
+    clarification_questions = guarded["clarification_questions"]
+    discovery_complete = guarded["discovery_complete"]
+    assistant_response = guarded["assistant_response"]
+
     try:
         project_id = project_repo.upsert_by_session(
             session_id=session_id,
             context=merged_context,
-            status=result.project_action.value.lower(),
+            status=project_action.lower(),
         )
-        # Check if we are routing to report_generator next.
-        report_workflows = {
-            "PRD",
-            "TECHNICAL_ARCHITECTURE",
-            "MARKET_RESEARCH",
-            "COMPETITOR_ANALYSIS",
-            "ROI",
-            "HR_PLANNING",
-            "RISK_ANALYSIS",
-            "ROADMAP",
-            "FINAL_REPORT",
-        }
-        will_route_to_report = False
-        for wf in result.next_workflows:
-            if wf and wf.value != "NO_ACTION" and wf.value in report_workflows:
-                if result.discovery_complete or result.project_action.value == "REPORT_REQUEST":
-                    will_route_to_report = True
-                    break
+        will_route_to_report = any(
+            wf in REPORT_WORKFLOWS
+            and (discovery_complete or project_action == "REPORT_REQUEST")
+            for wf in next_workflows
+        )
 
         if not will_route_to_report:
             conversation_repo.append_turn(
                 session_id=session_id,
                 user_input=user_input,
-                ai_response=result.assistant_response,
+                ai_response=assistant_response,
                 metadata={
-                    "project_action":    result.project_action.value,
-                    "next_workflows":    [w.value for w in result.next_workflows],
-                    "stale_outputs":     result.stale_outputs,
-                    "needs_clarification": result.needs_clarification,
-                    "discovery_complete": result.discovery_complete,
-                    "confidence":        result.confidence,
+                    "project_action": project_action,
+                    "next_workflows": next_workflows,
+                    "stale_outputs": result.stale_outputs,
+                    "needs_clarification": needs_clarification,
+                    "discovery_complete": discovery_complete,
+                    "confidence": result.confidence,
+                    "requested_report": guarded.get("requested_report"),
                 },
             )
         else:
-            print("[project_workflow] Deferring database conversation log to report_generator_node.")
+            print(
+                "[project_workflow] Deferring database conversation log "
+                "to report_generator_node."
+            )
     except Exception as db_err:
-        # DB errors must never crash the graph.
         print(f"[project_workflow] MongoDB write warning: {db_err}")
         project_id = None
 
-    # ── build metadata update ────────────────────────────────────────────────
     metadata_update = {
         **state.get("metadata", {}),
-        "project_action":      result.project_action.value,
-        "next_workflows":      [w.value for w in result.next_workflows],
-        "stale_outputs":       result.stale_outputs,
-        "needs_clarification": result.needs_clarification,
-        "discovery_complete":  result.discovery_complete,
+        "project_action": project_action,
+        "next_workflows": next_workflows,
+        "stale_outputs": result.stale_outputs,
+        "needs_clarification": needs_clarification,
+        "clarification_questions": clarification_questions,
+        "discovery_complete": discovery_complete,
         "workflow_confidence": result.confidence,
-        "workflow_reasoning":  result.reasoning_summary,
-        "project_id":          project_id,
+        "workflow_reasoning": result.reasoning_summary,
+        "project_id": project_id,
+        "requested_report": guarded.get("requested_report"),
     }
 
     return {
-        "conversation_history": [AIMessage(content=result.assistant_response)],
-        "project_context":      merged_context,
-        "metadata":             metadata_update,
+        "conversation_history": [AIMessage(content=assistant_response)],
+        "project_context": merged_context,
+        "metadata": metadata_update,
     }

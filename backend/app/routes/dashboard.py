@@ -71,6 +71,54 @@ async def get_dashboard_stats(request: Request) -> dict:
     }
 
 
+@router.get("/assets", summary="List generated report assets across all projects")
+async def list_dashboard_assets(request: Request, limit: int = 100) -> list:
+    """Artifact library: every generated report the user can access."""
+    user = request.state.user
+    db = get_database()
+
+    member_docs = await db.members.find(
+        {"user_id": ObjectId(user["user_id"]), "status": "active"}
+    ).to_list(None)
+    org_ids = [m["organization_id"] for m in member_docs]
+    if not org_ids:
+        return []
+
+    projects = await db.projects.find(
+        {"organization_id": {"$in": org_ids}, "status": {"$ne": "deleted"}}
+    ).to_list(None)
+    project_ids = [p["_id"] for p in projects]
+    project_map = {str(p["_id"]): p.get("title", "Untitled") for p in projects}
+    if not project_ids:
+        return []
+
+    docs = (
+        await db.generated_reports.find({"project_id": {"$in": project_ids}})
+        .sort("updated_at", -1)
+        .limit(max(1, min(limit, 200)))
+        .to_list(None)
+    )
+
+    assets: list[dict] = []
+    for doc in docs:
+        pid = str(doc["project_id"])
+        report_type = str(doc.get("report_type") or "report")
+        assets.append(
+            {
+                "asset_id": str(doc["_id"]),
+                "kind": "report",
+                "report_type": report_type,
+                "title": report_type.replace("_", " ").title(),
+                "project_id": pid,
+                "project_title": project_map.get(pid, "Untitled"),
+                "version": doc.get("version_number", 1),
+                "updated_at": doc["updated_at"].isoformat() if doc.get("updated_at") else None,
+                "created_at": doc["created_at"].isoformat() if doc.get("created_at") else None,
+            }
+        )
+    return assets
+
+
 @router.get("/runs", summary="Get recent AI workflow runs")
 async def get_recent_runs(request: Request, limit: int = 10) -> list:
     user = request.state.user

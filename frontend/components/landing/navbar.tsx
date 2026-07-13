@@ -2,31 +2,15 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
     Hexagon,
-    Home as HomeIcon,
-    BarChart2,
-    GitBranch,
-    Brain,
-    Play,
-    Search,
-    Grid,
-    Cloud,
-    FileText,
-    CreditCard,
-    Shield,
-    RefreshCw,
-    Code,
-    Globe,
-    MessageSquare,
-    Share2,
     Menu,
     X,
-    ArrowRight,
-    Sparkles,
-    ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+
+import { AppEntryCta } from '@/components/auth/AppEntryCta';
+import { loginHref, ROUTES } from '@/lib/routes';
 
 
 const Navbar = () => {
@@ -73,14 +57,14 @@ const Navbar = () => {
         >
             <div className="flex items-center justify-between px-6 md:px-8 w-full">
                 {/* Brand Logo */}
-                <div className="flex items-center gap-3 cursor-pointer group">
+                <Link href={ROUTES.home} className="flex items-center gap-3 cursor-pointer group">
                     <span className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] grid place-items-center shadow-[0_0_20px_rgba(79,141,255,0.3)] transition-transform duration-300 group-hover:scale-105">
                         <Hexagon className="w-4.5 h-4.5 text-white fill-white" />
                     </span>
                     <span className="font-sans text-lg font-bold text-[#F7F8FC] tracking-tight">
                         Planify
                     </span>
-                </div>
+                </Link>
 
                 {/* Desktop Nav Links */}
                 <div className="hidden md:flex items-center space-x-8">
@@ -101,8 +85,8 @@ const Navbar = () => {
                     {status === "loading" ? (
                         <div className="h-9 w-9 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                     ) : session ? (
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
+                        <div className="flex items-center gap-3">
+                            <div className="hidden sm:flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5">
                                 {session.user?.image ? (
                                     <img
                                         src={session.user.image}
@@ -115,21 +99,18 @@ const Navbar = () => {
                                         {session.user?.email?.[0].toUpperCase() || "U"}
                                     </div>
                                 )}
-                                <span className="hidden sm:inline text-sm font-medium text-gray-200">
+                                <span className="text-sm font-medium text-gray-200 max-w-[8rem] truncate">
                                     {session.user?.name || session.user?.email?.split('@')[0]}
                                 </span>
                             </div>
+                            <AppEntryCta
+                                authLabel="Dashboard"
+                                guestLabel="Get Started"
+                                className="bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-[#4F8DFF]/20 hover:shadow-[#4F8DFF]/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+                            />
                             <button
-                                onClick={() => signOut()}
-                                className="
-                                                            rounded-xl
-                                                            border border-white/10
-                                                            px-6 py-3
-                                                            text-white
-                                                            bg-white/5
-                                                            hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400
-                                                            transition cursor-pointer
-                                                            "
+                                onClick={() => signOut({ callbackUrl: ROUTES.home })}
+                                className="hidden sm:inline-flex rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white bg-white/5 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400 transition cursor-pointer"
                             >
                                 Sign out
                             </button>
@@ -138,16 +119,15 @@ const Navbar = () => {
                         <>
                             <Link
                                 className="hidden sm:inline-block font-sans text-sm text-[#F7F8FC] hover:bg-white/5 transition-all duration-200 px-4 py-2 rounded-lg"
-                                href='/login'
+                                href={loginHref()}
                             >
                                 Sign In
                             </Link>
-                            <Link
+                            <AppEntryCta
+                                guestLabel="Get Started"
+                                authLabel="Dashboard"
                                 className="bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-[#4F8DFF]/20 hover:shadow-[#4F8DFF]/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
-                                href="#cta"
-                            >
-                                Get Started
-                            </Link>
+                            />
                         </>
                     )}
 
@@ -184,7 +164,7 @@ const Navbar = () => {
                         {status === "loading" ? (
                             <div className="h-9 w-9 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                         ) : session ? (
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-col gap-3 pt-2">
                                 <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
                                     {session.user?.image ? (
                                         <img
@@ -198,40 +178,41 @@ const Navbar = () => {
                                             {session.user?.email?.[0].toUpperCase() || "U"}
                                         </div>
                                     )}
-                                    <span className="hidden sm:inline text-sm font-medium text-gray-200">
+                                    <span className="text-sm font-medium text-gray-200">
                                         {session.user?.name || session.user?.email?.split('@')[0]}
                                     </span>
                                 </div>
+                                <AppEntryCta
+                                    authLabel="Go to Dashboard"
+                                    guestLabel="Get Started"
+                                    className="bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-5 py-3 rounded-xl font-semibold text-center"
+                                    onClick={() => setMobileOpen(false)}
+                                />
                                 <button
-                                    onClick={() => signOut()}
-                                    className="
-                                                            rounded-xl
-                                                            border border-white/10
-                                                            px-6 py-3
-                                                            text-white
-                                                            bg-white/5
-                                                            hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400
-                                                            transition cursor-pointer
-                                                            "
+                                    onClick={() => {
+                                        setMobileOpen(false);
+                                        signOut({ callbackUrl: ROUTES.home });
+                                    }}
+                                    className="rounded-xl border border-white/10 px-6 py-3 text-white bg-white/5 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400 transition cursor-pointer"
                                 >
                                     Sign out
                                 </button>
                             </div>
                         ) : (
-                            <>
+                            <div className="flex flex-col gap-3 pt-2">
                                 <Link
-                                    className="hidden sm:inline-block font-sans text-sm text-[#F7F8FC] hover:bg-white/5 transition-all duration-200 px-4 py-2 rounded-lg"
-                                    href='/login'
+                                    onClick={() => setMobileOpen(false)}
+                                    className="font-sans text-sm text-[#F7F8FC] hover:bg-white/5 transition-all duration-200 px-4 py-3 rounded-lg text-center border border-white/10"
+                                    href={loginHref()}
                                 >
                                     Sign In
                                 </Link>
-                                <Link
-                                    className="bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-[#4F8DFF]/20 hover:shadow-[#4F8DFF]/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
-                                    href="#cta"
-                                >
-                                    Get Started
-                                </Link>
-                            </>
+                                <AppEntryCta
+                                    guestLabel="Get Started"
+                                    authLabel="Dashboard"
+                                    className="bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-5 py-3 rounded-xl font-semibold text-center"
+                                />
+                            </div>
                         )}
                     </motion.div>
                 )}

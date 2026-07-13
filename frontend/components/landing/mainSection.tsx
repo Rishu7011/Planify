@@ -4,6 +4,8 @@ import {motion} from 'framer-motion'
 import { BarChart2, Brain, Cloud, Code, CreditCard, FileText, GitBranch, Grid, Hexagon, HomeIcon, Play, RefreshCw, Search, Shield, Sparkles } from 'lucide-react';
 import gsap from 'gsap';
 
+import { AppEntryCta } from '@/components/auth/AppEntryCta';
+
 const MainSection = () => {
     const heroRef = useRef<HTMLDivElement>(null);
 
@@ -121,12 +123,11 @@ const MainSection = () => {
                   variants={itemVariants}
                   className="flex flex-col sm:flex-row gap-4 pt-2"
                 >
-                  <a
-                    href="#cta"
+                  <AppEntryCta
+                    guestLabel="Start Building for Free"
+                    authLabel="Go to Dashboard"
                     className="btn-primary font-sans text-sm text-white px-8 py-3.5 rounded-lg font-medium text-center h-12 flex items-center justify-center shadow-lg"
-                  >
-                    Start Building for Free
-                  </a>
+                  />
                   <a
                     href="#demo"
                     className="glass-panel font-sans text-sm text-[#F7F8FC] px-8 py-3.5 rounded-lg font-medium text-center h-12 flex items-center justify-center hover:bg-white/10 transition-colors"
@@ -355,14 +356,13 @@ const MainSection = () => {
                 Join thousands of modern teams accelerating their planning phase from weeks to minutes.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <a
-                  href="#"
+                <AppEntryCta
+                  guestLabel="Start Free Trial"
+                  authLabel="Open Dashboard"
                   className="btn-primary font-sans text-sm text-white px-8 py-4 rounded-xl font-semibold text-center flex items-center justify-center shadow-lg shadow-[#4F8DFF]/20"
-                >
-                  Start Free Trial
-                </a>
+                />
                 <a
-                  href="#"
+                  href="#demo"
                   className="glass-panel bg-white/5 font-sans text-sm text-[#F7F8FC] px-8 py-4 rounded-xl font-semibold text-center flex items-center justify-center hover:bg-white/10 transition-colors"
                 >
                   Book a Demo
