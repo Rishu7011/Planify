@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { ArrowRight, Mail, User } from "lucide-react";
 
 import { AuthShell } from "@/components/auth/AuthShell";
@@ -27,6 +27,10 @@ export default function SignupPage() {
       router.replace(ROUTES.dashboard);
     }
   }, [status, router]);
+
+  const handleGoogleSignIn = () => {
+    signIn("google", { callbackUrl: ROUTES.dashboard });
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -118,7 +122,28 @@ export default function SignupPage() {
           </button>
         </div>
       ) : (
-        <form onSubmit={onSubmit} className="space-y-4">
+        <>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 active:scale-[0.98] rounded-xl py-3 px-4 font-medium transition duration-200 cursor-pointer"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" width="24" height="24">
+              <path
+                fill="oklch(0.75 0.12 190)"
+                d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.34 0-6.05-2.71-6.05-6.05s2.71-6.05 6.05-6.05c1.493 0 2.858.543 3.918 1.437l3.107-3.107C18.89 2.766 15.8 1.5 12.24 1.5 6.27 1.5 1.5 6.27 1.5 12.24s4.77 10.74 10.74 10.74c5.96 0 10.4-4.184 10.4-10.4 0-.712-.064-1.403-.18-2.072H12.24Z"
+              />
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+
+          <div className="relative flex py-5 items-center">
+            <div className="flex-grow border-t border-white/10"></div>
+            <span className="flex-shrink mx-4 text-[#9BA3AF] text-xs uppercase tracking-wider font-semibold">Or</span>
+            <div className="flex-grow border-t border-white/10"></div>
+          </div>
+
+          <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="name"
@@ -189,7 +214,8 @@ export default function SignupPage() {
           <p className="text-[11px] text-center text-[#9BA3AF] pt-1">
             By continuing you agree to receive a one-time setup email.
           </p>
-        </form>
+          </form>
+        </>
       )}
     </AuthShell>
   );
