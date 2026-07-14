@@ -732,6 +732,13 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
+                {loadingData ? (
+                  <div className="space-y-4">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="h-16 bg-white/5 rounded-xl border border-white/5 animate-pulse" />
+                    ))}
+                  </div>
+                ) : runs.length === 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between group">
                       <div className="flex items-center justify-between mb-6">
@@ -793,6 +800,52 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
+                ) : (
+                  <div className="space-y-4">
+                    {runs.slice(0, 3).map((run) => {
+                      const statusColors: Record<string, string> = {
+                        completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                        running: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                        failed: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                        unknown: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+                      };
+                      const colorClass = statusColors[run.status] || statusColors.unknown;
+
+                      return (
+                        <div key={run.run_id} className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-lg bg-[#8E6BFF]/10 flex items-center justify-center">
+                              <span className="material-symbols-outlined text-[#8E6BFF]">cyclone</span>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-bold">{run.project_title}</h4>
+                                <span className={`text-[9px] px-2 py-0.5 rounded-full border uppercase font-bold ${colorClass}`}>
+                                  {run.status}
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#7C869A] mt-0.5">
+                                Agents executed: {run.agents_executed?.length > 0 ? run.agents_executed.join(" → ") : "None yet"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-6 text-xs font-bold text-[#7C869A]">
+                            <div>
+                              <span className="text-[10px] text-[#7C869A] block uppercase font-bold">Duration</span>
+                              <span className="text-[#F7F8FC]">{(run.duration_ms / 1000).toFixed(1)}s</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-[#7C869A] block uppercase font-bold">Triggered</span>
+                              <span className="text-[#F7F8FC]">
+                                {run.created_at ? new Date(run.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Active Projects */}
