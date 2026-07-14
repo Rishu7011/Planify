@@ -185,8 +185,8 @@
     "semantic_hash": ""
   },
   "backend/app/services/chat_service.py": {
-    "mtime": 1784025006.3243206,
-    "ast_hash": "1177cc6eaa0ea7e049a1a064339da29b",
+    "mtime": 1784047109.2545094,
+    "ast_hash": "7bf90bd9f268dfb1f0fcda8dba109922",
     "semantic_hash": ""
   },
   "frontend/app/dashboard/page.tsx": {
@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "frontend/app/projects/[id]/chat/page.tsx": {
-    "mtime": 1784025121.9897819,
-    "ast_hash": "2bd08428d88ddb3b8b17d4b99276447b",
+    "mtime": 1784025155.191164,
+    "ast_hash": "d0e62db3536fccf565b5fde11488a26b",
     "semantic_hash": ""
   },
   "frontend/app/projects/[id]/reports/page.tsx": {
@@ -285,8 +285,8 @@
     "semantic_hash": ""
   },
   "frontend/components/workspace/chat/ChatComposer.tsx": {
-    "mtime": 1784025055.2762308,
-    "ast_hash": "9885cf5b541678b0de51e38c99f3e36e",
+    "mtime": 1784025339.119078,
+    "ast_hash": "136ec41e884b8542dec7057900aaf076",
     "semantic_hash": ""
   },
   "frontend/components/workspace/chat/ChatMarkdown.tsx": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "backend/app/agent/llm.py": {
-    "mtime": 1783963737.2636418,
-    "ast_hash": "b60174d565a05e7d28379c133df622fe",
+    "mtime": 1784046972.8620121,
+    "ast_hash": "d63a5ee0f9d118b69288d532c904a49a",
     "semantic_hash": ""
   },
   "backend/app/agent/main.py": {
@@ -360,18 +360,18 @@
     "semantic_hash": ""
   },
   "backend/app/agent/nodes/project_workflow.py": {
-    "mtime": 1784025021.6362917,
-    "ast_hash": "1bfea827edff07806c5e6aab395fb840",
+    "mtime": 1784047127.7629888,
+    "ast_hash": "cbf47234d748f628a79452131e3f51da",
     "semantic_hash": ""
   },
   "backend/app/agent/nodes/report_generator.py": {
-    "mtime": 1784024528.6090636,
-    "ast_hash": "dbe8bd925465f05bf6acb8e081af66a8",
+    "mtime": 1784047142.3881023,
+    "ast_hash": "4a8817c8bda38e263f470f6902ef0c1c",
     "semantic_hash": ""
   },
   "backend/app/agent/prompts.py": {
-    "mtime": 1784024532.9752438,
-    "ast_hash": "d69346a96b0628b939336971347e8e71",
+    "mtime": 1784047090.416492,
+    "ast_hash": "d93043a2cddda490b5ba31bc58f4b3cf",
     "semantic_hash": ""
   },
   "backend/app/agent/router.py": {
@@ -380,13 +380,13 @@
     "semantic_hash": ""
   },
   "backend/app/agent/schemas.py": {
-    "mtime": 1783971412.605178,
-    "ast_hash": "a8f9803e3010850bcc1a03d71602fa16",
+    "mtime": 1784047017.8581944,
+    "ast_hash": "bf24ac2f9def3da0a3e6f745a959727e",
     "semantic_hash": ""
   },
   "backend/app/agent/state.py": {
-    "mtime": 1783931090.4927678,
-    "ast_hash": "185f943ad63febb2ce5ac08d564a7cee",
+    "mtime": 1784046992.0279264,
+    "ast_hash": "8d211963a5e58db83a6fc600c33043f4",
     "semantic_hash": ""
   },
   "backend/app/agent/test_router.py": {
@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "backend/app/config.py": {
-    "mtime": 1784024977.1750696,
-    "ast_hash": "2a75d45f687fa94a8d1501ca906a06ca",
+    "mtime": 1784046945.1619744,
+    "ast_hash": "5a927d4f8b7cb6a1a5d2d1ea162c407f",
     "semantic_hash": ""
   },
   "backend/app/services/project_context.py": {
@@ -415,18 +415,18 @@
     "semantic_hash": ""
   },
   "backend/app/agent/test_workflow_guards.py": {
-    "mtime": 1784024594.7450914,
-    "ast_hash": "ab0d32b253a140e1b25cf150327e3e63",
+    "mtime": 1784041400.6171753,
+    "ast_hash": "e7b4c41ab5a7df8f971375b00851b109",
     "semantic_hash": ""
   },
   "backend/app/agent/workflow_guards.py": {
-    "mtime": 1784024469.1771786,
-    "ast_hash": "6001eaf29f094df88b92afee5660d7c4",
+    "mtime": 1784041300.416105,
+    "ast_hash": "c3d2fed38092ea35e4bdd8e352a78dcc",
     "semantic_hash": ""
   },
   "backend/app/agent/web_search.py": {
-    "mtime": 1783973725.7379265,
-    "ast_hash": "1a6a4115479e192020caf85285ea9a65",
+    "mtime": 1784041385.8167503,
+    "ast_hash": "1057c5fd60c28d2489f0831b6e2de2ee",
     "semantic_hash": ""
   },
   "frontend/components/auth/AppEntryCta.tsx": {
@@ -557,11 +557,6 @@
   "backend/app/utils/objectid.py": {
     "mtime": 1784024374.5432582,
     "ast_hash": "b6cf2b0984bdaa39202ed4193a345b9c",
-    "semantic_hash": ""
-  },
-  "backend/NextJS Ebook.pdf": {
-    "mtime": 1784022276.0554776,
-    "ast_hash": "419934227efed0dad605c655cde40243",
     "semantic_hash": ""
   },
   "backend/app/routes/files.py": {

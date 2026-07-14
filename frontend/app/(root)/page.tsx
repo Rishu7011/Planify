@@ -3,19 +3,15 @@ import MainSection from "@/components/landing/mainSection";
 import Footer from "@/components/landing/footer";
 
 export default function Home() {
-
   return (
-    <div className="relative min-h-screen bg-[#090B14] text-[#e1e2ec] font-sans selection:bg-[#aec6ff]/20 selection:text-[#aec6ff] overflow-x-hidden">
-      {/* Noise Overlay */}
+    <div className="relative min-h-screen bg-[#111315] text-[#D7DBE2] font-sans overflow-x-hidden">
+      {/* Subtle noise texture */}
       <div className="noise-overlay" />
-      {/* TopNavBar */}
-      <Navbar/>
 
-      {/* {Main Section} */}
-      <MainSection/>
-
-      {/* Footer Section */}
-      <Footer/>
+      <Navbar />
+      <MainSection />
+      <Footer />
     </div>
   );
 }
+
