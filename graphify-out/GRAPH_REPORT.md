@@ -1,16 +1,16 @@
 # Graph Report - Planify  (2026-07-14)
 
 ## Corpus Check
-- 114 files · ~50,905 words
+- 114 files · ~51,011 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 708 nodes · 1068 edges · 65 communities (41 shown, 24 thin omitted)
+- 708 nodes · 1066 edges · 66 communities (42 shown, 24 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 104 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cf625b24`
+- Built from commit: `10d4a78c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -101,7 +101,7 @@
 ## Hyperedges (group relationships)
 - **Next.js Breaking Change Surfaces** — frontend_agents_nextjs_apis, frontend_agents_nextjs_conventions, frontend_agents_nextjs_file_structure, frontend_agents_deprecation_notices [EXTRACTED 1.00]
 
-## Communities (65 total, 24 thin omitted)
+## Communities (66 total, 24 thin omitted)
 
 ### Community 0 - "Frontend Dependencies"
 Cohesion: 0.05

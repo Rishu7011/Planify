@@ -23,91 +23,11 @@
     {
       "label": "page.tsx",
       "file_type": "code",
-      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_app_auth_forgot_password_page",
-      "community": 16,
-      "norm_label": "page.tsx"
-    },
-    {
-      "label": "ForgotPasswordPage()",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
-      "source_location": "L12",
-      "_origin": "ast",
-      "id": "frontend_app_auth_forgot_password_page_forgotpasswordpage",
-      "community": 16,
-      "norm_label": "forgotpasswordpage()"
-    },
-    {
-      "label": "page.tsx",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_app_auth_login_page",
-      "community": 16,
-      "norm_label": "page.tsx"
-    },
-    {
-      "label": "LoginForm()",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L23",
-      "_origin": "ast",
-      "id": "frontend_app_auth_login_page_loginform",
-      "community": 16,
-      "norm_label": "loginform()"
-    },
-    {
-      "label": "LoginPage()",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L236",
-      "_origin": "ast",
-      "id": "frontend_app_auth_login_page_loginpage",
-      "community": 16,
-      "norm_label": "loginpage()"
-    },
-    {
-      "label": "page.tsx",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/set-password/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_app_auth_set_password_page",
-      "community": 16,
-      "norm_label": "page.tsx"
-    },
-    {
-      "label": "SetPasswordForm()",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/set-password/page.tsx",
-      "source_location": "L17",
-      "_origin": "ast",
-      "id": "frontend_app_auth_set_password_page_setpasswordform",
-      "community": 16,
-      "norm_label": "setpasswordform()"
-    },
-    {
-      "label": "SetPasswordPage()",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/set-password/page.tsx",
-      "source_location": "L216",
-      "_origin": "ast",
-      "id": "frontend_app_auth_set_password_page_setpasswordpage",
-      "community": 16,
-      "norm_label": "setpasswordpage()"
-    },
-    {
-      "label": "page.tsx",
-      "file_type": "code",
       "source_file": "frontend/app/(auth)/signup/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_app_auth_signup_page",
-      "community": 16,
+      "community": 57,
       "norm_label": "page.tsx"
     },
     {
@@ -117,8 +37,88 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_app_auth_signup_page_signuppage",
-      "community": 16,
+      "community": 57,
       "norm_label": "signuppage()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 16,
+      "norm_label": "page.tsx",
+      "id": "frontend_app_auth_forgot_password_page"
+    },
+    {
+      "label": "ForgotPasswordPage()",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
+      "source_location": "L12",
+      "_origin": "ast",
+      "community": 16,
+      "norm_label": "forgotpasswordpage()",
+      "id": "frontend_app_auth_forgot_password_page_forgotpasswordpage"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 16,
+      "norm_label": "page.tsx",
+      "id": "frontend_app_auth_login_page"
+    },
+    {
+      "label": "LoginForm()",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L23",
+      "_origin": "ast",
+      "community": 16,
+      "norm_label": "loginform()",
+      "id": "frontend_app_auth_login_page_loginform"
+    },
+    {
+      "label": "LoginPage()",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L236",
+      "_origin": "ast",
+      "community": 16,
+      "norm_label": "loginpage()",
+      "id": "frontend_app_auth_login_page_loginpage"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/set-password/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 16,
+      "norm_label": "page.tsx",
+      "id": "frontend_app_auth_set_password_page"
+    },
+    {
+      "label": "SetPasswordForm()",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/set-password/page.tsx",
+      "source_location": "L17",
+      "_origin": "ast",
+      "community": 16,
+      "norm_label": "setpasswordform()",
+      "id": "frontend_app_auth_set_password_page_setpasswordform"
+    },
+    {
+      "label": "SetPasswordPage()",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/set-password/page.tsx",
+      "source_location": "L216",
+      "_origin": "ast",
+      "community": 16,
+      "norm_label": "setpasswordpage()",
+      "id": "frontend_app_auth_set_password_page_setpasswordpage"
     },
     {
       "label": "page.tsx",
@@ -126,9 +126,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_app_dashboard_page",
       "community": 15,
-      "norm_label": "page.tsx"
+      "norm_label": "page.tsx",
+      "id": "frontend_app_dashboard_page"
     },
     {
       "label": "NavView",
@@ -136,9 +136,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L13",
       "_origin": "ast",
-      "id": "frontend_app_dashboard_page_navview",
       "community": 15,
-      "norm_label": "navview"
+      "norm_label": "navview",
+      "id": "frontend_app_dashboard_page_navview"
     },
     {
       "label": "DashboardPage()",
@@ -146,9 +146,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L15",
       "_origin": "ast",
-      "id": "frontend_app_dashboard_page_dashboardpage",
       "community": 15,
-      "norm_label": "dashboardpage()"
+      "norm_label": "dashboardpage()",
+      "id": "frontend_app_dashboard_page_dashboardpage"
     },
     {
       "label": "page.tsx",
@@ -156,9 +156,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page",
       "community": 42,
-      "norm_label": "page.tsx"
+      "norm_label": "page.tsx",
+      "id": "frontend_app_projects_id_chat_page"
     },
     {
       "label": "Message",
@@ -166,9 +166,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L38",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_message",
       "community": 42,
-      "norm_label": "message"
+      "norm_label": "message",
+      "id": "frontend_app_projects_id_chat_page_message"
     },
     {
       "label": "ChatHistoryResponse",
@@ -176,9 +176,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L57",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_chathistoryresponse",
       "community": 42,
-      "norm_label": "chathistoryresponse"
+      "norm_label": "chathistoryresponse",
+      "id": "frontend_app_projects_id_chat_page_chathistoryresponse"
     },
     {
       "label": "MemoryItem",
@@ -186,9 +186,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L62",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_memoryitem",
       "community": 42,
-      "norm_label": "memoryitem"
+      "norm_label": "memoryitem",
+      "id": "frontend_app_projects_id_chat_page_memoryitem"
     },
     {
       "label": "WorkflowEventType",
@@ -196,9 +196,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L70",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_workfloweventtype",
       "community": 42,
-      "norm_label": "workfloweventtype"
+      "norm_label": "workfloweventtype",
+      "id": "frontend_app_projects_id_chat_page_workfloweventtype"
     },
     {
       "label": "WorkflowEvent",
@@ -206,9 +206,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L85",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_workflowevent",
       "community": 42,
-      "norm_label": "workflowevent"
+      "norm_label": "workflowevent",
+      "id": "frontend_app_projects_id_chat_page_workflowevent"
     },
     {
       "label": "isWorkflowEvent()",
@@ -216,9 +216,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L98",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_isworkflowevent",
       "community": 42,
-      "norm_label": "isworkflowevent()"
+      "norm_label": "isworkflowevent()",
+      "id": "frontend_app_projects_id_chat_page_isworkflowevent"
     },
     {
       "label": "getMemoryTone()",
@@ -226,9 +226,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L108",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_getmemorytone",
       "community": 42,
-      "norm_label": "getmemorytone()"
+      "norm_label": "getmemorytone()",
+      "id": "frontend_app_projects_id_chat_page_getmemorytone"
     },
     {
       "label": "createStreamingMessage()",
@@ -236,9 +236,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L127",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_createstreamingmessage",
       "community": 42,
-      "norm_label": "createstreamingmessage()"
+      "norm_label": "createstreamingmessage()",
+      "id": "frontend_app_projects_id_chat_page_createstreamingmessage"
     },
     {
       "label": "ChatPage()",
@@ -246,9 +246,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L142",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_chat_page_chatpage",
       "community": 42,
-      "norm_label": "chatpage()"
+      "norm_label": "chatpage()",
+      "id": "frontend_app_projects_id_chat_page_chatpage"
     },
     {
       "label": "page.tsx",
@@ -256,9 +256,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_reports_page",
       "community": 40,
-      "norm_label": "page.tsx"
+      "norm_label": "page.tsx",
+      "id": "frontend_app_projects_id_reports_page"
     },
     {
       "label": "Version",
@@ -266,9 +266,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L19",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_reports_page_version",
       "community": 40,
-      "norm_label": "version"
+      "norm_label": "version",
+      "id": "frontend_app_projects_id_reports_page_version"
     },
     {
       "label": "Comment",
@@ -276,9 +276,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L26",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_reports_page_comment",
       "community": 40,
-      "norm_label": "comment"
+      "norm_label": "comment",
+      "id": "frontend_app_projects_id_reports_page_comment"
     },
     {
       "label": "SAMPLE_COMMENTS",
@@ -286,9 +286,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L33",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_reports_page_sample_comments",
       "community": 40,
-      "norm_label": "sample_comments"
+      "norm_label": "sample_comments",
+      "id": "frontend_app_projects_id_reports_page_sample_comments"
     },
     {
       "label": "ReportsPage()",
@@ -296,9 +296,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L38",
       "_origin": "ast",
-      "id": "frontend_app_projects_id_reports_page_reportspage",
       "community": 40,
-      "norm_label": "reportspage()"
+      "norm_label": "reportspage()",
+      "id": "frontend_app_projects_id_reports_page_reportspage"
     },
     {
       "label": "AuthShell.tsx",
@@ -306,9 +306,9 @@
       "source_file": "frontend/components/auth/AuthShell.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_components_auth_authshell",
       "community": 16,
-      "norm_label": "authshell.tsx"
+      "norm_label": "authshell.tsx",
+      "id": "frontend_components_auth_authshell"
     },
     {
       "label": "AuthShell()",
@@ -316,9 +316,9 @@
       "source_file": "frontend/components/auth/AuthShell.tsx",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "frontend_components_auth_authshell_authshell",
       "community": 16,
-      "norm_label": "authshell()"
+      "norm_label": "authshell()",
+      "id": "frontend_components_auth_authshell_authshell"
     },
     {
       "label": "ChangePasswordOtpForm.tsx",
@@ -326,9 +326,9 @@
       "source_file": "frontend/components/auth/ChangePasswordOtpForm.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_components_auth_changepasswordotpform",
       "community": 16,
-      "norm_label": "changepasswordotpform.tsx"
+      "norm_label": "changepasswordotpform.tsx",
+      "id": "frontend_components_auth_changepasswordotpform"
     },
     {
       "label": "ChangePasswordOtpFormProps",
@@ -336,9 +336,9 @@
       "source_file": "frontend/components/auth/ChangePasswordOtpForm.tsx",
       "source_location": "L6",
       "_origin": "ast",
-      "id": "frontend_components_auth_changepasswordotpform_changepasswordotpformprops",
       "community": 16,
-      "norm_label": "changepasswordotpformprops"
+      "norm_label": "changepasswordotpformprops",
+      "id": "frontend_components_auth_changepasswordotpform_changepasswordotpformprops"
     },
     {
       "label": "ChangePasswordOtpForm()",
@@ -346,9 +346,9 @@
       "source_file": "frontend/components/auth/ChangePasswordOtpForm.tsx",
       "source_location": "L22",
       "_origin": "ast",
-      "id": "frontend_components_auth_changepasswordotpform_changepasswordotpform",
       "community": 16,
-      "norm_label": "changepasswordotpform()"
+      "norm_label": "changepasswordotpform()",
+      "id": "frontend_components_auth_changepasswordotpform_changepasswordotpform"
     },
     {
       "label": "AssetsView.tsx",
@@ -356,9 +356,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview",
       "community": 15,
-      "norm_label": "assetsview.tsx"
+      "norm_label": "assetsview.tsx",
+      "id": "frontend_components_dashboard_assetsview"
     },
     {
       "label": "DashboardAsset",
@@ -366,9 +366,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L8",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_dashboardasset",
       "community": 15,
-      "norm_label": "dashboardasset"
+      "norm_label": "dashboardasset",
+      "id": "frontend_components_dashboard_assetsview_dashboardasset"
     },
     {
       "label": "AssetsViewProps",
@@ -376,9 +376,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L20",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_assetsviewprops",
       "community": 15,
-      "norm_label": "assetsviewprops"
+      "norm_label": "assetsviewprops",
+      "id": "frontend_components_dashboard_assetsview_assetsviewprops"
     },
     {
       "label": "TypeFilter",
@@ -386,9 +386,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L27",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_typefilter",
       "community": 15,
-      "norm_label": "typefilter"
+      "norm_label": "typefilter",
+      "id": "frontend_components_dashboard_assetsview_typefilter"
     },
     {
       "label": "LayoutMode",
@@ -396,9 +396,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L28",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_layoutmode",
       "community": 15,
-      "norm_label": "layoutmode"
+      "norm_label": "layoutmode",
+      "id": "frontend_components_dashboard_assetsview_layoutmode"
     },
     {
       "label": "timeAgo()",
@@ -406,9 +406,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L30",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_timeago",
       "community": 15,
-      "norm_label": "timeago()"
+      "norm_label": "timeago()",
+      "id": "frontend_components_dashboard_assetsview_timeago"
     },
     {
       "label": "normalizeType()",
@@ -416,9 +416,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L50",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_normalizetype",
       "community": 15,
-      "norm_label": "normalizetype()"
+      "norm_label": "normalizetype()",
+      "id": "frontend_components_dashboard_assetsview_normalizetype"
     },
     {
       "label": "assetIcon()",
@@ -426,9 +426,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L54",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_asseticon",
       "community": 15,
-      "norm_label": "asseticon()"
+      "norm_label": "asseticon()",
+      "id": "frontend_components_dashboard_assetsview_asseticon"
     },
     {
       "label": "assetAccent()",
@@ -436,9 +436,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L68",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_assetaccent",
       "community": 15,
-      "norm_label": "assetaccent()"
+      "norm_label": "assetaccent()",
+      "id": "frontend_components_dashboard_assetsview_assetaccent"
     },
     {
       "label": "prettyLabel()",
@@ -446,9 +446,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L81",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_prettylabel",
       "community": 15,
-      "norm_label": "prettylabel()"
+      "norm_label": "prettylabel()",
+      "id": "frontend_components_dashboard_assetsview_prettylabel"
     },
     {
       "label": "AssetsView()",
@@ -456,9 +456,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L90",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_assetsview_assetsview",
       "community": 15,
-      "norm_label": "assetsview()"
+      "norm_label": "assetsview()",
+      "id": "frontend_components_dashboard_assetsview_assetsview"
     },
     {
       "label": "ProjectsView.tsx",
@@ -466,9 +466,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview",
       "community": 15,
-      "norm_label": "projectsview.tsx"
+      "norm_label": "projectsview.tsx",
+      "id": "frontend_components_dashboard_projectsview"
     },
     {
       "label": "DashboardProject",
@@ -476,9 +476,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L6",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_dashboardproject",
       "community": 15,
-      "norm_label": "dashboardproject"
+      "norm_label": "dashboardproject",
+      "id": "frontend_components_dashboard_projectsview_dashboardproject"
     },
     {
       "label": "ProjectsViewProps",
@@ -486,9 +486,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L15",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_projectsviewprops",
       "community": 15,
-      "norm_label": "projectsviewprops"
+      "norm_label": "projectsviewprops",
+      "id": "frontend_components_dashboard_projectsview_projectsviewprops"
     },
     {
       "label": "StatusFilter",
@@ -496,9 +496,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L25",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_statusfilter",
       "community": 15,
-      "norm_label": "statusfilter"
+      "norm_label": "statusfilter",
+      "id": "frontend_components_dashboard_projectsview_statusfilter"
     },
     {
       "label": "SortKey",
@@ -506,9 +506,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L26",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_sortkey",
       "community": 15,
-      "norm_label": "sortkey"
+      "norm_label": "sortkey",
+      "id": "frontend_components_dashboard_projectsview_sortkey"
     },
     {
       "label": "LayoutMode",
@@ -516,9 +516,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L27",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_layoutmode",
       "community": 15,
-      "norm_label": "layoutmode"
+      "norm_label": "layoutmode",
+      "id": "frontend_components_dashboard_projectsview_layoutmode"
     },
     {
       "label": "timeAgo()",
@@ -526,9 +526,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L29",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_timeago",
       "community": 15,
-      "norm_label": "timeago()"
+      "norm_label": "timeago()",
+      "id": "frontend_components_dashboard_projectsview_timeago"
     },
     {
       "label": "statusMeta()",
@@ -536,9 +536,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L50",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_statusmeta",
       "community": 15,
-      "norm_label": "statusmeta()"
+      "norm_label": "statusmeta()",
+      "id": "frontend_components_dashboard_projectsview_statusmeta"
     },
     {
       "label": "matchesStatus()",
@@ -546,9 +546,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L73",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_matchesstatus",
       "community": 15,
-      "norm_label": "matchesstatus()"
+      "norm_label": "matchesstatus()",
+      "id": "frontend_components_dashboard_projectsview_matchesstatus"
     },
     {
       "label": "ProjectsView()",
@@ -556,9 +556,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L82",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_projectsview_projectsview",
       "community": 15,
-      "norm_label": "projectsview()"
+      "norm_label": "projectsview()",
+      "id": "frontend_components_dashboard_projectsview_projectsview"
     },
     {
       "label": "SettingsView.tsx",
@@ -566,9 +566,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview",
       "community": 16,
-      "norm_label": "settingsview.tsx"
+      "norm_label": "settingsview.tsx",
+      "id": "frontend_components_dashboard_settingsview"
     },
     {
       "label": "WorkspaceProfile",
@@ -576,9 +576,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L10",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_workspaceprofile",
       "community": 16,
-      "norm_label": "workspaceprofile"
+      "norm_label": "workspaceprofile",
+      "id": "frontend_components_dashboard_settingsview_workspaceprofile"
     },
     {
       "label": "MeResponse",
@@ -586,9 +586,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L18",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_meresponse",
       "community": 16,
-      "norm_label": "meresponse"
+      "norm_label": "meresponse",
+      "id": "frontend_components_dashboard_settingsview_meresponse"
     },
     {
       "label": "SettingsViewProps",
@@ -596,9 +596,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L27",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_settingsviewprops",
       "community": 16,
-      "norm_label": "settingsviewprops"
+      "norm_label": "settingsviewprops",
+      "id": "frontend_components_dashboard_settingsview_settingsviewprops"
     },
     {
       "label": "Prefs",
@@ -606,9 +606,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L37",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_prefs",
       "community": 16,
-      "norm_label": "prefs"
+      "norm_label": "prefs",
+      "id": "frontend_components_dashboard_settingsview_prefs"
     },
     {
       "label": "DEFAULT_PREFS",
@@ -616,9 +616,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L46",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_default_prefs",
       "community": 16,
-      "norm_label": "default_prefs"
+      "norm_label": "default_prefs",
+      "id": "frontend_components_dashboard_settingsview_default_prefs"
     },
     {
       "label": "loadPrefs()",
@@ -626,9 +626,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L53",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_loadprefs",
       "community": 16,
-      "norm_label": "loadprefs()"
+      "norm_label": "loadprefs()",
+      "id": "frontend_components_dashboard_settingsview_loadprefs"
     },
     {
       "label": "savePrefs()",
@@ -636,9 +636,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L64",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_saveprefs",
       "community": 16,
-      "norm_label": "saveprefs()"
+      "norm_label": "saveprefs()",
+      "id": "frontend_components_dashboard_settingsview_saveprefs"
     },
     {
       "label": "Toggle()",
@@ -646,9 +646,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L68",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_toggle",
       "community": 16,
-      "norm_label": "toggle()"
+      "norm_label": "toggle()",
+      "id": "frontend_components_dashboard_settingsview_toggle"
     },
     {
       "label": "SettingsView()",
@@ -656,9 +656,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L97",
       "_origin": "ast",
-      "id": "frontend_components_dashboard_settingsview_settingsview",
       "community": 16,
-      "norm_label": "settingsview()"
+      "norm_label": "settingsview()",
+      "id": "frontend_components_dashboard_settingsview_settingsview"
     },
     {
       "label": "page.tsx",
@@ -7124,144 +7124,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
-      "source_location": "L12",
-      "weight": 1.0,
-      "source": "frontend_app_auth_forgot_password_page",
-      "target": "frontend_app_auth_forgot_password_page_forgotpasswordpage",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "frontend_app_auth_forgot_password_page",
-      "target": "frontend_components_auth_authshell",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "frontend_app_auth_forgot_password_page",
-      "target": "frontend_components_auth_authshell_authshell",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "frontend_app_auth_forgot_password_page",
-      "target": "frontend_components_auth_changepasswordotpform",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "frontend_app_auth_forgot_password_page",
-      "target": "frontend_components_auth_changepasswordotpform_changepasswordotpform",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L23",
-      "weight": 1.0,
-      "source": "frontend_app_auth_login_page",
-      "target": "frontend_app_auth_login_page_loginform",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L236",
-      "weight": 1.0,
-      "source": "frontend_app_auth_login_page",
-      "target": "frontend_app_auth_login_page_loginpage",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "frontend_app_auth_login_page",
-      "target": "frontend_components_auth_authshell",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "frontend_app_auth_login_page",
-      "target": "frontend_components_auth_authshell_authshell",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/set-password/page.tsx",
-      "source_location": "L17",
-      "weight": 1.0,
-      "source": "frontend_app_auth_set_password_page",
-      "target": "frontend_app_auth_set_password_page_setpasswordform",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/set-password/page.tsx",
-      "source_location": "L216",
-      "weight": 1.0,
-      "source": "frontend_app_auth_set_password_page",
-      "target": "frontend_app_auth_set_password_page_setpasswordpage",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/set-password/page.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "frontend_app_auth_set_password_page",
-      "target": "frontend_components_auth_authshell",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/set-password/page.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "frontend_app_auth_set_password_page",
-      "target": "frontend_components_auth_authshell_authshell",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "frontend/app/(auth)/signup/page.tsx",
       "source_location": "L15",
       "weight": 1.0,
@@ -7270,26 +7132,142 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_forgot_password_page",
+      "target": "frontend_app_auth_forgot_password_page_forgotpasswordpage"
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/signup/page.tsx",
-      "source_location": "L9",
+      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
+      "source_location": "L8",
       "weight": 1.0,
-      "source": "frontend_app_auth_signup_page",
-      "target": "frontend_components_auth_authshell",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_forgot_password_page",
+      "target": "frontend_components_auth_authshell"
     },
     {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "frontend/app/(auth)/signup/page.tsx",
+      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_forgot_password_page",
+      "target": "frontend_components_auth_authshell_authshell"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
       "source_location": "L9",
       "weight": 1.0,
-      "source": "frontend_app_auth_signup_page",
-      "target": "frontend_components_auth_authshell_authshell",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_forgot_password_page",
+      "target": "frontend_components_auth_changepasswordotpform"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/forgot-password/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_forgot_password_page",
+      "target": "frontend_components_auth_changepasswordotpform_changepasswordotpform"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_login_page",
+      "target": "frontend_app_auth_login_page_loginform"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L236",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_login_page",
+      "target": "frontend_app_auth_login_page_loginpage"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_login_page",
+      "target": "frontend_components_auth_authshell"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_login_page",
+      "target": "frontend_components_auth_authshell_authshell"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/set-password/page.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_set_password_page",
+      "target": "frontend_app_auth_set_password_page_setpasswordform"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/set-password/page.tsx",
+      "source_location": "L216",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_set_password_page",
+      "target": "frontend_app_auth_set_password_page_setpasswordpage"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/set-password/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_set_password_page",
+      "target": "frontend_components_auth_authshell"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/(auth)/set-password/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_app_auth_set_password_page",
+      "target": "frontend_components_auth_authshell_authshell"
     },
     {
       "relation": "contains",
@@ -7297,9 +7275,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_app_dashboard_page_dashboardpage",
-      "confidence_score": 1.0
+      "target": "frontend_app_dashboard_page_dashboardpage"
     },
     {
       "relation": "contains",
@@ -7307,9 +7285,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_app_dashboard_page_navview",
-      "confidence_score": 1.0
+      "target": "frontend_app_dashboard_page_navview"
     },
     {
       "relation": "imports_from",
@@ -7318,9 +7296,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_components_dashboard_assetsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview"
     },
     {
       "relation": "imports",
@@ -7329,9 +7307,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_components_dashboard_assetsview_assetsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_assetsview"
     },
     {
       "relation": "imports",
@@ -7340,9 +7318,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_components_dashboard_assetsview_dashboardasset",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_dashboardasset"
     },
     {
       "relation": "imports_from",
@@ -7351,9 +7329,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_components_dashboard_projectsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview"
     },
     {
       "relation": "imports",
@@ -7362,9 +7340,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_components_dashboard_projectsview_projectsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_projectsview"
     },
     {
       "relation": "imports_from",
@@ -7373,9 +7351,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_components_dashboard_settingsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview"
     },
     {
       "relation": "imports",
@@ -7384,9 +7362,9 @@
       "source_file": "frontend/app/dashboard/page.tsx",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
-      "target": "frontend_components_dashboard_settingsview_settingsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_settingsview"
     },
     {
       "relation": "contains",
@@ -7394,9 +7372,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L57",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_chathistoryresponse",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_chathistoryresponse"
     },
     {
       "relation": "contains",
@@ -7404,9 +7382,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L142",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_chatpage",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_chatpage"
     },
     {
       "relation": "contains",
@@ -7414,9 +7392,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L127",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_createstreamingmessage",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_createstreamingmessage"
     },
     {
       "relation": "contains",
@@ -7424,9 +7402,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L108",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_getmemorytone",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_getmemorytone"
     },
     {
       "relation": "contains",
@@ -7434,9 +7412,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L98",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_isworkflowevent",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_isworkflowevent"
     },
     {
       "relation": "contains",
@@ -7444,9 +7422,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L62",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_memoryitem",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_memoryitem"
     },
     {
       "relation": "contains",
@@ -7454,9 +7432,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_message",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_message"
     },
     {
       "relation": "contains",
@@ -7464,9 +7442,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_workflowevent",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_workflowevent"
     },
     {
       "relation": "contains",
@@ -7474,9 +7452,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L70",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_workfloweventtype",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_workfloweventtype"
     },
     {
       "relation": "calls",
@@ -7485,9 +7463,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L647",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page_chatpage",
-      "target": "frontend_app_projects_id_chat_page_isworkflowevent",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_isworkflowevent"
     },
     {
       "relation": "calls",
@@ -7496,9 +7474,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L1298",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page_chatpage",
-      "target": "frontend_app_projects_id_chat_page_getmemorytone",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_getmemorytone"
     },
     {
       "relation": "calls",
@@ -7507,9 +7485,9 @@
       "source_file": "frontend/app/projects/[id]/chat/page.tsx",
       "source_location": "L286",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_chat_page_chatpage",
-      "target": "frontend_app_projects_id_chat_page_createstreamingmessage",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_chat_page_createstreamingmessage"
     },
     {
       "relation": "contains",
@@ -7517,9 +7495,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_reports_page",
-      "target": "frontend_app_projects_id_reports_page_comment",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_reports_page_comment"
     },
     {
       "relation": "contains",
@@ -7527,9 +7505,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_reports_page",
-      "target": "frontend_app_projects_id_reports_page_reportspage",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_reports_page_reportspage"
     },
     {
       "relation": "contains",
@@ -7537,9 +7515,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L33",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_reports_page",
-      "target": "frontend_app_projects_id_reports_page_sample_comments",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_reports_page_sample_comments"
     },
     {
       "relation": "contains",
@@ -7547,9 +7525,9 @@
       "source_file": "frontend/app/projects/[id]/reports/page.tsx",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_projects_id_reports_page",
-      "target": "frontend_app_projects_id_reports_page_version",
-      "confidence_score": 1.0
+      "target": "frontend_app_projects_id_reports_page_version"
     },
     {
       "relation": "contains",
@@ -7557,9 +7535,9 @@
       "source_file": "frontend/components/auth/AuthShell.tsx",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_auth_authshell",
-      "target": "frontend_components_auth_authshell_authshell",
-      "confidence_score": 1.0
+      "target": "frontend_components_auth_authshell_authshell"
     },
     {
       "relation": "contains",
@@ -7567,9 +7545,9 @@
       "source_file": "frontend/components/auth/ChangePasswordOtpForm.tsx",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_auth_changepasswordotpform",
-      "target": "frontend_components_auth_changepasswordotpform_changepasswordotpform",
-      "confidence_score": 1.0
+      "target": "frontend_components_auth_changepasswordotpform_changepasswordotpform"
     },
     {
       "relation": "contains",
@@ -7577,9 +7555,9 @@
       "source_file": "frontend/components/auth/ChangePasswordOtpForm.tsx",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_auth_changepasswordotpform",
-      "target": "frontend_components_auth_changepasswordotpform_changepasswordotpformprops",
-      "confidence_score": 1.0
+      "target": "frontend_components_auth_changepasswordotpform_changepasswordotpformprops"
     },
     {
       "relation": "imports_from",
@@ -7588,9 +7566,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_auth_changepasswordotpform",
-      "confidence_score": 1.0
+      "target": "frontend_components_auth_changepasswordotpform"
     },
     {
       "relation": "imports",
@@ -7599,9 +7577,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_auth_changepasswordotpform_changepasswordotpform",
-      "confidence_score": 1.0
+      "target": "frontend_components_auth_changepasswordotpform_changepasswordotpform"
     },
     {
       "relation": "contains",
@@ -7609,9 +7587,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_assetaccent",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_assetaccent"
     },
     {
       "relation": "contains",
@@ -7619,9 +7597,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L54",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_asseticon",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_asseticon"
     },
     {
       "relation": "contains",
@@ -7629,9 +7607,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_assetsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_assetsview"
     },
     {
       "relation": "contains",
@@ -7639,9 +7617,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_assetsviewprops",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_assetsviewprops"
     },
     {
       "relation": "contains",
@@ -7649,9 +7627,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_dashboardasset",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_dashboardasset"
     },
     {
       "relation": "contains",
@@ -7659,9 +7637,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L28",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_layoutmode",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_layoutmode"
     },
     {
       "relation": "contains",
@@ -7669,9 +7647,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_normalizetype",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_normalizetype"
     },
     {
       "relation": "contains",
@@ -7679,9 +7657,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L81",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_prettylabel",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_prettylabel"
     },
     {
       "relation": "contains",
@@ -7689,9 +7667,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L30",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_timeago",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_timeago"
     },
     {
       "relation": "contains",
@@ -7699,9 +7677,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview",
-      "target": "frontend_components_dashboard_assetsview_typefilter",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_typefilter"
     },
     {
       "relation": "calls",
@@ -7710,9 +7688,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L342",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview_assetsview",
-      "target": "frontend_components_dashboard_assetsview_timeago",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_timeago"
     },
     {
       "relation": "calls",
@@ -7721,9 +7699,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L69",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview_assetaccent",
-      "target": "frontend_components_dashboard_assetsview_normalizetype",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_normalizetype"
     },
     {
       "relation": "calls",
@@ -7732,9 +7710,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L55",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview_asseticon",
-      "target": "frontend_components_dashboard_assetsview_normalizetype",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_normalizetype"
     },
     {
       "relation": "calls",
@@ -7743,9 +7721,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview_assetsview",
-      "target": "frontend_components_dashboard_assetsview_normalizetype",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_normalizetype"
     },
     {
       "relation": "calls",
@@ -7754,9 +7732,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview_prettylabel",
-      "target": "frontend_components_dashboard_assetsview_normalizetype",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_normalizetype"
     },
     {
       "relation": "calls",
@@ -7765,9 +7743,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L332",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview_assetsview",
-      "target": "frontend_components_dashboard_assetsview_asseticon",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_asseticon"
     },
     {
       "relation": "calls",
@@ -7776,9 +7754,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L315",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview_assetsview",
-      "target": "frontend_components_dashboard_assetsview_assetaccent",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_assetaccent"
     },
     {
       "relation": "calls",
@@ -7787,9 +7765,9 @@
       "source_file": "frontend/components/dashboard/AssetsView.tsx",
       "source_location": "L227",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_assetsview_assetsview",
-      "target": "frontend_components_dashboard_assetsview_prettylabel",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_assetsview_prettylabel"
     },
     {
       "relation": "contains",
@@ -7797,9 +7775,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_dashboardproject",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_dashboardproject"
     },
     {
       "relation": "contains",
@@ -7807,9 +7785,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_layoutmode",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_layoutmode"
     },
     {
       "relation": "contains",
@@ -7817,9 +7795,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L73",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_matchesstatus",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_matchesstatus"
     },
     {
       "relation": "contains",
@@ -7827,9 +7805,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_projectsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_projectsview"
     },
     {
       "relation": "contains",
@@ -7837,9 +7815,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_projectsviewprops",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_projectsviewprops"
     },
     {
       "relation": "contains",
@@ -7847,9 +7825,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_sortkey",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_sortkey"
     },
     {
       "relation": "contains",
@@ -7857,9 +7835,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_statusfilter",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_statusfilter"
     },
     {
       "relation": "contains",
@@ -7867,9 +7845,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_statusmeta",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_statusmeta"
     },
     {
       "relation": "contains",
@@ -7877,9 +7855,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview",
-      "target": "frontend_components_dashboard_projectsview_timeago",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_timeago"
     },
     {
       "relation": "calls",
@@ -7888,9 +7866,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L364",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview_projectsview",
-      "target": "frontend_components_dashboard_projectsview_timeago",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_timeago"
     },
     {
       "relation": "calls",
@@ -7899,9 +7877,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L344",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview_projectsview",
-      "target": "frontend_components_dashboard_projectsview_statusmeta",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_statusmeta"
     },
     {
       "relation": "calls",
@@ -7910,9 +7888,9 @@
       "source_file": "frontend/components/dashboard/ProjectsView.tsx",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_projectsview_projectsview",
-      "target": "frontend_components_dashboard_projectsview_matchesstatus",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_projectsview_matchesstatus"
     },
     {
       "relation": "contains",
@@ -7920,9 +7898,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L46",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_default_prefs",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_default_prefs"
     },
     {
       "relation": "contains",
@@ -7930,9 +7908,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_loadprefs",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_loadprefs"
     },
     {
       "relation": "contains",
@@ -7940,9 +7918,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_meresponse",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_meresponse"
     },
     {
       "relation": "contains",
@@ -7950,9 +7928,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_prefs",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_prefs"
     },
     {
       "relation": "contains",
@@ -7960,9 +7938,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L64",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_saveprefs",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_saveprefs"
     },
     {
       "relation": "contains",
@@ -7970,9 +7948,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L97",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_settingsview",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_settingsview"
     },
     {
       "relation": "contains",
@@ -7980,9 +7958,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_settingsviewprops",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_settingsviewprops"
     },
     {
       "relation": "contains",
@@ -7990,9 +7968,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_toggle",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_toggle"
     },
     {
       "relation": "contains",
@@ -8000,9 +7978,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview",
-      "target": "frontend_components_dashboard_settingsview_workspaceprofile",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_workspaceprofile"
     },
     {
       "relation": "calls",
@@ -8011,9 +7989,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L116",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview_settingsview",
-      "target": "frontend_components_dashboard_settingsview_loadprefs",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_loadprefs"
     },
     {
       "relation": "calls",
@@ -8022,9 +8000,9 @@
       "source_file": "frontend/components/dashboard/SettingsView.tsx",
       "source_location": "L155",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_components_dashboard_settingsview_settingsview",
-      "target": "frontend_components_dashboard_settingsview_saveprefs",
-      "confidence_score": 1.0
+      "target": "frontend_components_dashboard_settingsview_saveprefs"
     },
     {
       "relation": "contains",
@@ -18350,5 +18328,5 @@
       "source_file": "frontend/AGENTS.md"
     }
   ],
-  "built_at_commit": "cf625b24726396546cad62669d8db5210fd9ce72"
+  "built_at_commit": "10d4a78c7079b85a0692e121f210e940a0b7ef37"
 }

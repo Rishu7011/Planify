@@ -788,9 +788,9 @@ export default function ChatPage() {
   const showThinking = loading && !activeAgent && !streaming;
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#090B14] text-[#F7F8FC]">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#111315] text-[#F7F8FC]">
       {/* Top Nav */}
-      <header className="z-40 flex h-14 sm:h-16 shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#090B14]/80 px-3 backdrop-blur-md sm:px-4 lg:px-6 safe-top">
+      <header className="z-40 flex h-14 sm:h-16 shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#191D20]/80 px-3 backdrop-blur-md sm:px-4 lg:px-6 safe-top">
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
           <button
             aria-label="Toggle Sidebar"

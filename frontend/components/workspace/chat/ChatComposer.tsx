@@ -118,7 +118,7 @@ export function ChatComposer({
               key={a.localId}
               className="group flex max-w-full items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.04] px-2.5 py-1.5 text-xs text-[#B4BCCB]"
             >
-              <span className="material-symbols-outlined text-base text-[#AEC6FF]">
+              <span className="material-symbols-outlined text-base text-[oklch(0.75_0.12_190)]">
                 draft
               </span>
               <span className="truncate font-medium text-[#F7F8FC]">{a.file.name}</span>
@@ -137,7 +137,7 @@ export function ChatComposer({
             </div>
           ))}
           {uploading && (
-            <span className="flex items-center gap-1.5 text-[11px] text-[#AEC6FF]">
+            <span className="flex items-center gap-1.5 text-[11px] text-[oklch(0.75_0.12_190)]">
               <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
               Uploading…
             </span>
@@ -146,7 +146,7 @@ export function ChatComposer({
       )}
 
       <div
-        className={`${GLASS_PANEL} flex items-end gap-1 rounded-2xl p-2 shadow-2xl shadow-black/20 ring-1 ring-white/[0.04] focus-within:border-[#AEC6FF]/25 focus-within:ring-[#AEC6FF]/20 ${TRANSITION}`}
+        className={`${GLASS_PANEL} flex items-end gap-1 rounded-2xl p-2 shadow-2xl shadow-black/20 ring-1 ring-white/[0.04] focus-within:border-[oklch(0.75_0.12_190)]/25 focus-within:ring-[oklch(0.75_0.12_190)]/20 ${TRANSITION}`}
       >
         <input
           ref={fileInputRef}
@@ -159,7 +159,7 @@ export function ChatComposer({
 
         <button
           type="button"
-          className="mb-0.5 shrink-0 rounded-xl p-2.5 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/40 disabled:opacity-40"
+          className="mb-0.5 shrink-0 rounded-xl p-2.5 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.75_0.12_190)]/40 disabled:opacity-40"
           aria-label="Attach file"
           disabled={!canAttach}
           title={
@@ -194,7 +194,7 @@ export function ChatComposer({
         <div className="mb-0.5 flex shrink-0 items-center gap-0.5 pr-1">
           <button
             type="button"
-            className="hidden rounded-xl p-2 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/40 sm:block"
+            className="hidden rounded-xl p-2 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.75_0.12_190)]/40 sm:block"
             aria-label="Voice input (coming soon)"
             disabled
             title="Voice input coming soon"
@@ -215,11 +215,11 @@ export function ChatComposer({
             }
             className={`flex h-10 w-10 items-center justify-center rounded-xl md:h-11 md:w-11 ${TRANSITION} ${
               showStop && !canSend
-                ? "bg-[#151A2B] text-[#F7F8FC] ring-1 ring-white/10 hover:bg-[#1B2136] active:scale-[0.97]"
+                ? "bg-[#191D20] text-[#F7F8FC] ring-1 ring-white/10 hover:bg-[#191D20]/90 active:scale-[0.97]"
                 : canSend
-                ? "bg-[#AEC6FF] text-[#090B14] shadow-lg shadow-[#AEC6FF]/25 hover:scale-[1.03] active:scale-[0.97]"
+                ? "bg-[oklch(0.75_0.12_190)] text-[#0d1210] shadow-lg shadow-[oklch(0.75_0.12_190)]/25 hover:scale-[1.03] active:scale-[0.97]"
                 : "bg-white/[0.06] text-[#7C869A]"
-            } focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/50 disabled:pointer-events-none`}
+            } focus:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.75_0.12_190)]/50 disabled:pointer-events-none`}
           >
             {showStop && !canSend ? (
               <span className="material-symbols-outlined text-xl">stop_circle</span>

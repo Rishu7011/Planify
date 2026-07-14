@@ -92,7 +92,7 @@ export function ChatMessage({
         className={`flex justify-end ${bubbleWidth} ml-auto`}
       >
         <div
-          className="rounded-2xl rounded-tr-md border border-[#AEC6FF]/25 bg-[#AEC6FF]/12 px-4 py-3 shadow-md shadow-[#AEC6FF]/5 selection:bg-[#AEC6FF]/30 md:px-5 md:py-3.5"
+          className="rounded-2xl rounded-tr-md border border-[oklch(0.75_0.12_190)]/25 bg-[oklch(0.75_0.12_190)]/12 px-4 py-3 shadow-md shadow-[oklch(0.75_0.12_190)]/5 selection:bg-[oklch(0.75_0.12_190)]/30 md:px-5 md:py-3.5"
           role="article"
           aria-label="Your message"
         >
@@ -103,7 +103,7 @@ export function ChatMessage({
                   key={a.file_id}
                   type="button"
                   onClick={() => downloadAttachment(a.file_id, a.filename)}
-                  className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-[#AEC6FF]/20 bg-[#090B14]/40 px-2 py-1 text-[11px] text-[#AEC6FF] transition-colors hover:border-[#AEC6FF]/40 hover:bg-[#090B14]/60"
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-[oklch(0.75_0.12_190)]/20 bg-[#191D20]/40 px-2 py-1 text-[11px] text-[oklch(0.75_0.12_190)] transition-colors hover:border-[oklch(0.75_0.12_190)]/40 hover:bg-[#191D20]/60"
                   title={`Download ${a.filename}`}
                 >
                   <span className="material-symbols-outlined text-sm">attach_file</span>
@@ -134,11 +134,11 @@ export function ChatMessage({
       className={`flex items-start gap-3 ${bubbleWidth}`}
     >
       <div
-        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-[#151A2B] shadow-inner"
+        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-[#191D20] shadow-inner"
         aria-hidden
       >
         <span
-          className={`material-symbols-outlined text-lg ${agentMeta?.iconColor || (message.message_type === "discovery" ? "text-cyan-400" : "text-[#AEC6FF]")}`}
+          className={`material-symbols-outlined text-lg ${agentMeta?.iconColor || (message.message_type === "discovery" ? "text-cyan-400" : "text-[oklch(0.75_0.12_190)]")}`}
           style={{ fontVariationSettings: "'FILL' 1" }}
         >
           {agentMeta?.icon || (message.message_type === "discovery" ? "edit_note" : "smart_toy")}
@@ -146,7 +146,7 @@ export function ChatMessage({
       </div>
 
       <div
-        className="min-w-0 flex-1 overflow-hidden rounded-2xl rounded-tl-md border border-white/[0.08] bg-[#151A2B] px-4 py-3 shadow-sm transition-colors hover:bg-[#1B2136]/80 md:px-5 md:py-4"
+        className="min-w-0 flex-1 overflow-hidden rounded-2xl rounded-tl-md border border-white/[0.08] bg-[#191D20] px-4 py-3 shadow-sm transition-colors hover:bg-[#191D20]/80 md:px-5 md:py-4"
         role="article"
         aria-label="Assistant message"
       >
@@ -169,7 +169,7 @@ export function ChatMessage({
         <ChatMarkdown content={content} />
         {streaming && (
           <span
-            className="ml-0.5 inline-block h-[1.1em] w-0.5 animate-pulse bg-[#AEC6FF] align-text-bottom"
+            className="ml-0.5 inline-block h-[1.1em] w-0.5 animate-pulse bg-[oklch(0.75_0.12_190)] align-text-bottom"
             aria-hidden
           />
         )}
@@ -180,15 +180,15 @@ export function ChatMessage({
               <Link
                 key={r}
                 href={`/projects/${projectId}/reports`}
-                className="group flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5 transition-all hover:border-[#AEC6FF]/40 hover:bg-white/[0.06]"
+                className="group flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5 transition-all hover:border-[oklch(0.75_0.12_190)]/40 hover:bg-white/[0.06]"
               >
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-base text-emerald-400">
                     task_alt
                   </span>
-                  <span className="text-xs font-medium text-[#F7F8FC]">{r.toUpperCase()}</span>
+                  <span className="text-xs font-semibold text-[#F7F8FC]">{r.toUpperCase()}</span>
                 </div>
-                <span className="material-symbols-outlined text-sm text-[#7C869A] transition-colors group-hover:text-[#AEC6FF]">
+                <span className="material-symbols-outlined text-sm text-[#7C869A] transition-colors group-hover:text-[oklch(0.75_0.12_190)]">
                   open_in_new
                 </span>
               </Link>

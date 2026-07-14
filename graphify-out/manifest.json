@@ -460,8 +460,8 @@
     "semantic_hash": ""
   },
   "frontend/app/(auth)/signup/page.tsx": {
-    "mtime": 1784052296.7037134,
-    "ast_hash": "76dd4f1cf6a7cc869c92ef8a732e93f9",
+    "mtime": 1784052885.734075,
+    "ast_hash": "1f5708d92643a6b41481316cc9c0f918",
     "semantic_hash": ""
   },
   "frontend/app/api/auth/set-password/route.ts": {
