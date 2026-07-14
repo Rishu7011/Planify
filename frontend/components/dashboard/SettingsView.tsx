@@ -82,7 +82,7 @@ function Toggle({
       aria-label={label}
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-11 rounded-full transition-colors shrink-0 ${
-        checked ? "bg-[#aec6ff]" : "bg-white/10"
+        checked ? "bg-[oklch(0.75_0.12_190)]" : "bg-white/10"
       }`}
     >
       <span
@@ -192,7 +192,7 @@ export function SettingsView({
   return (
     <div className="space-y-8 max-w-4xl">
       <div className="space-y-2">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#aec6ff]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[oklch(0.75_0.12_190)]">
           Account
         </p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F7F8FC]">
@@ -210,7 +210,7 @@ export function SettingsView({
       )}
 
       {/* Profile */}
-      <section className="rounded-2xl border border-white/[0.08] bg-[#151A2B] overflow-hidden">
+      <section className="rounded-2xl border border-white/[0.08] bg-[#191D20] overflow-hidden">
         <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
           <h2 className="text-sm font-bold text-[#F7F8FC]">Profile</h2>
           {loading && (
@@ -229,7 +229,7 @@ export function SettingsView({
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-16 h-16 rounded-2xl bg-[#aec6ff]/15 border border-[#aec6ff]/25 text-[#aec6ff] flex items-center justify-center text-lg font-bold shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-[oklch(0.75_0.12_190)]/15 border border-[oklch(0.75_0.12_190)]/25 text-[oklch(0.75_0.12_190)] flex items-center justify-center text-lg font-bold shrink-0">
               {initials}
             </div>
           )}
@@ -237,7 +237,7 @@ export function SettingsView({
             <p className="text-lg font-bold text-[#F7F8FC] truncate">{displayName}</p>
             <p className="text-sm text-[#7C869A] truncate">{displayEmail}</p>
             <div className="flex flex-wrap gap-2 pt-2">
-              <span className="inline-flex items-center rounded-full border border-[#aec6ff]/25 bg-[#aec6ff]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#aec6ff]">
+              <span className="inline-flex items-center rounded-full border border-[oklch(0.75_0.12_190)]/25 bg-[oklch(0.75_0.12_190)]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[oklch(0.75_0.12_190)]">
                 {plan} plan
               </span>
               <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#B4BCCB]">
@@ -263,7 +263,7 @@ export function SettingsView({
       </section>
 
       {/* Workspace */}
-      <section className="rounded-2xl border border-white/[0.08] bg-[#151A2B]">
+      <section className="rounded-2xl border border-white/[0.08] bg-[#191D20]">
         <div className="px-6 py-4 border-b border-white/[0.06]">
           <h2 className="text-sm font-bold text-[#F7F8FC]">Workspace</h2>
           <p className="text-xs text-[#7C869A] mt-1">
@@ -285,14 +285,14 @@ export function SettingsView({
                 onChange={(e) => setWorkspaceName(e.target.value)}
                 disabled={loading || !me?.workspace || savingWorkspace}
                 maxLength={80}
-                className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 px-4 text-sm text-[#F7F8FC] outline-none focus:border-[#aec6ff]/40 disabled:opacity-50"
+                className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 px-4 text-sm text-[#F7F8FC] outline-none focus:border-[oklch(0.75_0.12_190)]/40 disabled:opacity-50"
                 placeholder="My Workspace"
               />
               <button
                 type="button"
                 onClick={saveWorkspace}
                 disabled={loading || !me?.workspace || savingWorkspace}
-                className="h-11 px-5 rounded-xl bg-[#aec6ff] text-[#00275e] text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all"
+                className="h-11 px-5 rounded-xl bg-[oklch(0.75_0.12_190)] text-[#0d1210] text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all"
               >
                 {savingWorkspace ? "Saving…" : "Save"}
               </button>
@@ -330,7 +330,7 @@ export function SettingsView({
       </section>
 
       {/* Preferences */}
-      <section className="rounded-2xl border border-white/[0.08] bg-[#151A2B]">
+      <section className="rounded-2xl border border-white/[0.08] bg-[#191D20]">
         <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-bold text-[#F7F8FC]">Preferences</h2>
@@ -388,7 +388,7 @@ export function SettingsView({
       </section>
 
       {/* Change password via email OTP */}
-      <section className="rounded-2xl border border-white/[0.08] bg-[#151A2B]">
+      <section className="rounded-2xl border border-white/[0.08] bg-[#191D20]">
         <div className="px-6 py-4 border-b border-white/[0.06]">
           <h2 className="text-sm font-bold text-[#F7F8FC]">Change password</h2>
           <p className="text-xs text-[#7C869A] mt-1">

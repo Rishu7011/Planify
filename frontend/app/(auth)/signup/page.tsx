@@ -9,6 +9,9 @@ import { ArrowRight, Mail, User } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { loginHref, ROUTES } from "@/lib/routes";
 
+const fieldClass =
+  "w-full bg-white/5 border border-white/10 focus:border-[oklch(0.75_0.12_190_/_0.5)] focus:ring-1 focus:ring-[oklch(0.75_0.12_190_/_0.3)] rounded-xl py-3 pl-12 pr-4 text-white placeholder-[#9BA3AF] outline-none transition";
+
 export default function SignupPage() {
   const router = useRouter();
   const { status } = useSession();
@@ -50,8 +53,9 @@ export default function SignupPage() {
 
   if (status === "loading" || status === "authenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050816] text-white">
-        <div className="h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#111315] text-white">
+        <div className="h-8 w-8 border-2 border-white/20 rounded-full animate-spin"
+          style={{ borderTopColor: "oklch(0.75 0.12 190)" }} />
       </div>
     );
   }
@@ -61,27 +65,27 @@ export default function SignupPage() {
       title={
         <>
           Create your{" "}
-          <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          <span style={{
+            backgroundImage: "linear-gradient(135deg, oklch(0.55 0.09 195), oklch(0.75 0.12 190))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}>
             Planify
           </span>{" "}
           account
         </>
       }
-      subtitle="Enter your name and email — we’ll send a link to set your password."
+      subtitle="Enter your name and email — we'll send a link to set your password."
       footer={
         <>
           Already have an account?{" "}
-          <Link
-            href={loginHref()}
-            className="text-purple-400 hover:text-purple-300 underline underline-offset-4"
-          >
+          <Link href={loginHref()}
+            className="underline underline-offset-4 hover:opacity-80 transition-opacity"
+            style={{ color: "oklch(0.75 0.12 190)" }}>
             Sign in
           </Link>
           {" · "}
-          <Link
-            href={ROUTES.home}
-            className="hover:text-gray-300 underline underline-offset-4"
-          >
+          <Link href={ROUTES.home} className="hover:text-[#D7DBE2] underline underline-offset-4">
             Home
           </Link>
         </>
@@ -99,7 +103,7 @@ export default function SignupPage() {
             <Mail className="h-6 w-6" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Check your email</h3>
-          <p className="text-gray-400 text-sm px-2">
+          <p className="text-[#9BA3AF] text-sm px-2">
             We sent a set-password link to{" "}
             <span className="text-white font-medium">{email}</span>. Open it to
             create your password, then sign in.
@@ -107,7 +111,8 @@ export default function SignupPage() {
           <button
             type="button"
             onClick={() => setSent(false)}
-            className="mt-6 text-sm text-purple-400 hover:text-purple-300 underline underline-offset-4"
+            className="mt-6 text-sm underline underline-offset-4 hover:opacity-80 transition-opacity"
+            style={{ color: "oklch(0.75 0.12 190)" }}
           >
             Use a different email
           </button>
@@ -117,12 +122,12 @@ export default function SignupPage() {
           <div>
             <label
               htmlFor="name"
-              className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2"
+              className="block text-xs font-semibold text-[#9BA3AF] uppercase tracking-wider mb-2"
             >
               Full name
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[#9BA3AF]">
                 <User className="h-5 w-5" />
               </span>
               <input
@@ -134,7 +139,7 @@ export default function SignupPage() {
                 onChange={(e) => setName(e.target.value)}
                 disabled={loading}
                 placeholder="Rishab Negi"
-                className="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 outline-none transition"
+                className={fieldClass}
               />
             </div>
           </div>
@@ -142,12 +147,12 @@ export default function SignupPage() {
           <div>
             <label
               htmlFor="email"
-              className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2"
+              className="block text-xs font-semibold text-[#9BA3AF] uppercase tracking-wider mb-2"
             >
               Email
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[#9BA3AF]">
                 <Mail className="h-5 w-5" />
               </span>
               <input
@@ -160,7 +165,7 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 placeholder="you@example.com"
-                className="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 outline-none transition"
+                className={fieldClass}
               />
             </div>
           </div>
@@ -168,7 +173,8 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:scale-[0.98] disabled:opacity-50 text-white font-semibold rounded-xl py-3.5 transition shadow-lg shadow-purple-500/20"
+            className="w-full flex items-center justify-center gap-2 font-semibold rounded-xl py-3.5 transition active:scale-[0.98] disabled:opacity-50 text-[#0d1210] shadow-[0_0_24px_oklch(0.6_0.1_195/0.3)] hover:shadow-[0_0_36px_oklch(0.6_0.1_195/0.5)]"
+            style={{ background: "linear-gradient(135deg, oklch(0.55 0.09 195), oklch(0.75 0.12 190))" }}
           >
             {loading ? (
               <div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -180,7 +186,7 @@ export default function SignupPage() {
             )}
           </button>
 
-          <p className="text-[11px] text-center text-gray-500 pt-1">
+          <p className="text-[11px] text-center text-[#9BA3AF] pt-1">
             By continuing you agree to receive a one-time setup email.
           </p>
         </form>

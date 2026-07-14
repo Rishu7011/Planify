@@ -211,15 +211,15 @@ export default function ReportsPage() {
       <div
         style={{
           display: "flex", alignItems: "center", justifyContent: "center",
-          minHeight: "100vh", background: "oklch(12% 0.012 265)",
+          minHeight: "100vh", background: "#111315",
           flexDirection: "column", gap: 16,
         }}
       >
         <div
           style={{
             width: 36, height: 36, borderRadius: "50%",
-            border: "2px solid oklch(68% 0.14 295 / 0.25)",
-            borderTopColor: "oklch(68% 0.14 295)",
+            border: "2px solid oklch(0.75 0.12 190 / 0.25)",
+            borderTopColor: "oklch(0.75 0.12 190)",
             animation: "spin 0.8s linear infinite",
           }}
         />

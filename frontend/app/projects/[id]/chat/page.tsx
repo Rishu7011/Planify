@@ -107,9 +107,9 @@ function isWorkflowEvent(value: unknown): value is WorkflowEvent {
 
 function getMemoryTone(color?: string) {
   const tones: Record<string, { bg: string; text: string }> = {
-    primary: { bg: "bg-[#AEC6FF]/20", text: "text-[#AEC6FF]" },
-    "purple-400": { bg: "bg-purple-500/20", text: "text-purple-400" },
-    "blue-400": { bg: "bg-blue-500/20", text: "text-blue-400" },
+    primary: { bg: "bg-[oklch(0.75_0.12_190)]/20", text: "text-[oklch(0.75_0.12_190)]" },
+    "purple-400": { bg: "bg-[oklch(0.55_0.09_195)]/20", text: "text-[oklch(0.55_0.09_195)]" },
+    "blue-400": { bg: "bg-[oklch(0.75_0.12_190)]/20", text: "text-[oklch(0.75_0.12_190)]" },
     "amber-400": { bg: "bg-amber-500/20", text: "text-amber-400" },
     "emerald-400": { bg: "bg-emerald-500/20", text: "text-emerald-400" },
     success: { bg: "bg-emerald-500/20", text: "text-emerald-400" },
@@ -818,7 +818,7 @@ export default function ChatPage() {
               <span className="max-w-[120px] truncate font-medium md:max-w-none">
                 {project?.title || "Loading..."}
               </span>
-              <span className="ml-2 whitespace-nowrap rounded bg-[#AEC6FF]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#AEC6FF]">
+              <span className="ml-2 whitespace-nowrap rounded bg-[oklch(0.75_0.12_190)]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[oklch(0.75_0.12_190)]">
                 Stage: {stageLabel}
               </span>
             </div>
@@ -852,7 +852,7 @@ export default function ChatPage() {
           <div className="mx-1 hidden h-6 w-px bg-white/[0.08] sm:block" />
 
           <button
-            className="rounded-lg p-2 text-[#B4BCCB] transition-colors hover:bg-white/5 hover:text-[#AEC6FF]"
+            className="rounded-lg p-2 text-[#B4BCCB] transition-colors hover:bg-white/5 hover:text-[oklch(0.75_0.12_190)]"
             onClick={() => setContextOpen((v) => !v)}
             title="Context Panel"
             aria-label="Toggle context panel"
@@ -860,7 +860,7 @@ export default function ChatPage() {
             <span className="material-symbols-outlined">info</span>
           </button>
 
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#AEC6FF]/40 bg-[#AEC6FF]/20 text-xs font-bold text-[#AEC6FF]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[oklch(0.75_0.12_190)]/40 bg-[oklch(0.75_0.12_190)]/20 text-xs font-bold text-[oklch(0.75_0.12_190)]">
             {(session?.user?.name || "U")
               .split(" ")
               .map((p: string) => p[0])
@@ -890,7 +890,7 @@ export default function ChatPage() {
         {/* Sidebar */}
         <aside
           className={[
-            "group z-50 flex h-full shrink-0 flex-col overflow-hidden border-r border-white/[0.08] bg-[#090B14]",
+            "group z-50 flex h-full shrink-0 flex-col overflow-hidden border-r border-white/[0.08] bg-[#191D20]",
             TRANSITION,
             "fixed inset-y-0 left-0 top-16 z-50 w-[min(85vw,240px)] md:relative md:top-0 md:h-full md:translate-x-0",
             sidebarOpenMobile ? "translate-x-0" : "-translate-x-full md:translate-x-0",
@@ -919,7 +919,7 @@ export default function ChatPage() {
               <div className="space-y-1">
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="w-full rounded-lg border-r-2 border-[#AEC6FF] bg-[#508EFF]/10 px-3 py-2 text-[#AEC6FF] transition-all hover:bg-[#508EFF]/20"
+                  className="w-full rounded-lg border-r-2 border-[oklch(0.75_0.12_190)] bg-[oklch(0.75_0.12_190)]/10 px-3 py-2 text-[oklch(0.75_0.12_190)] transition-all hover:bg-[oklch(0.75_0.12_190)]/20"
                 >
                   <div
                     className={`flex items-center gap-3 ${
@@ -1004,7 +1004,7 @@ export default function ChatPage() {
                       <div
                         className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                           isActive
-                            ? "bg-[#AEC6FF] ring-4 ring-[#AEC6FF]/20"
+                            ? "bg-[oklch(0.75_0.12_190)] ring-4 ring-[oklch(0.75_0.12_190)]/20"
                             : isDone
                             ? "bg-emerald-400"
                             : "bg-[#7C869A]"
@@ -1039,10 +1039,10 @@ export default function ChatPage() {
         )}
 
         {/* Main conversation */}
-        <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#0F1220]">
+        <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#111315]">
           <div
             ref={scrollRef}
-            className={`min-h-0 flex-1 overflow-y-auto overscroll-contain ${CUSTOM_SCROLLBAR} selection:bg-[#AEC6FF]/25 selection:text-[#F7F8FC]`}
+            className={`min-h-0 flex-1 overflow-y-auto overscroll-contain ${CUSTOM_SCROLLBAR} selection:bg-[oklch(0.75_0.12_190)]/25 selection:text-[#F7F8FC]`}
             role="log"
             aria-live="polite"
             aria-relevant="additions"
@@ -1070,7 +1070,7 @@ export default function ChatPage() {
                   {...FADE_UP}
                   className={`${GLASS_PANEL} relative overflow-hidden rounded-2xl p-4 md:p-5`}
                 >
-                  <div className="pointer-events-none absolute inset-0 animate-pulse bg-gradient-to-r from-[#AEC6FF]/5 to-transparent" />
+                  <div className="pointer-events-none absolute inset-0 animate-pulse bg-gradient-to-r from-[oklch(0.75_0.12_190)]/5 to-transparent" />
 
                   <div className="relative mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-4">
@@ -1082,7 +1082,7 @@ export default function ChatPage() {
                           ).map((a) => (
                             <div
                               key={a}
-                              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#151A2B] ${AGENT_META[a].iconBg} ${AGENT_META[a].iconColor}`}
+                              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#191D20] ${AGENT_META[a].iconBg} ${AGENT_META[a].iconColor}`}
                             >
                               <span className="material-symbols-outlined text-xl">
                                 {AGENT_META[a].icon}
@@ -1098,9 +1098,9 @@ export default function ChatPage() {
                             ? `${Math.min(activeAgentIndex + 1, AGENT_ORDER.length)} of ${AGENT_ORDER.length} agents`
                             : "AI agents working"}
                           <span className="flex gap-1">
-                            <span className="h-1 w-1 rounded-full bg-[#AEC6FF] animate-pulse" />
-                            <span className="h-1 w-1 rounded-full bg-[#AEC6FF] animate-pulse [animation-delay:200ms]" />
-                            <span className="h-1 w-1 rounded-full bg-[#AEC6FF] animate-pulse [animation-delay:400ms]" />
+                            <span className="h-1 w-1 rounded-full bg-[oklch(0.75_0.12_190)] animate-pulse" />
+                            <span className="h-1 w-1 rounded-full bg-[oklch(0.75_0.12_190)] animate-pulse [animation-delay:200ms]" />
+                            <span className="h-1 w-1 rounded-full bg-[oklch(0.75_0.12_190)] animate-pulse [animation-delay:400ms]" />
                           </span>
                         </h3>
                         <p className="mt-1 text-xs text-[#7C869A]">
@@ -1110,7 +1110,7 @@ export default function ChatPage() {
                     </div>
 
                     <div className="text-left sm:text-right">
-                      <span className="text-2xl font-bold text-[#AEC6FF]">
+                      <span className="text-2xl font-bold text-[oklch(0.75_0.12_190)]">
                         {progressPct}%
                       </span>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#7C869A]">
@@ -1125,7 +1125,7 @@ export default function ChatPage() {
 
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
                     <motion.div
-                      className="h-full rounded-full bg-gradient-to-r from-[#AEC6FF] to-[#6B5CFF]"
+                      className="h-full rounded-full bg-gradient-to-r from-[oklch(0.75_0.12_190)] to-[oklch(0.55_0.09_195)]"
                       initial={false}
                       animate={{ width: `${progressPct}%` }}
                       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -1194,7 +1194,7 @@ export default function ChatPage() {
             </div>
           </div>
 
-          <div className="relative shrink-0 border-t border-white/[0.06] bg-[#0F1220]/90 px-3 py-3 backdrop-blur-xl safe-bottom sm:px-4 md:px-8 md:py-4">
+          <div className="relative shrink-0 border-t border-white/[0.06] bg-[#111315]/90 px-3 py-3 backdrop-blur-xl safe-bottom sm:px-4 md:px-8 md:py-4">
             <ScrollToBottomButton
               visible={showScrollButton}
               onClick={() => scrollToBottom("smooth")}
@@ -1216,7 +1216,7 @@ export default function ChatPage() {
         {/* Context panel */}
         <aside
           className={[
-            "z-50 flex h-full min-h-0 shrink-0 flex-col overflow-hidden bg-[#090B14]",
+            "z-50 flex h-full min-h-0 shrink-0 flex-col overflow-hidden bg-[#191D20]",
             TRANSITION,
             "fixed inset-y-0 right-0 top-16 md:relative md:top-0 md:h-full",
             contextOpen
@@ -1274,7 +1274,7 @@ export default function ChatPage() {
                     <label className="mb-1 block text-[10px] font-bold uppercase text-[#7C869A]">
                       Target
                     </label>
-                    <span className="text-xs font-semibold text-[#AEC6FF]">
+                    <span className="text-xs font-semibold text-[oklch(0.75_0.12_190)]">
                       {project?.target || "—"}
                     </span>
                   </div>
@@ -1287,7 +1287,7 @@ export default function ChatPage() {
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#7C869A]">
                   Active Memory
                 </h4>
-                <span className="cursor-pointer text-[10px] text-[#AEC6FF] hover:underline">
+                <span className="cursor-pointer text-[10px] text-[oklch(0.75_0.12_190)] hover:underline">
                   View all
                 </span>
               </div>
@@ -1346,8 +1346,8 @@ export default function ChatPage() {
                     return (
                       <div key={a} className="relative flex gap-4">
                         <div
-                          className={`z-10 flex h-6 w-6 items-center justify-center rounded-full border-4 border-[#090B14] ${
-                            isActive ? "bg-[#AEC6FF]" : "bg-emerald-400"
+                          className={`z-10 flex h-6 w-6 items-center justify-center rounded-full border-4 border-[#191D20] ${
+                            isActive ? "bg-[oklch(0.75_0.12_190)]" : "bg-emerald-400"
                           }`}
                         >
                           <span className="material-symbols-outlined text-[10px] text-white">
@@ -1370,7 +1370,7 @@ export default function ChatPage() {
 
                 {completedAgents.length === 0 && !activeAgent && (
                   <div className="relative flex gap-4 opacity-50">
-                    <div className="z-10 flex h-6 w-6 items-center justify-center rounded-full border-4 border-[#090B14] bg-white/[0.08]">
+                    <div className="z-10 flex h-6 w-6 items-center justify-center rounded-full border-4 border-[#191D20] bg-white/[0.08]">
                       <div className="h-1.5 w-1.5 rounded-full bg-[#7C869A]" />
                     </div>
                     <div>
@@ -1395,9 +1395,9 @@ export default function ChatPage() {
       </div>
 
       {/* Footer */}
-      <footer className="relative z-40 hidden h-10 shrink-0 items-center justify-between border-t border-white/[0.08] bg-[#090B14] px-4 sm:flex sm:px-6">
+      <footer className="relative z-40 hidden h-10 shrink-0 items-center justify-between border-t border-white/[0.08] bg-[#191D20] px-4 sm:flex sm:px-6">
         <p className="truncate text-[9px] font-medium uppercase tracking-tighter text-[#7C869A]">
-          © {new Date().getFullYear()} ProjectPilot AI • Secure Enterprise
+          © {new Date().getFullYear()} Planify AI • Secure Enterprise
         </p>
 
         <div className="flex items-center gap-3">

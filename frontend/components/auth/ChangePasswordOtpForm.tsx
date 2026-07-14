@@ -13,6 +13,12 @@ type ChangePasswordOtpFormProps = {
   compact?: boolean;
 };
 
+const fieldClass =
+  "w-full bg-white/5 border border-white/10 focus:border-[oklch(0.75_0.12_190_/_0.5)] focus:ring-1 focus:ring-[oklch(0.75_0.12_190_/_0.3)] rounded-xl py-3 pl-12 pr-4 text-white placeholder-[#9BA3AF] outline-none transition";
+
+const labelClass =
+  "block text-xs font-semibold text-[#9BA3AF] uppercase tracking-wider mb-2";
+
 export function ChangePasswordOtpForm({
   defaultEmail = "",
   lockEmail = false,
@@ -79,11 +85,6 @@ export function ChangePasswordOtpForm({
     }
   };
 
-  const fieldClass =
-    "w-full bg-white/5 border border-white/10 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 outline-none transition";
-  const labelClass =
-    "block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2";
-
   if (step === "done") {
     return (
       <div className="text-center py-2 space-y-3">
@@ -94,7 +95,7 @@ export function ChangePasswordOtpForm({
           {info || "Password updated successfully."}
         </p>
         {successRedirectHint && (
-          <p className="text-xs text-gray-400">{successRedirectHint}</p>
+          <p className="text-xs text-[#9BA3AF]">{successRedirectHint}</p>
         )}
       </div>
     );
@@ -115,11 +116,9 @@ export function ChangePasswordOtpForm({
         )}
 
         <div>
-          <label htmlFor="otp" className={labelClass}>
-            Email OTP
-          </label>
+          <label htmlFor="otp" className={labelClass}>Email OTP</label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[#9BA3AF]">
               <KeyRound className="h-5 w-5" />
             </span>
             <input
@@ -139,11 +138,9 @@ export function ChangePasswordOtpForm({
         </div>
 
         <div>
-          <label htmlFor="new-password" className={labelClass}>
-            New password
-          </label>
+          <label htmlFor="new-password" className={labelClass}>New password</label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[#9BA3AF]">
               <Lock className="h-5 w-5" />
             </span>
             <input
@@ -161,11 +158,9 @@ export function ChangePasswordOtpForm({
         </div>
 
         <div>
-          <label htmlFor="confirm-new-password" className={labelClass}>
-            Confirm new password
-          </label>
+          <label htmlFor="confirm-new-password" className={labelClass}>Confirm new password</label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[#9BA3AF]">
               <Lock className="h-5 w-5" />
             </span>
             <input
@@ -180,7 +175,7 @@ export function ChangePasswordOtpForm({
               className={fieldClass}
             />
           </div>
-          <p className="mt-2 text-[11px] text-gray-500">
+          <p className="mt-2 text-[11px] text-[#9BA3AF]">
             Use at least 8 characters with a letter and a number.
           </p>
         </div>
@@ -188,7 +183,8 @@ export function ChangePasswordOtpForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:scale-[0.98] disabled:opacity-50 text-white font-semibold rounded-xl py-3.5 transition shadow-lg shadow-purple-500/20"
+          className="w-full flex items-center justify-center gap-2 font-semibold rounded-xl py-3.5 transition active:scale-[0.98] disabled:opacity-50 text-[#0d1210] shadow-[0_0_24px_oklch(0.6_0.1_195/0.3)] hover:shadow-[0_0_36px_oklch(0.6_0.1_195/0.5)]"
+          style={{ background: "linear-gradient(135deg, oklch(0.55 0.09 195), oklch(0.75 0.12 190))" }}
         >
           {loading ? (
             <div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -204,7 +200,8 @@ export function ChangePasswordOtpForm({
           type="button"
           disabled={loading}
           onClick={() => requestOtp()}
-          className="w-full text-sm text-purple-400 hover:text-purple-300 underline underline-offset-4"
+          className="w-full text-sm underline underline-offset-4 hover:opacity-80 transition-opacity"
+          style={{ color: "oklch(0.75 0.12 190)" }}
         >
           Resend code
         </button>
@@ -220,7 +217,7 @@ export function ChangePasswordOtpForm({
               setError(null);
               setInfo(null);
             }}
-            className="w-full text-xs text-gray-500 hover:text-gray-300"
+            className="w-full text-xs text-[#9BA3AF] hover:text-[#D7DBE2]"
           >
             Use a different email
           </button>
@@ -237,11 +234,9 @@ export function ChangePasswordOtpForm({
         </div>
       )}
       <div>
-        <label htmlFor="otp-email" className={labelClass}>
-          Email
-        </label>
+        <label htmlFor="otp-email" className={labelClass}>Email</label>
         <div className="relative">
-          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[#9BA3AF]">
             <Mail className="h-5 w-5" />
           </span>
           <input
@@ -260,7 +255,8 @@ export function ChangePasswordOtpForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:scale-[0.98] disabled:opacity-50 text-white font-semibold rounded-xl py-3.5 transition shadow-lg shadow-purple-500/20"
+        className="w-full flex items-center justify-center gap-2 font-semibold rounded-xl py-3.5 transition active:scale-[0.98] disabled:opacity-50 text-[#0d1210] shadow-[0_0_24px_oklch(0.6_0.1_195/0.3)] hover:shadow-[0_0_36px_oklch(0.6_0.1_195/0.5)]"
+        style={{ background: "linear-gradient(135deg, oklch(0.55 0.09 195), oklch(0.75 0.12 190))" }}
       >
         {loading ? (
           <div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />

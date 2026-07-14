@@ -307,7 +307,7 @@ export default function DashboardPage() {
   const navItemClass = (active: boolean) =>
     `flex items-center gap-3 rounded-xl transition-colors text-sm ${
       active
-        ? "bg-[#aec6ff]/10 text-[#aec6ff] font-medium"
+        ? "bg-[oklch(0.75_0.12_190)]/10 text-[oklch(0.75_0.12_190)] font-medium"
         : "text-[#7C869A] hover:bg-white/5 hover:text-[#F7F8FC]"
     } ${sidebarCollapsed ? "justify-center py-2.5 px-0" : "px-4 py-2.5"}`;
 
@@ -323,23 +323,26 @@ export default function DashboardPage() {
   // ── Session Loading View ───────────────────────────────────────────────────
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-[#090B14] flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-[#111315] flex flex-col items-center justify-center relative overflow-hidden">
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block');
           .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
         `}</style>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[80px]" />
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center shadow-lg animate-pulse mb-4 z-10">
-          <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full blur-[80px]"
+          style={{ background: "oklch(0.55 0.09 195 / 0.1)" }} />
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg animate-pulse mb-4 z-10"
+          style={{ background: "linear-gradient(135deg, oklch(0.55 0.09 195), oklch(0.75 0.12 190))" }}
+        >
+          <span className="material-symbols-outlined text-[#0d1210] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
         </div>
-        <p className="text-sm font-semibold text-[#7C869A] animate-pulse z-10">Initializing workspace...</p>
+        <p className="text-sm font-semibold text-[#9BA3AF] animate-pulse z-10">Initializing workspace...</p>
       </div>
     );
   }
 
   return (
     <div
-      className="flex min-h-screen bg-[#090B14] text-[#F7F8FC] overflow-x-hidden"
+      className="flex min-h-screen bg-[#111315] text-[#F7F8FC] overflow-x-hidden"
       style={{ fontFamily: "'Geist', sans-serif", ["--sidebar-width" as string]: sidebarWidth }}
     >
       {/* Styles */}
@@ -362,7 +365,7 @@ export default function DashboardPage() {
       <aside
         ref={sidebarRef}
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 bg-[#0F1220] border-r border-white/[0.08] z-[60] flex flex-col sidebar-transition w-[240px] lg:w-[var(--sidebar-width)] ${
+        className={`fixed inset-y-0 left-0 bg-[#191D20] border-r border-white/[0.08] z-[60] flex flex-col sidebar-transition w-[240px] lg:w-[var(--sidebar-width)] ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
@@ -375,8 +378,10 @@ export default function DashboardPage() {
           }`}
         >
           <Link href="/" className={`flex items-center gap-3 min-w-0 ${sidebarCollapsed ? "" : "flex-1"}`}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center shadow-lg shrink-0">
-              <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shrink-0"
+              style={{ background: "linear-gradient(135deg, oklch(0.55 0.09 195), oklch(0.75 0.12 190))" }}
+            >
+              <span className="material-symbols-outlined text-[#0d1210]" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
             </div>
             {!sidebarCollapsed && (
               <div className="fade-text whitespace-nowrap overflow-hidden">
@@ -414,7 +419,7 @@ export default function DashboardPage() {
           <div className="px-3 mb-6">
             <button
               onClick={() => setModalOpen(true)}
-              className={`w-full h-11 rounded-xl bg-[#aec6ff]/10 hover:bg-[#aec6ff]/20 text-[#aec6ff] border border-[#aec6ff]/20 text-sm font-semibold transition-all flex items-center gap-3 group ${sidebarCollapsed ? "justify-center px-0" : "justify-start px-4"}`}
+              className={`w-full h-11 rounded-xl bg-[oklch(0.75_0.12_190)]/10 hover:bg-[oklch(0.75_0.12_190)]/20 text-[oklch(0.75_0.12_190)] border border-[oklch(0.75_0.12_190)]/20 text-sm font-semibold transition-all flex items-center gap-3 group ${sidebarCollapsed ? "justify-center px-0" : "justify-start px-4"}`}
             >
               <span className="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform shrink-0">add</span>
               {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">New Project</span>}
@@ -500,7 +505,7 @@ export default function DashboardPage() {
               title="Open settings"
               className={`flex items-center gap-3 min-w-0 ${sidebarCollapsed ? "" : "flex-1"}`}
             >
-              <div className="w-8 h-8 rounded-lg bg-[#aec6ff]/10 text-[#aec6ff] flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[oklch(0.75_0.12_190)]/10 text-[oklch(0.75_0.12_190)] flex items-center justify-center text-xs font-bold shrink-0">
                 {initials}
               </div>
               {!sidebarCollapsed && (
@@ -529,7 +534,7 @@ export default function DashboardPage() {
         {/* Header */}
         <header
           ref={headerRef}
-          className="border-b border-white/[0.05] sticky top-0 bg-[#090B14]/80 backdrop-blur-xl z-50 px-4 sm:px-6 md:px-8 shrink-0 safe-top"
+          className="border-b border-white/[0.05] sticky top-0 bg-[#111315]/80 backdrop-blur-xl z-50 px-4 sm:px-6 md:px-8 shrink-0 safe-top"
         >
           <div className="max-w-[1440px] mx-auto min-h-16 py-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-0 sm:h-16">
             <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
@@ -574,7 +579,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <div className="flex md:hidden flex-1 items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 gap-2 min-w-0 focus-within:border-[#aec6ff]/50 transition-all">
+              <div className="flex md:hidden flex-1 items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 gap-2 min-w-0 focus-within:border-[oklch(0.75_0.12_190)]/50 transition-all">
                 <span className="material-symbols-outlined text-sm text-[#7C869A] shrink-0">search</span>
                 <input
                   className="bg-transparent border-none outline-none text-xs text-[#F7F8FC] placeholder:text-[#7C869A] w-full min-w-0"
@@ -586,7 +591,7 @@ export default function DashboardPage() {
                 />
               </div>
 
-              <div className="hidden md:flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 gap-2 w-64 focus-within:border-[#aec6ff]/50 transition-all">
+              <div className="hidden md:flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 gap-2 w-64 focus-within:border-[oklch(0.75_0.12_190)]/50 transition-all">
                 <span className="material-symbols-outlined text-sm text-[#7C869A]">search</span>
                 <input
                   className="bg-transparent border-none outline-none text-xs text-[#F7F8FC] placeholder:text-[#7C869A] w-full"
@@ -601,10 +606,10 @@ export default function DashboardPage() {
 
               <button aria-label="Notifications" className="w-9 h-9 flex items-center justify-center rounded-lg text-[#7C869A] hover:text-[#F7F8FC] hover:bg-white/5 transition-colors relative shrink-0">
                 <span className="material-symbols-outlined">notifications</span>
-                <span className="absolute top-2 right-2 w-2 h-2 bg-[#aec6ff] rounded-full border-2 border-[#090B14]" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-[oklch(0.75_0.12_190)] rounded-full border-2 border-[#111315]" />
               </button>
 
-              <button className="hidden sm:inline-flex bg-[#508eff] text-[#00275e] px-3 sm:px-4 h-9 rounded-lg text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#508eff]/10 shrink-0">
+              <button className="hidden sm:inline-flex bg-gradient-to-r from-[oklch(0.55_0.09_195)] to-[oklch(0.75_0.12_190)] text-[#0d1210] px-3 sm:px-4 h-9 rounded-lg text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[oklch(0.75_0.12_190)]/10 shrink-0">
                 Upgrade
               </button>
             </div>
@@ -669,7 +674,7 @@ export default function DashboardPage() {
               <div className="h-5 w-64 bg-white/5 rounded animate-pulse" />
             ) : (
               <p className="text-[#B4BCCB] font-medium">
-                Your <span className="text-[#aec6ff]">AI team</span> has compiled {stats?.total_reports || 0} reports across {stats?.total_projects || 0} active projects.
+                Your <span className="text-[oklch(0.75_0.12_190)]">AI team</span> has compiled {stats?.total_reports || 0} reports across {stats?.total_projects || 0} active projects.
               </p>
             )}
           </section>
@@ -677,17 +682,17 @@ export default function DashboardPage() {
           {/* ── KPI Stats Row ─────────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
             {[
-              { icon: "folder_copy", label: "Active Projects", value: stats?.total_projects ?? 0, color: "#4F8DFF" },
-              { icon: "description", label: "Reports Generated", value: stats?.total_reports ?? 0, color: "#8E6BFF" },
+              { icon: "folder_copy", label: "Active Projects", value: stats?.total_projects ?? 0, color: "oklch(0.75 0.12 190)" },
+              { icon: "description", label: "Reports Generated", value: stats?.total_reports ?? 0, color: "oklch(0.55 0.09 195)" },
               { icon: "cyclone", label: "AI Workflow Runs", value: stats?.total_ai_runs ?? 0, color: "#34D399" },
             ].map(({ icon, label, value, color }) => (
               <div
                 key={label}
-                className="bg-[#151A2B] border border-white/[0.08] rounded-2xl p-5 flex items-center gap-4 hover:border-white/20 transition-all group"
+                className="bg-[#191D20] border border-white/[0.08] rounded-2xl p-5 flex items-center gap-4 hover:border-white/20 transition-all group"
               >
                 <div
                   className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
-                  style={{ background: `${color}18` }}
+                  style={{ background: color.startsWith("oklch") ? `color-mix(in srgb, ${color} 15%, transparent)` : `${color}18` }}
                 >
                   <span
                     className="material-symbols-outlined"
@@ -713,12 +718,12 @@ export default function DashboardPage() {
             {/* Left Content */}
             <div className="col-span-12 xl:col-span-9 space-y-8">
               {/* AI Command Center / Activity Monitor */}
-              <div ref={commandCenterRef} className="bg-[#151A2B] p-6 rounded-2xl border border-white/[0.08] relative overflow-hidden">
-                <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#aec6ff]/5 blur-[60px] rounded-full pointer-events-none" />
+              <div ref={commandCenterRef} className="bg-[#191D20] p-6 rounded-2xl border border-white/[0.08] relative overflow-hidden">
+                <div className="absolute -top-12 -right-12 w-48 h-48 bg-[oklch(0.75_0.12_190)]/5 blur-[60px] rounded-full pointer-events-none" />
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#8E6BFF]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                    <span className="material-symbols-outlined text-[oklch(0.75_0.12_190)]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                     <h2 className="text-base sm:text-lg font-bold">AI Activity Monitor</h2>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-1 bg-[#34D399]/10 border border-[#34D399]/20 rounded-full w-fit">
@@ -919,12 +924,12 @@ export default function DashboardPage() {
                         <Link
                           key={project.id}
                           href={`/projects/${project.id}/chat`}
-                          className="proj-card bg-[#151A2B] border border-white/[0.08] rounded-2xl p-6 hover:border-white/20 transition-all flex flex-col group cursor-pointer relative"
+                          className="proj-card bg-[#191D20] border border-white/[0.08] rounded-2xl p-6 hover:border-white/20 transition-all flex flex-col group cursor-pointer relative"
                         >
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-4 min-w-0">
-                              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                                <span className="material-symbols-outlined text-blue-400 text-xl">folder</span>
+                              <div className="w-10 h-10 rounded-xl bg-[oklch(0.75_0.12_190)]/10 border border-[oklch(0.75_0.12_190)]/20 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                <span className="material-symbols-outlined text-[oklch(0.75_0.12_190)] text-xl">folder</span>
                               </div>
                               <div className="min-w-0">
                                 <h3 className="text-base font-bold truncate">{project.title}</h3>
@@ -932,7 +937,7 @@ export default function DashboardPage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-[10px] font-bold text-[#aec6ff] uppercase tracking-tight">
+                              <span className="text-[10px] font-bold text-[oklch(0.75_0.12_190)] uppercase tracking-tight">
                                 {project.status || "active"}
                               </span>
                               {/* Delete button — visible on hover */}
@@ -956,7 +961,7 @@ export default function DashboardPage() {
                           </p>
                           <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
                             <div className="flex -space-x-2">
-                              <div className="w-7 h-7 rounded-full border-2 border-[#151A2B] bg-[#191b22] flex items-center justify-center text-[9px] font-bold">AI</div>
+                              <div className="w-7 h-7 rounded-full border-2 border-[#191D20] bg-[#191b22] flex items-center justify-center text-[9px] font-bold">AI</div>
                             </div>
                             <span className="text-[10px] font-bold text-[#7C869A] group-hover:text-[#F7F8FC] uppercase tracking-widest transition-colors flex items-center gap-1">
                               Enter Workspace <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -972,12 +977,14 @@ export default function DashboardPage() {
 
             {/* Right Sidebar */}
             <div ref={rightPanelRef} className="col-span-12 xl:col-span-3 space-y-8">
-              <div className="bg-[#151A2B] rounded-2xl border border-white/[0.08] p-6 xl:sticky xl:top-24">
+              <div className="bg-[#191D20] rounded-2xl border border-white/[0.08] p-6 xl:sticky xl:top-24">
                 {/* AI Assistant header */}
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-[1.5px]">
-                    <div className="w-full h-full rounded-full bg-[#151A2B] flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[#aec6ff] text-xl">smart_toy</span>
+                  <div className="w-10 h-10 rounded-full p-[1.5px]"
+                    style={{ background: "linear-gradient(135deg, oklch(0.55 0.09 195), oklch(0.75 0.12 190))" }}
+                  >
+                    <div className="w-full h-full rounded-full bg-[#191D20] flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[oklch(0.75_0.12_190)] text-xl">smart_toy</span>
                     </div>
                   </div>
                   <div>
@@ -1000,7 +1007,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           onClick={() => goToView("assets")}
-                          className="text-[10px] font-bold uppercase tracking-widest text-[#aec6ff] hover:underline underline-offset-4"
+                          className="text-[10px] font-bold uppercase tracking-widest text-[oklch(0.75_0.12_190)] hover:underline underline-offset-4"
                         >
                           All assets
                         </button>
@@ -1034,8 +1041,8 @@ export default function DashboardPage() {
                     <h4 className="text-[10px] font-bold text-[#7C869A] uppercase tracking-widest mb-4">AI Tips</h4>
                     <div className="space-y-4">
                       <div className="flex gap-3 items-start group cursor-pointer">
-                        <div className="w-6 h-6 rounded bg-[#aec6ff]/10 flex items-center justify-center shrink-0 group-hover:bg-[#aec6ff]/20 transition-colors">
-                          <span className="material-symbols-outlined text-[#aec6ff] text-[14px]">lightbulb</span>
+                        <div className="w-6 h-6 rounded bg-[oklch(0.75_0.12_190)]/10 flex items-center justify-center shrink-0 group-hover:bg-[oklch(0.75_0.12_190)]/20 transition-colors">
+                          <span className="material-symbols-outlined text-[oklch(0.75_0.12_190)] text-[14px]">lightbulb</span>
                         </div>
                         <p className="text-xs text-[#B4BCCB] leading-relaxed group-hover:text-[#F7F8FC] transition-colors">
                           Need a roadmap or financial projection? Click on a project to run AI Agents.
@@ -1044,7 +1051,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <button onClick={() => setModalOpen(true)} className="w-full py-3.5 bg-[#aec6ff] text-[#00275e] font-bold text-[10px] rounded-xl hover:shadow-[0_0_20px_rgba(79,141,255,0.3)] transition-all uppercase tracking-widest mt-4">
+                  <button onClick={() => setModalOpen(true)} className="w-full py-3.5 bg-[oklch(0.75_0.12_190)] text-[#0d1210] font-bold text-[10px] rounded-xl hover:shadow-[0_0_20px_oklch(0.75_0.12_190_/_0.3)] transition-all uppercase tracking-widest mt-4">
                     New Project
                   </button>
                 </div>
@@ -1056,14 +1063,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-auto border-t border-white/[0.08] bg-[#090B14]/50 py-8 sm:py-10 px-4 sm:px-8 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 text-[10px] sm:text-[11px] font-bold text-[#7C869A] uppercase tracking-widest text-center md:text-left">
+        <footer className="mt-auto border-t border-white/[0.08] bg-[#191D20]/50 py-8 sm:py-10 px-4 sm:px-8 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 text-[10px] sm:text-[11px] font-bold text-[#7C869A] uppercase tracking-widest text-center md:text-left">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
             <span className="opacity-40 font-bold text-xs">PLANIFY AI</span>
             <p className="normal-case sm:uppercase tracking-normal sm:tracking-widest">© 2026 Planify AI. Engineered for Excellence.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
             {["Privacy", "Terms", "Security", "Status"].map((item) => (
-              <Link key={item} href="#" className="hover:text-[#aec6ff] transition-colors">{item}</Link>
+              <Link key={item} href="#" className="hover:text-[oklch(0.75_0.12_190)] transition-colors">{item}</Link>
             ))}
           </div>
         </footer>
@@ -1072,7 +1079,7 @@ export default function DashboardPage() {
       {/* ── Create Project Modal ───────────────────────────────── */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
-          <div className="bg-[#151A2B] border border-white/10 rounded-3xl w-full max-w-lg p-6 sm:p-8 shadow-[0_0_80px_rgba(79,141,255,0.15)] animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-[#191D20] border border-white/10 rounded-3xl w-full max-w-lg p-6 sm:p-8 shadow-[0_0_80px_oklch(0.55_0.09_195_/_0.15)] animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-[#F7F8FC]">Create New Project</h3>
               <button
@@ -1107,7 +1114,7 @@ export default function DashboardPage() {
                   placeholder="e.g. Fintech Super App"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 focus:border-[#aec6ff]/50 rounded-xl py-3 px-4 text-sm text-white placeholder-gray-500 outline-none transition duration-200"
+                  className="w-full bg-white/5 border border-white/10 focus:border-[oklch(0.75_0.12_190)]/50 rounded-xl py-3 px-4 text-sm text-white placeholder-gray-500 outline-none transition duration-200"
                 />
               </div>
 
@@ -1122,7 +1129,7 @@ export default function DashboardPage() {
                   placeholder="Describe the target audience, problem statement, key constraints, and requirements..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 focus:border-[#aec6ff]/50 rounded-xl py-3 px-4 text-sm text-white placeholder-gray-500 outline-none transition duration-200 resize-none"
+                  className="w-full bg-white/5 border border-white/10 focus:border-[oklch(0.75_0.12_190)]/50 rounded-xl py-3 px-4 text-sm text-white placeholder-gray-500 outline-none transition duration-200 resize-none"
                 />
               </div>
 
@@ -1143,10 +1150,10 @@ export default function DashboardPage() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 py-3 bg-[#aec6ff] text-[#00275e] font-semibold text-xs rounded-xl transition duration-200 uppercase tracking-wider hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-[oklch(0.75_0.12_190)] text-[#0d1210] font-semibold text-xs rounded-xl transition duration-200 uppercase tracking-wider hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {creating ? (
-                    <div className="h-4 w-4 border-2 border-[#00275e]/20 border-t-[#00275e] rounded-full animate-spin" />
+                    <div className="h-4 w-4 border-2 border-[#0d1210]/20 border-t-[#0d1210] rounded-full animate-spin" />
                   ) : (
                     <span>Create Project</span>
                   )}
@@ -1167,13 +1174,13 @@ export default function DashboardPage() {
       />
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────── */}
-      <nav aria-label="Primary" className="lg:hidden fixed bottom-0 left-0 w-full bg-[#0F1220] border-t border-white/10 flex justify-around items-center h-16 z-[70] px-2 sm:px-4 backdrop-blur-2xl safe-bottom">
+      <nav aria-label="Primary" className="lg:hidden fixed bottom-0 left-0 w-full bg-[#191D20] border-t border-white/10 flex justify-around items-center h-16 z-[70] px-2 sm:px-4 backdrop-blur-2xl safe-bottom">
         <button
           type="button"
           aria-label="Dashboard"
           aria-current={activeNav === "dashboard" ? "page" : undefined}
           onClick={() => goToView("dashboard")}
-          className={activeNav === "dashboard" ? "text-[#aec6ff]" : "text-[#7C869A]"}
+          className={activeNav === "dashboard" ? "text-[oklch(0.75_0.12_190)]" : "text-[#7C869A]"}
         >
           <span
             className="material-symbols-outlined"
@@ -1191,7 +1198,7 @@ export default function DashboardPage() {
           aria-label="Projects"
           aria-current={activeNav === "projects" ? "page" : undefined}
           onClick={() => goToView("projects")}
-          className={activeNav === "projects" ? "text-[#aec6ff]" : "text-[#7C869A]"}
+          className={activeNav === "projects" ? "text-[oklch(0.75_0.12_190)]" : "text-[#7C869A]"}
         >
           <span
             className="material-symbols-outlined"
@@ -1207,7 +1214,8 @@ export default function DashboardPage() {
         <button
           onClick={() => setModalOpen(true)}
           aria-label="New project"
-          className="w-12 h-12 -mt-10 rounded-full bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center text-white shadow-xl ring-4 ring-[#090B14]"
+          className="w-12 h-12 -mt-10 rounded-full flex items-center justify-center text-[#0d1210] shadow-xl ring-4 ring-[#111315]"
+          style={{ background: "linear-gradient(135deg, oklch(0.55 0.09 195), oklch(0.75 0.12 190))" }}
         >
           <span className="material-symbols-outlined">add</span>
         </button>
@@ -1216,7 +1224,7 @@ export default function DashboardPage() {
           aria-label="Assets"
           aria-current={activeNav === "assets" ? "page" : undefined}
           onClick={() => goToView("assets")}
-          className={activeNav === "assets" ? "text-[#aec6ff]" : "text-[#7C869A]"}
+          className={activeNav === "assets" ? "text-[oklch(0.75_0.12_190)]" : "text-[#7C869A]"}
         >
           <span
             className="material-symbols-outlined"
@@ -1234,7 +1242,7 @@ export default function DashboardPage() {
           aria-label="Settings"
           aria-current={activeNav === "settings" ? "page" : undefined}
           onClick={() => goToView("settings")}
-          className={activeNav === "settings" ? "text-[#aec6ff]" : "text-[#7C869A]"}
+          className={activeNav === "settings" ? "text-[oklch(0.75_0.12_190)]" : "text-[#7C869A]"}
         >
           <span
             className="material-symbols-outlined"

@@ -67,15 +67,15 @@ function assetIcon(reportType: string): string {
 
 function assetAccent(reportType: string): string {
   const t = normalizeType(reportType);
-  if (t.includes("prd")) return "#4F8DFF";
-  if (t.includes("architecture")) return "#8E6BFF";
+  if (t.includes("prd")) return "oklch(0.75 0.12 190)";
+  if (t.includes("architecture")) return "oklch(0.55 0.09 195)";
   if (t.includes("market")) return "#34D399";
   if (t.includes("competitor")) return "#F59E0B";
   if (t.includes("roi") || t.includes("budget")) return "#22D3EE";
   if (t.includes("hr")) return "#F472B6";
   if (t.includes("risk")) return "#FB7185";
   if (t.includes("roadmap")) return "#A3E635";
-  return "#aec6ff";
+  return "oklch(0.75 0.12 190)";
 }
 
 function prettyLabel(reportType: string): string {
@@ -129,7 +129,7 @@ export function AssetsView({
     <div className="space-y-8">
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div className="space-y-2 max-w-2xl">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#aec6ff]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[oklch(0.75_0.12_190)]">
             Library
           </p>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F7F8FC]">
@@ -152,7 +152,7 @@ export function AssetsView({
           <button
             type="button"
             onClick={onCreateProject}
-            className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-[#aec6ff] text-[#00275e] text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all"
+            className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-[oklch(0.75_0.12_190)] text-[#0d1210] text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             New project
@@ -162,14 +162,14 @@ export function AssetsView({
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total assets", value: assets.length, icon: "inventory_2", accent: "#4F8DFF" },
-          { label: "Projects", value: byProject, icon: "folder_copy", accent: "#8E6BFF" },
+          { label: "Total assets", value: assets.length, icon: "inventory_2", accent: "oklch(0.75 0.12 190)" },
+          { label: "Projects", value: byProject, icon: "folder_copy", accent: "oklch(0.55 0.09 195)" },
           { label: "Types", value: typeOptions.length, icon: "category", accent: "#34D399" },
           { label: "Showing", value: filtered.length, icon: "filter_alt", accent: "#FBBF24" },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-2xl border border-white/[0.08] bg-[#151A2B]/80 px-4 py-3.5 flex items-center gap-3"
+            className="rounded-2xl border border-white/[0.08] bg-[#191D20]/80 px-4 py-3.5 flex items-center gap-3"
           >
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -190,7 +190,7 @@ export function AssetsView({
       </div>
 
       <div className="flex flex-col xl:flex-row xl:items-center gap-3">
-        <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3.5 h-11 focus-within:border-[#aec6ff]/40 transition-colors">
+        <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3.5 h-11 focus-within:border-[oklch(0.75_0.12_190)]/40 transition-colors">
           <span className="material-symbols-outlined text-[18px] text-[#7C869A]">search</span>
           <input
             value={search}
@@ -207,7 +207,7 @@ export function AssetsView({
             onClick={() => setTypeFilter("all")}
             className={`h-9 px-3.5 rounded-lg text-xs font-bold uppercase tracking-wide border transition-all ${
               typeFilter === "all"
-                ? "bg-[#aec6ff]/15 text-[#aec6ff] border-[#aec6ff]/30"
+                ? "bg-[oklch(0.75_0.12_190)]/15 text-[oklch(0.75_0.12_190)] border-[oklch(0.75_0.12_190)]/30"
                 : "text-[#7C869A] border-white/10 hover:text-[#F7F8FC] hover:bg-white/5"
             }`}
           >
@@ -220,7 +220,7 @@ export function AssetsView({
               onClick={() => setTypeFilter(t)}
               className={`h-9 px-3 rounded-lg text-xs font-bold uppercase tracking-wide border transition-all ${
                 typeFilter === t
-                  ? "bg-[#aec6ff]/15 text-[#aec6ff] border-[#aec6ff]/30"
+                  ? "bg-[oklch(0.75_0.12_190)]/15 text-[oklch(0.75_0.12_190)] border-[oklch(0.75_0.12_190)]/30"
                   : "text-[#7C869A] border-white/10 hover:text-[#F7F8FC] hover:bg-white/5"
               }`}
             >
@@ -242,7 +242,7 @@ export function AssetsView({
                 aria-pressed={layout === mode.id}
                 className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
                   layout === mode.id
-                    ? "bg-[#aec6ff]/20 text-[#aec6ff]"
+                    ? "bg-[oklch(0.75_0.12_190)]/20 text-[oklch(0.75_0.12_190)]"
                     : "text-[#7C869A] hover:text-[#F7F8FC]"
                 }`}
               >
@@ -271,11 +271,11 @@ export function AssetsView({
           ))}
         </div>
       ) : assets.length === 0 ? (
-        <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#151A2B] px-8 py-16 text-center">
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_rgba(142,107,255,0.12),_transparent_55%)]" />
+        <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#191D20] px-8 py-16 text-center">
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_rgba(20,184,166,0.12),_transparent_55%)]" />
           <div className="relative mx-auto max-w-md flex flex-col items-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#8E6BFF]/10 border border-[#8E6BFF]/20 flex items-center justify-center mb-5">
-              <span className="material-symbols-outlined text-[#8E6BFF] text-3xl">
+            <div className="w-16 h-16 rounded-2xl bg-[oklch(0.55_0.09_195)]/10 border border-[oklch(0.55_0.09_195)]/20 flex items-center justify-center mb-5">
+              <span className="material-symbols-outlined text-[oklch(0.75_0.12_190)] text-3xl">
                 inventory_2
               </span>
             </div>
@@ -287,7 +287,7 @@ export function AssetsView({
             <button
               type="button"
               onClick={onCreateProject}
-              className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[#aec6ff] text-[#00275e] text-sm font-bold hover:brightness-110 transition-all"
+              className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[oklch(0.75_0.12_190)] text-[#0d1210] text-sm font-bold hover:brightness-110 transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
               Start a project
@@ -295,7 +295,7 @@ export function AssetsView({
           </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-white/[0.08] bg-[#151A2B] px-8 py-12 text-center">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#191D20] px-8 py-12 text-center">
           <h3 className="font-bold text-base mb-1">No matches</h3>
           <p className="text-xs text-[#7C869A] mb-5">Try another type or clear search.</p>
           <button
@@ -304,7 +304,7 @@ export function AssetsView({
               setSearch("");
               setTypeFilter("all");
             }}
-            className="text-sm font-semibold text-[#aec6ff] hover:underline underline-offset-4"
+            className="text-sm font-semibold text-[oklch(0.75_0.12_190)] hover:underline underline-offset-4"
           >
             Reset filters
           </button>
@@ -317,7 +317,7 @@ export function AssetsView({
             return (
               <article
                 key={asset.asset_id}
-                className="group flex flex-col rounded-2xl border border-white/[0.08] bg-[#151A2B] p-5 hover:border-white/20 transition-all"
+                className="group flex flex-col rounded-2xl border border-white/[0.08] bg-[#191D20] p-5 hover:border-white/20 transition-all"
               >
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div
@@ -366,7 +366,7 @@ export function AssetsView({
           })}
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/[0.08] bg-[#151A2B]/60 divide-y divide-white/[0.05] overflow-hidden">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#191D20]/60 divide-y divide-white/[0.05] overflow-hidden">
           {filtered.map((asset) => {
             const accent = assetAccent(asset.report_type);
             const label = prettyLabel(asset.report_type);

@@ -4,20 +4,20 @@
  * ────────────────────────────────────────────────────────────── */
 
 :root {
-  --r-bg:            oklch(12% 0.012 265);
-  --r-bg-elevated:   oklch(15% 0.014 265);
-  --r-surface:       oklch(18% 0.016 265);
-  --r-surface-2:     oklch(22% 0.018 265);
-  --r-fg:            oklch(96% 0.008 265);
-  --r-muted:         oklch(68% 0.02 265);
-  --r-subtle:        oklch(52% 0.02 265);
+  --r-bg:            oklch(0.12 0.012 195);
+  --r-bg-elevated:   oklch(0.15 0.014 195);
+  --r-surface:       oklch(0.18 0.016 195);
+  --r-surface-2:     oklch(0.22 0.018 195);
+  --r-fg:            oklch(0.96 0.008 190);
+  --r-muted:         oklch(0.68 0.02 190);
+  --r-subtle:        oklch(0.52 0.02 190);
   --r-border:        oklch(100% 0 0 / 0.08);
   --r-border-strong: oklch(100% 0 0 / 0.14);
-  --r-accent:        oklch(66% 0.17 255);
-  --r-accent-hover:  oklch(72% 0.16 255);
-  --r-accent-muted:  oklch(66% 0.17 255 / 0.14);
-  --r-ai:            oklch(68% 0.14 295);
-  --r-ai-muted:      oklch(68% 0.14 295 / 0.14);
+  --r-accent:        oklch(0.75 0.12 190);
+  --r-accent-hover:  oklch(0.80 0.11 190);
+  --r-accent-muted:  oklch(0.75 0.12 190 / 0.14);
+  --r-ai:            oklch(0.75 0.12 190);
+  --r-ai-muted:      oklch(0.75 0.12 190 / 0.14);
   --r-success:       oklch(72% 0.15 155);
   --r-warn:          oklch(78% 0.14 85);
   --r-danger:        oklch(65% 0.18 25);

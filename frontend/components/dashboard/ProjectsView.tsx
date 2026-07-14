@@ -133,7 +133,7 @@ export function ProjectsView({
       {/* Page intro */}
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div className="space-y-2 max-w-2xl">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#aec6ff]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[oklch(0.75_0.12_190)]">
             Workspace
           </p>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F7F8FC]">
@@ -147,7 +147,7 @@ export function ProjectsView({
         <button
           type="button"
           onClick={onCreate}
-          className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-[#aec6ff] text-[#00275e] text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_0_24px_rgba(174,198,255,0.18)] shrink-0"
+          className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-[oklch(0.75_0.12_190)] text-[#0d1210] text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_0_24px_oklch(0.75_0.12_190_/_0.18)] shrink-0"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           New project
@@ -157,19 +157,19 @@ export function ProjectsView({
       {/* Insight chips */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total", value: counts.all, icon: "folder_copy", accent: "#4F8DFF" },
+          { label: "Total", value: counts.all, icon: "folder_copy", accent: "oklch(0.75 0.12 190)" },
           { label: "Active", value: counts.active, icon: "bolt", accent: "#34D399" },
           { label: "Drafts", value: counts.draft, icon: "edit_note", accent: "#FBBF24" },
           {
             label: "Showing",
             value: filtered.length,
             icon: "filter_list",
-            accent: "#8E6BFF",
+            accent: "oklch(0.55 0.09 195)",
           },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-2xl border border-white/[0.08] bg-[#151A2B]/80 px-4 py-3.5 flex items-center gap-3"
+            className="rounded-2xl border border-white/[0.08] bg-[#191D20]/80 px-4 py-3.5 flex items-center gap-3"
           >
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -191,7 +191,7 @@ export function ProjectsView({
 
       {/* Toolbar */}
       <div className="flex flex-col xl:flex-row xl:items-center gap-3 xl:gap-4">
-        <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3.5 h-11 focus-within:border-[#aec6ff]/40 transition-colors">
+        <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3.5 h-11 focus-within:border-[oklch(0.75_0.12_190)]/40 transition-colors">
           <span className="material-symbols-outlined text-[18px] text-[#7C869A]">search</span>
           <input
             value={searchQuery}
@@ -226,7 +226,7 @@ export function ProjectsView({
               onClick={() => setStatusFilter(f.id)}
               className={`h-9 px-3.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all border ${
                 statusFilter === f.id
-                  ? "bg-[#aec6ff]/15 text-[#aec6ff] border-[#aec6ff]/30"
+                  ? "bg-[oklch(0.75_0.12_190)]/15 text-[oklch(0.75_0.12_190)] border-[oklch(0.75_0.12_190)]/30"
                   : "bg-transparent text-[#7C869A] border-white/10 hover:text-[#F7F8FC] hover:bg-white/5"
               }`}
             >
@@ -265,7 +265,7 @@ export function ProjectsView({
                 aria-pressed={layout === mode.id}
                 className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
                   layout === mode.id
-                    ? "bg-[#aec6ff]/20 text-[#aec6ff]"
+                    ? "bg-[oklch(0.75_0.12_190)]/20 text-[oklch(0.75_0.12_190)]"
                     : "text-[#7C869A] hover:text-[#F7F8FC]"
                 }`}
               >
@@ -295,11 +295,11 @@ export function ProjectsView({
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#151A2B] px-8 py-16 text-center">
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_rgba(79,141,255,0.12),_transparent_55%)]" />
+        <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#191D20] px-8 py-16 text-center">
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_rgba(13,148,136,0.12),_transparent_55%)]" />
           <div className="relative mx-auto max-w-md flex flex-col items-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#aec6ff]/10 border border-[#aec6ff]/20 flex items-center justify-center mb-5">
-              <span className="material-symbols-outlined text-[#aec6ff] text-3xl">
+            <div className="w-16 h-16 rounded-2xl bg-[oklch(0.75_0.12_190)]/10 border border-[oklch(0.75_0.12_190)]/20 flex items-center justify-center mb-5">
+              <span className="material-symbols-outlined text-[oklch(0.75_0.12_190)] text-3xl">
                 create_new_folder
               </span>
             </div>
@@ -311,7 +311,7 @@ export function ProjectsView({
             <button
               type="button"
               onClick={onCreate}
-              className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[#aec6ff] text-[#00275e] text-sm font-bold hover:brightness-110 transition-all"
+              className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[oklch(0.75_0.12_190)] text-[#0d1210] text-sm font-bold hover:brightness-110 transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
               Create your first project
@@ -319,7 +319,7 @@ export function ProjectsView({
           </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-white/[0.08] bg-[#151A2B] px-8 py-12 text-center">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#191D20] px-8 py-12 text-center">
           <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
             <span className="material-symbols-outlined text-[#7C869A] text-2xl">search_off</span>
           </div>
@@ -333,7 +333,7 @@ export function ProjectsView({
               onSearchChange("");
               setStatusFilter("all");
             }}
-            className="text-sm font-semibold text-[#aec6ff] hover:underline underline-offset-4"
+            className="text-sm font-semibold text-[oklch(0.75_0.12_190)] hover:underline underline-offset-4"
           >
             Reset filters
           </button>
@@ -345,14 +345,14 @@ export function ProjectsView({
             return (
               <article
                 key={project.id}
-                className="group relative flex flex-col rounded-2xl border border-white/[0.08] bg-[#151A2B] p-5 hover:border-white/20 transition-all"
+                className="group relative flex flex-col rounded-2xl border border-white/[0.08] bg-[#191D20] p-5 hover:border-white/20 transition-all"
               >
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#aec6ff]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[oklch(0.75_0.12_190)]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                      <span className="material-symbols-outlined text-blue-400 text-xl">
+                    <div className="w-11 h-11 rounded-xl bg-[oklch(0.75_0.12_190)]/10 border border-[oklch(0.75_0.12_190)]/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <span className="material-symbols-outlined text-[oklch(0.75_0.12_190)] text-xl">
                         folder
                       </span>
                     </div>
@@ -380,7 +380,7 @@ export function ProjectsView({
                 <div className="mt-auto pt-4 border-t border-white/5 flex items-center gap-2">
                   <Link
                     href={`/projects/${project.id}/chat`}
-                    className="flex-1 h-9 rounded-lg bg-[#aec6ff]/10 hover:bg-[#aec6ff]/20 text-[#aec6ff] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                    className="flex-1 h-9 rounded-lg bg-[oklch(0.75_0.12_190)]/10 hover:bg-[oklch(0.75_0.12_190)]/20 text-[oklch(0.75_0.12_190)] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
                   >
                     Open chat
                     <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -412,7 +412,7 @@ export function ProjectsView({
           })}
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/[0.08] bg-[#151A2B]/60 divide-y divide-white/[0.05] overflow-hidden">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#191D20]/60 divide-y divide-white/[0.05] overflow-hidden">
           {filtered.map((project) => {
             const meta = statusMeta(project.status);
             return (
@@ -421,8 +421,8 @@ export function ProjectsView({
                 className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 py-4 hover:bg-white/[0.03] transition-colors group"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-blue-400">folder</span>
+                  <div className="w-10 h-10 rounded-xl bg-[oklch(0.75_0.12_190)]/10 border border-[oklch(0.75_0.12_190)]/20 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[oklch(0.75_0.12_190)]">folder</span>
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -445,7 +445,7 @@ export function ProjectsView({
                 <div className="flex items-center gap-2 sm:shrink-0">
                   <Link
                     href={`/projects/${project.id}/chat`}
-                    className="h-9 px-3.5 rounded-lg bg-[#aec6ff]/10 hover:bg-[#aec6ff]/20 text-[#aec6ff] text-xs font-bold flex items-center gap-1.5 transition-colors"
+                    className="h-9 px-3.5 rounded-lg bg-[oklch(0.75_0.12_190)]/10 hover:bg-[oklch(0.75_0.12_190)]/20 text-[oklch(0.75_0.12_190)] text-xs font-bold flex items-center gap-1.5 transition-colors"
                   >
                     Open
                     <span className="material-symbols-outlined text-[16px]">arrow_forward</span>

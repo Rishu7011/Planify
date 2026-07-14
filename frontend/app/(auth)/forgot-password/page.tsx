@@ -15,15 +15,15 @@ export default function ForgotPasswordPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      // Logged-in users change password from Settings.
       router.replace(ROUTES.dashboard);
     }
   }, [status, router]);
 
   if (status === "loading" || status === "authenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050816] text-white">
-        <div className="h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#111315] text-white">
+        <div className="h-8 w-8 border-2 border-white/20 rounded-full animate-spin"
+          style={{ borderTopColor: "oklch(0.75 0.12 190)" }} />
       </div>
     );
   }
@@ -37,14 +37,15 @@ export default function ForgotPasswordPage() {
           Remembered it?{" "}
           <Link
             href={loginHref()}
-            className="text-purple-400 hover:text-purple-300 underline underline-offset-4"
+            className="underline underline-offset-4 hover:opacity-80 transition-opacity"
+            style={{ color: "oklch(0.75 0.12 190)" }}
           >
             Sign in
           </Link>
           {" · "}
           <Link
             href={ROUTES.signup}
-            className="hover:text-gray-300 underline underline-offset-4"
+            className="hover:text-[#D7DBE2] underline underline-offset-4"
           >
             Sign up
           </Link>
