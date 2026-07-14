@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "backend/app/main.py": {
-    "mtime": 1784025012.2880483,
-    "ast_hash": "3af72d51f81b8df7b883c77ccbff3059",
+    "mtime": 1784056995.6440732,
+    "ast_hash": "5faaad884d5e0a0c3c79303aecd834e6",
     "semantic_hash": ""
   },
   "backend/app/middleware/__init__.py": {
@@ -185,13 +185,13 @@
     "semantic_hash": ""
   },
   "backend/app/services/chat_service.py": {
-    "mtime": 1784047109.2545094,
-    "ast_hash": "7bf90bd9f268dfb1f0fcda8dba109922",
+    "mtime": 1784053794.2429142,
+    "ast_hash": "398295d527e8583443a2532db94479e9",
     "semantic_hash": ""
   },
   "frontend/app/dashboard/page.tsx": {
-    "mtime": 1784052552.1304715,
-    "ast_hash": "f95a98c3551bb1ab0f5be7b04998bee1",
+    "mtime": 1784057554.782559,
+    "ast_hash": "d8e016f6a75d26e48ed1f459015af241",
     "semantic_hash": ""
   },
   "frontend/app/projects/[id]/chat/page.tsx": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "backend/app/agent/llm.py": {
-    "mtime": 1784046972.8620121,
-    "ast_hash": "d63a5ee0f9d118b69288d532c904a49a",
+    "mtime": 1784054257.5768776,
+    "ast_hash": "1669aa4e8f1d026303f59818922070ee",
     "semantic_hash": ""
   },
   "backend/app/agent/main.py": {
@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "backend/app/agent/nodes/report_generator.py": {
-    "mtime": 1784047142.3881023,
-    "ast_hash": "4a8817c8bda38e263f470f6902ef0c1c",
+    "mtime": 1784053800.1306438,
+    "ast_hash": "3e88fefbbeafd24cf822ad722f55692f",
     "semantic_hash": ""
   },
   "backend/app/agent/prompts.py": {
@@ -567,6 +567,11 @@
   "backend/app/services/file_service.py": {
     "mtime": 1784024981.6639056,
     "ast_hash": "e0141c90f3cbd0425d11f6e899d8dff6",
+    "semantic_hash": ""
+  },
+  "backend/requirements.txt": {
+    "mtime": 1784054580.0142882,
+    "ast_hash": "76cff1e1e8814d617b29bd3054b6dc2b",
     "semantic_hash": ""
   }
 }

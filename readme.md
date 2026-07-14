@@ -1,177 +1,204 @@
 # ⚡ Planify
 
-AI project intelligence platform — turn ideas into structured plans, reports, and workspace artifacts through a connected frontend, API backend, and multi-agent workflow.
-
-This README is derived from the **graphify knowledge graph** ([`graphify-out/graph.html`](./graphify-out/graph.html)). Open that file in a browser to explore symbols, dependencies, and communities interactively.
+AI Project Intelligence Platform — turn ideas into structured plans, reports, and workspace artifacts through a connected frontend, API backend, and multi-agent workflow. Planify acts like a fused team of a **Product Manager** 🧑‍💼, **Business Analyst** 📊, **Solution Architect** 🏗️, and **Strategy Consultant** 🧠 operating over a persistent, multi-turn conversation.
 
 ---
 
-## 🔍 Repository at a glance
+## 🚀 Key Architectural Principles
 
-| Area | Role (from graph) | Symbol count* |
-|------|---------------------|---------------|
-| 🎨 [`frontend/`](./frontend/) | Next.js app — landing, auth, dashboard, project chat, reports | ~325 code nodes |
-| ⚙️ [`backend/`](./backend/) | FastAPI app — routes, agents, MongoDB, workflow orchestration | ~338 code nodes |
-| 📊 [`graphify-out/`](./graphify-out/) | Generated architecture graph (713 nodes, 1054 edges, 76 communities) | — |
-
-\*Approximate node counts by top-level path in `graph.html`.
-
-**Graph stats:** 713 nodes · 1054 edges · 76 communities
+1. 💾 **Statefulness**: Maintains a persistent, evolving understanding of "what this project is" across a long-lived conversation.
+2. 🔗 **Interconnection**: Every generated artifact (PRD, Feasibility study, ROI model, Roadmap) is derived from a shared context object. Mutation of any assumption cascades and triggers re-derivation of dependent artifacts.
+3. 🤖 **Multi-Agent Reasoning**: Coordinated via a LangGraph orchestration layer, specialized agents handle different domains (market research, technical feasibility, business strategy) rather than a single monolithic prompt.
 
 ---
 
-## 🕸️ How the codebase connects
+## 🕸️ System Architecture & Request Lifecycle
 
-The graph models relationships such as `contains`, `calls`, `imports`, `imports_from`, `references`, and `rationale_for`. High-traffic hubs (most connected symbols) include:
+```mermaid
+flowchart TD
+    User([Browser / Client]) <-->|HTTPS + SSE Streaming| NextJS[Next.js Application Layer]
+    NextJS <-->|JWT Authenticated API Requests| FastAPI[FastAPI Backend Layer]
+    
+    subgraph FastAPI Backend
+        AuthMiddleware[Auth Middleware] --> RouteHandler[Route Handlers]
+        RouteHandler <--> ChatService[Chat Service Orchestrator]
+    end
+    
+    ChatService <-->|Stateful Turn Execution| LangGraph[LangGraph Workflow Engine]
+    
+    subgraph LangGraph Orchestration
+        direction TB
+        ConvUnder[Conversation Understanding Node]
+        ProjWork[Project Workflow Agent Node]
+        RepGen[Report Generator Node]
+        
+        ConvUnder -->|PROJECT| ProjWork
+        ProjWork -->|REPORT_REQUEST| RepGen
+    end
+    
+    FastAPI <-->|System of Record| MongoDB[(MongoDB DB)]
+    FastAPI <-->|PDF Semantic Memory| RAG[RAG Vector Store]
+    ProjWork <-->|Web Intelligence| WebSearch[DuckDuckGo Search]
+```
 
-| Symbol | File | Connections |
-|--------|------|-------------|
-| 🔑 `parse_object_id()` | `backend/app/utils/objectid.py` | 24 |
-| 💬 `chat_service.py` | `backend/app/services/chat_service.py` | 21 |
-| 📦 `dependencies` | `frontend/package.json` | 20 |
-| 🛡️ `apply_workflow_guards()` | `backend/app/agent/workflow_guards.py` | 19 |
-| ⚙️ `get_settings()` | `backend/app/config.py` | 18 |
-| 🔒 `_assert_project_access()` | `backend/app/routes/projects.py` | 17 |
-| ⛓️ `_run_workflow_and_stream_locked()` | `backend/app/services/chat_service.py` | 15 |
-| 🧭 `workflow_guards.py` | `backend/app/agent/workflow_guards.py` | 15 |
-| 📄 `page.tsx` | `frontend/app/projects/[id]/chat/page.tsx` | 14 |
-| 💾 `db.py` | `backend/app/agent/db.py` | 14 |
-
-These hubs sit at the center of auth, routing, database access, and the AI chat workflow.
-
----
-
-## 🎨 Frontend (Next.js)
-
-### 📍 App routes
-
-| Route | Source |
-|-------|--------|
-| `/` | `frontend/app/(root)/page.tsx` |
-| `/dashboard` | `frontend/app/dashboard/page.tsx` |
-| `/login` | `frontend/app/(auth)/login/page.tsx` |
-| `/signup` | `frontend/app/(auth)/signup/page.tsx` |
-| `/forgot-password` | `frontend/app/(auth)/forgot-password/page.tsx` |
-| `/set-password` | `frontend/app/(auth)/set-password/page.tsx` |
-| `/projects/[id]/chat` | `frontend/app/projects/[id]/chat/page.tsx` |
-| `/projects/[id]/reports` | `frontend/app/projects/[id]/reports/page.tsx` |
-
-### 🗂️ UI communities (graph clusters)
-
-- 🏠 **Home Page** — landing (`navbar`, `mainSection`, `footer`) and entry CTAs
-- 🖥️ **App Layout / Root Layout** — root shell and providers
-- 🔐 **NextAuth Integration** — session, password auth, crypto helpers
-- 📊 **ProjectsView / SettingsView / AssetsView** — dashboard workspace views
-- 💬 **agents.ts / Chat workspace** — agent metadata, chat UI, scroll, composer, markdown
-- 📄 **Report viewers** — PRD, feasibility, ROI, roadmap, markdown body
-
-### 📦 Shared libraries
-
-- `frontend/lib/routes.ts` — route helpers and protected paths
-- `frontend/lib/api.ts` — API client and streaming
-- `frontend/lib/password-auth.ts` / `password-crypto.ts` — credential flows
-- `frontend/proxy.ts` — request proxy / middleware boundary
+### 🔄 Request Lifecycle Example (User sends message):
+1. 💬 **User message sent**: The user sends a chat message (optionally with attachments) via the Next.js client.
+2. 🔑 **API Verification**: Next.js proxies/forwards the request to FastAPI with a signed JWT. FastAPI's [auth.py](./backend/app/middleware/auth.py) middleware verifies the token signature independently and determines the user's role and workspace access.
+3. 📥 **Context Ingestion**: The FastAPI route loads the latest project state and chat history from MongoDB.
+4. 🧠 **LangGraph Execution**: FastAPI triggers the LangGraph workflow compiled in [graph.py](./backend/app/agent/graph.py).
+   - [conversation_understanding.py](./backend/app/agent/nodes/conversation_understanding.py) decides if the turn is a `PROJECT` discussion or a general conversation query.
+   - [project_workflow.py](./backend/app/agent/nodes/project_workflow.py) parses the user's answers and uses structured LLM calls to update the Project Context.
+   - [report_generator.py](./backend/app/agent/nodes/report_generator.py) runs conditionally to synthesize detailed markdown reports based on the accumulated project knowledge.
+5. 📡 **Streaming Response**: The response is saved to MongoDB and streamed in real-time to the client using Server-Sent Events (SSE).
 
 ---
 
-## ⚙️ Backend (FastAPI)
+## 📁 Repository Structure
 
-### 🛣️ HTTP route modules
+Below is the high-level layout of the Planify repository:
 
-| Module | Path |
-|--------|------|
-| 🔐 Auth | `backend/app/routes/auth.py` |
-| 📁 Projects | `backend/app/routes/projects.py` |
-| 💬 Chat | `backend/app/routes/chat.py` |
-| 📄 Reports | `backend/app/routes/reports.py` |
-| 📊 Dashboard | `backend/app/routes/dashboard.py` |
-| 📥 Export | `backend/app/routes/export.py` |
-
-### 🤖 AI & workflow (graph communities)
-
-- 🛡️ **apply_workflow_guards** / **route_after_project_workflow** — LangGraph routing and guard rails
-- 🧠 **ProjectContext** — shared context passed through chat and generation
-- 🤖 **Agent nodes** — e.g. `input_understanding_agent`, `prd_agent`, `roadmap_agent`, `final_report_agent`
-- 🔮 **llm.py / get_llm** — model access layer
-- 💬 **chat_service.py** — orchestrates workflow runs and SSE streaming
-
-### 💾 Data & infrastructure
-
-- 🔑 **ObjectId / Backend MongoDB API** — MongoDB persistence
-- 🔒 **Auth Middleware** — request authentication
-- 📝 **Logging Config** — application logging
-- 🏥 **Health Tests** — service health coverage
-
-Entry point: `backend/main.py`
+```
+Planify/
+├── 📁 backend/                       # FastAPI Backend
+│   ├── 📁 app/
+│   │   ├── 📁 agent/                 # LangGraph Agent Workflow
+│   │   │   ├── 📁 nodes/             # Agent nodes (Conversation, Project, Reports)
+│   │   │   ├── 📁 rag/               # RAG Vector Store and PDF indexing
+│   │   │   ├── 📄 graph.py           # LangGraph StateGraph compiler
+│   │   │   ├── 📄 schemas.py         # Pydantic structured output models
+│   │   │   ├── 📄 state.py           # Shared LangGraph WorkflowState definition
+│   │   │   └── 📄 workflow_guards.py # Deterministic validations on agent output
+│   │   ├── 📁 db/                    # Async MongoDB interface
+│   │   ├── 📁 middleware/            # Security and JWT token verification
+│   │   ├── 📁 routes/                # HTTP & SSE endpoint routers
+│   │   ├── 📁 schemas/               # API validation models
+│   │   ├── 📁 services/              # Business logic (chat, file, context services)
+│   │   ├── 📁 utils/                 # MongoDB ObjectID validation
+│   │   └── 📄 main.py                # FastAPI Application setup
+│   └── 📄 pyproject.toml             # Python dependencies (uv managed)
+│
+├── 📁 frontend/                      # Next.js 15 Frontend
+│   ├── 📁 app/                       # App Router Pages
+│   │   ├── 📁 (auth)/                # Auth views (login, signup, password-reset)
+│   │   ├── 📁 (root)/                # Landing/Marketing views
+│   │   ├── 📁 dashboard/             # Workspace & Project selection dashboard
+│   │   └── 📁 projects/[id]/         # Project layout containing chat & reports
+│   ├── 📁 components/                # React UI Components
+│   │   ├── 📁 auth/                  # Authentication forms and shells
+│   │   ├── 📁 dashboard/             # Projects, Assets, and Settings components
+│   │   ├── 📁 reports/               # Custom Markdown viewer panels per report type
+│   │   └── 📁 workspace/             # Chat composer, agents drawer, clarification panel
+│   ├── 📁 hooks/                     # Custom hooks (e.g. Chat scrolling logic)
+│   ├── 📁 lib/                       # NextAuth, API client helper, crypto functions
+│   └── 📄 package.json               # Node.js dependencies
+│
+├── 📁 graphify-out/                  # Architecture graph database
+│   ├── 📄 GRAPH_REPORT.md            # Structural report on file connections
+│   ├── 📄 graph.html                 # Interactive graph browser
+│   └── 📄 graph.json                 # Parsed AST graph payload
+│
+├── 📄 phase.md                       # Comprehensive delivery schedule & phases
+├── 📄 plan.md                        # Product & Architecture blueprint
+└── 📄 readme.md                      # Primary project readme (this file)
+```
 
 ---
 
-## 📊 Architecture graph
+## 📦 Key Directory Details
 
-Explore the full dependency map locally:
+### ⚙️ FastAPI Backend (`backend/`)
+* **📄 [main.py](./backend/app/main.py)**: Configures the FastAPI app, registers routes, and enables CORS and lifespan hooks.
+* **🧠 [agent/](./backend/app/agent/)**: Configures the LangGraph engine.
+  * **📄 [state.py](./backend/app/agent/state.py)**: Defines `WorkflowState` - the single source of truth passed between every node in the graph (including context, uploaded files, and message history).
+  * **📄 [schemas.py](./backend/app/agent/schemas.py)**: Holds Pydantic models for LLM structured output.
+  * **📄 [workflow_guards.py](./backend/app/agent/workflow_guards.py)**: Applies deterministic business logic (e.g. enforcing discovery criteria, stripping repetitive questions, normalizing budget parameters) to LLM responses.
+* **🛣️ [routes/](./backend/app/routes/)**: Exposes REST and streaming SSE endpoints:
+  * 🔑 [auth.py](./backend/app/routes/auth.py): Signup and user authentication callbacks.
+  * 📁 [projects.py](./backend/app/routes/projects.py): Project lifecycle operations.
+  * 💬 [chat.py](./backend/app/routes/chat.py): Chat message routing and turn-stream orchestration.
+  * 📄 [reports.py](./backend/app/routes/reports.py): Querying and exporting generated artifacts.
+* **🧱 [services/](./backend/app/services/)**:
+  * ⚙️ [chat_service.py](./backend/app/services/chat_service.py): Manages LangGraph turn lifecycle, transaction locking, and SSE formatting.
+  * 📁 [file_service.py](./backend/app/services/file_service.py): Handles RAG indexing and file ingestion.
 
+### 🎨 Next.js Frontend (`frontend/`)
+* **🧭 [app/](./frontend/app/)**: Uses the Next.js App Router.
+  * 💬 [projects/\[id\]/chat/page.tsx](./frontend/app/projects/[id]/chat/page.tsx): Main interactive workspace page with custom sidebar for agent phases and dynamic chat threads.
+  * 📄 [projects/\[id\]/reports/page.tsx](./frontend/app/projects/[id]/reports/page.tsx): Dynamic viewer showcasing compiled reports (PRD, Feasibility, ROI, Roadmap).
+* **🧩 [components/](./frontend/components/)**:
+  * 🖥️ [ProjectsView.tsx](./frontend/components/dashboard/ProjectsView.tsx): Project catalog dashboard with filters, search, and creation forms.
+  * ❓ [WorkspaceClarificationPanel.tsx](./frontend/components/workspace/WorkspaceClarificationPanel.tsx): Renders structured clarification questions flagged by the backend agent.
+* **📚 [lib/](./frontend/lib/)**:
+  * 📡 [api.ts](./frontend/lib/api.ts): Encapsulates requests to the FastAPI backend, featuring SSE event-stream consumption (`apiStream`).
+  * 🔐 [auth.ts](./frontend/lib/auth.ts): NextAuth authentication handlers, connecting to MongoDB for credentials and session verification.
+
+---
+
+## 🛠️ Getting Started
+
+### 📋 Prerequisites
+- **Python 3.11+** (managed via `uv`)
+- **Node.js 18+**
+- **MongoDB** (Local instance or MongoDB Atlas)
+- **Ollama** running locally (or configured Gemini/Mistral API keys)
+
+### 🗄️ 1. Database Setup
+Ensure MongoDB is running locally on `mongodb://localhost:27017` or obtain a MongoDB Atlas URI string.
+
+### 🐍 2. Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Copy the environment variables template and configure it:
+   ```bash
+   cp .env.example .env
+   # Edit backend/.env to configure MONGO_URI, JWT_SECRET, LLM_API_KEY, or OLLAMA_MODEL
+   ```
+3. Synchronize dependencies using `uv`:
+   ```bash
+   uv sync
+   ```
+4. Run the development server:
+   ```bash
+   uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+The Swagger documentation will be available at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+### 🖥️ 3. Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Copy the environment variables template and configure it:
+   ```bash
+   cp .env.example .env.local
+   # Edit frontend/.env.local with NEXTAUTH_SECRET, NEXT_PUBLIC_API_URL, and MONGODB_URI
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+Open [http://localhost:3000](http://localhost:3000) to view the application interface.
+
+---
+
+## 📊 Exploring Codebase Architecture (Graphify)
+
+This repository includes a pre-compiled AST knowledge graph representing references, calls, and imports across all source files.
+
+To explore this map in your browser:
 ```bash
 open graphify-out/graph.html
 ```
 
-The visualization includes:
-
-- 🗂️ **76 communities** — logical clusters (auth, chat workflow, dashboard, agents, etc.)
-- 🔍 **Search** — find any symbol by name
-- 🖱️ **Click-to-inspect** — source file, community, and neighbors per node
-- 🎨 **Community legend** — filter by cluster
-
-Largest communities in the current graph:
-
-| Community | Nodes |
-|-----------|-------|
-| ObjectId | 80 |
-| Logging Config | 47 |
-| Frontend Dependencies | 39 |
-| route_after_project_workflow | 35 |
-| apply_workflow_guards | 35 |
-| Health Tests | 34 |
-| NextAuth Integration | 33 |
-| mongodb.ts | 30 |
-| Dev Tooling | 30 |
-| __init__.py | 27 |
-
----
-
-## 🚀 Getting started
-
-### 💻 Frontend
-
+If you modify codebase logic and want to rebuild the AST graph:
 ```bash
-cd frontend
-npm install
-npm run dev
+graphify update .
 ```
 
-### 🐍 Backend
-
-```bash
-cd backend
-# See backend/README.md for Python env setup
-uvicorn app.main:app --reload --port 8000
-```
-
-The frontend expects the API at `http://localhost:8000` (see `frontend/lib/api.ts` in the graph).
-
----
-
-## 📄 Related docs in repo
-
-| Document | Notes |
-|----------|-------|
-| 📊 [`graphify-out/graph.html`](./graphify-out/graph.html) | **Primary architecture map** for this README |
-| 🎨 [`frontend/README.md`](./frontend/README.md) | Frontend-specific setup |
-| ⚙️ [`backend/README.md`](./backend/README.md) | Backend-specific setup |
-| 📄 [`plan.md`](./plan.md) | Extended product & engineering blueprint |
-| 📈 [`phase.md`](./phase.md) | Phased delivery roadmap |
-
----
-
-## 📜 License
-
-TBD.
+*For more information on repository structure, query options, and code connections, see [graphify-out/GRAPH_REPORT.md](./graphify-out/GRAPH_REPORT.md).*
