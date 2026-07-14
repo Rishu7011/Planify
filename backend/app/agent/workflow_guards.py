@@ -129,19 +129,85 @@ def is_discovery_complete(context: dict[str, Any] | None) -> bool:
     return False
 
 
+_QUESTION_MARKERS = (
+    "?",
+    "what ",
+    "what's ",
+    "whats ",
+    "how ",
+    "why ",
+    "when ",
+    "who ",
+    "which ",
+    "about ",
+    "tell me",
+    "explain",
+    "discuss",
+)
+
+_CONCEPTUAL_QUESTION_INDICATORS = (
+    "how to",
+    "how do i",
+    "how does",
+    "how should",
+    "what is",
+    "what are",
+    "what's",
+    "whats",
+    "why do",
+    "why should",
+    "why is",
+    "why are",
+    "explain what",
+    "explain how",
+    "explain why",
+    "tell me about the differences",
+    "tell me what",
+    "tell me how",
+    "tell me why",
+)
+
+
+def clean_user_message(user_input: str) -> str:
+    """Extract only the user's actual prompt, ignoring any appended file/document content blocks."""
+    if not user_input:
+        return ""
+    marker = "The user attached the following documents this turn."
+    if marker in user_input:
+        return user_input.split(marker)[0].strip()
+    return user_input.strip()
+
+
 def detect_requested_report(user_input: str) -> str | None:
-    """Return a report type if the user is asking to generate one."""
-    text = (user_input or "").strip().lower()
+    """Return a report type only when the user is clearly asking to generate one.
+
+    Requires an explicit generate-verb, or a very short command-like message
+    (e.g. "PRD", "roadmap please"). Conversational mentions like
+    "what about our roadmap?" must NOT force report generation.
+    """
+    clean_input = clean_user_message(user_input)
+    text = clean_input.strip().lower()
     if not text:
         return None
 
+    # Ignore conceptual question/informational requests even if they contain generate trigger keywords
+    if any(indicator in text for indicator in _CONCEPTUAL_QUESTION_INDICATORS):
+        return None
+
     has_verb = any(hint in text for hint in _GENERATE_HINTS)
+    looks_like_question = any(marker in text for marker in _QUESTION_MARKERS)
+    words = text.split()
+
     for report_type, aliases in _REPORT_ALIASES:
         for alias in aliases:
-            if alias in text:
-                if has_verb or len(text.split()) <= 12:
-                    return report_type
-                break
+            if alias not in text:
+                continue
+            if has_verb:
+                return report_type
+            # Short imperative / title-only: "PRD", "the roadmap", "roi please"
+            if len(words) <= 5 and not looks_like_question:
+                return report_type
+            break
     return None
 
 
@@ -321,6 +387,8 @@ def apply_workflow_guards(
                 assistant_response = _discovery_ready_reply(merged_context)
 
     # Even mid-discovery: never keep optional-only asks; rewrite questionnaire dumps.
+    # Only promote discovery_complete when soft gates are already satisfied
+    # (idea/problem + users/goals) — never on idea alone.
     if not discovery_complete:
         questions = filter_clarification_questions(
             questions,
@@ -331,18 +399,22 @@ def apply_workflow_guards(
         needs_clarification = bool(questions)
         if not questions:
             needs_clarification = False
-        if _is_blocking_discovery_ask(assistant_response) and (
-            _nonempty_str(merged_context.get("idea"))
-            or _nonempty_str(merged_context.get("problem_statement"))
-        ):
-            # Soft-complete when we have a usable idea — don't stall the user.
-            discovery_complete = True
-            merged_context["discovery_complete"] = True
-            merged_context["missing_information"] = []
-            merged_context.pop("pending_discovery", None)
-            needs_clarification = False
-            questions = []
-            assistant_response = _discovery_ready_reply(merged_context)
+        if _is_blocking_discovery_ask(assistant_response):
+            if is_discovery_complete(merged_context):
+                discovery_complete = True
+                merged_context["discovery_complete"] = True
+                merged_context["missing_information"] = []
+                merged_context.pop("pending_discovery", None)
+                needs_clarification = False
+                questions = []
+                assistant_response = _discovery_ready_reply(merged_context)
+            elif not questions:
+                # Optional-field quiz with incomplete core discovery — nudge, don't complete.
+                assistant_response = (
+                    "Thanks — I’ve noted what you shared. "
+                    "A bit more on the core problem and who it’s for will unblock reports. "
+                    "Share those whenever you’re ready, or say **generate the PRD** if you want me to fill gaps as labeled assumptions."
+                )
 
     if not workflows:
         workflows = ["NO_ACTION"]

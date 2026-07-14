@@ -8,23 +8,26 @@ from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Request, status
 
 from app.db.mongodb import get_database
-from app.schemas.project import CreateProjectRequest
+from app.schemas.project import CreateProjectRequest, UpdateProjectRequest
 from app.services.project_context import empty_context_object, enrich_project_response
+from app.utils.objectid import parse_object_id
 
 router = APIRouter(prefix="/api/projects", tags=["Projects"])
 UTC = timezone.utc
 
 
 async def _get_user_org_ids(user: dict, db) -> list[ObjectId]:
+    user_id = parse_object_id(user.get("user_id"), field="user_id")
     member_docs = await db.members.find(
-        {"user_id": ObjectId(user["user_id"]), "status": "active"}
+        {"user_id": user_id, "status": "active"}
     ).to_list(None)
     return [m["organization_id"] for m in member_docs]
 
 
 async def _assert_project_access(project_id: str, user: dict, db) -> dict:
+    oid = parse_object_id(project_id, field="project_id")
     project = await db.projects.find_one(
-        {"_id": ObjectId(project_id), "status": {"$ne": "deleted"}}
+        {"_id": oid, "status": {"$ne": "deleted"}}
     )
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
@@ -40,13 +43,14 @@ async def _assert_project_access(project_id: str, user: dict, db) -> dict:
 async def create_project(request: Request, body: CreateProjectRequest) -> dict:
     user = request.state.user
     db = get_database()
+    user_id = parse_object_id(user.get("user_id"), field="user_id")
 
     if body.organization_id:
-        org_id = ObjectId(body.organization_id)
+        org_id = parse_object_id(body.organization_id, field="organization_id")
         member = await db.members.find_one(
             {
                 "organization_id": org_id,
-                "user_id": ObjectId(user["user_id"]),
+                "user_id": user_id,
                 "status": "active",
             }
         )
@@ -54,32 +58,41 @@ async def create_project(request: Request, body: CreateProjectRequest) -> dict:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a member of this org")
     else:
         personal_org = await db.organizations.find_one(
-            {"owner_id": ObjectId(user["user_id"]), "type": "personal"}
+            {"owner_id": user_id, "type": "personal"}
         )
         if not personal_org:
             now = datetime.now(UTC)
-            org_result = await db.organizations.insert_one(
-                {
-                    "name": f"{user.get('email', 'My')} Workspace",
-                    "owner_id": ObjectId(user["user_id"]),
-                    "type": "personal",
-                    "plan_tier": "free",
-                    "settings": {},
-                    "created_at": now,
-                    "updated_at": now,
-                }
-            )
-            org_id = org_result.inserted_id
-            await db.members.insert_one(
-                {
-                    "organization_id": org_id,
-                    "user_id": ObjectId(user["user_id"]),
-                    "role": "OWNER",
-                    "invited_by": ObjectId(user["user_id"]),
-                    "joined_at": now,
-                    "status": "active",
-                }
-            )
+            try:
+                org_result = await db.organizations.insert_one(
+                    {
+                        "name": f"{user.get('email', 'My')} Workspace",
+                        "owner_id": user_id,
+                        "type": "personal",
+                        "plan_tier": "free",
+                        "settings": {},
+                        "created_at": now,
+                        "updated_at": now,
+                    }
+                )
+                org_id = org_result.inserted_id
+                await db.members.insert_one(
+                    {
+                        "organization_id": org_id,
+                        "user_id": user_id,
+                        "role": "OWNER",
+                        "invited_by": user_id,
+                        "joined_at": now,
+                        "status": "active",
+                    }
+                )
+            except Exception:
+                # Race: another request created the personal org first
+                personal_org = await db.organizations.find_one(
+                    {"owner_id": user_id, "type": "personal"}
+                )
+                if not personal_org:
+                    raise
+                org_id = personal_org["_id"]
         else:
             org_id = personal_org["_id"]
 
@@ -92,7 +105,7 @@ async def create_project(request: Request, body: CreateProjectRequest) -> dict:
     project_result = await db.projects.insert_one(
         {
             "organization_id": org_id,
-            "owner_id": ObjectId(user["user_id"]),
+            "owner_id": user_id,
             "title": body.title,
             "description": body.description or "",
             "status": "active",
@@ -106,7 +119,7 @@ async def create_project(request: Request, body: CreateProjectRequest) -> dict:
     chat_result = await db.chat_sessions.insert_one(
         {
             "project_id": project_id,
-            "user_id": ObjectId(user["user_id"]),
+            "user_id": user_id,
             "organization_id": org_id,
             "title": f"Chat — {body.title}",
             "status": "active",
@@ -150,29 +163,33 @@ async def get_project(request: Request, project_id: str) -> dict:
     db = get_database()
 
     project = await _assert_project_access(project_id, user, db)
-    chat = await db.chat_sessions.find_one({"project_id": ObjectId(project_id)})
+    chat = await db.chat_sessions.find_one(
+        {"project_id": parse_object_id(project_id, field="project_id")}
+    )
     chat_session_id = str(chat["_id"]) if chat else None
     return enrich_project_response(project, chat_session_id)
 
 
 @router.patch("/{project_id}", summary="Update project title or description")
-async def update_project(request: Request, project_id: str) -> dict:
+async def update_project(request: Request, project_id: str, body: UpdateProjectRequest) -> dict:
     user = request.state.user
     db = get_database()
 
     await _assert_project_access(project_id, user, db)
-    body = await request.json()
     update_fields: dict = {}
-    if "title" in body:
-        update_fields["title"] = body["title"]
-    if "description" in body:
-        update_fields["description"] = body["description"]
+    if body.title is not None:
+        update_fields["title"] = body.title
+    if body.description is not None:
+        update_fields["description"] = body.description
 
     if not update_fields:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
     update_fields["updated_at"] = datetime.now(UTC)
-    await db.projects.update_one({"_id": ObjectId(project_id)}, {"$set": update_fields})
+    await db.projects.update_one(
+        {"_id": parse_object_id(project_id, field="project_id")},
+        {"$set": update_fields},
+    )
     return {"message": "Project updated"}
 
 
@@ -189,7 +206,7 @@ async def delete_project(request: Request, project_id: str) -> dict:
         )
 
     await db.projects.update_one(
-        {"_id": ObjectId(project_id)},
+        {"_id": parse_object_id(project_id, field="project_id")},
         {"$set": {"status": "deleted", "updated_at": datetime.now(UTC)}},
     )
     return {"message": "Project archived"}
@@ -202,7 +219,9 @@ async def get_project_workflow_runs(request: Request, project_id: str) -> list:
 
     await _assert_project_access(project_id, user, db)
     runs = (
-        await db.ai_workflow_runs.find({"project_id": ObjectId(project_id)})
+        await db.ai_workflow_runs.find(
+            {"project_id": parse_object_id(project_id, field="project_id")}
+        )
         .sort("created_at", -1)
         .to_list(None)
     )

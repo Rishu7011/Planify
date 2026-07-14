@@ -14,11 +14,10 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       /** Signed HS256 JWT — send as Authorization: Bearer <accessToken> to FastAPI */
-      accessToken: string;
+      accessToken?: string;
     };
   }
 }
-
 declare module "next-auth/jwt" {
   interface JWT {
     sub?: string;

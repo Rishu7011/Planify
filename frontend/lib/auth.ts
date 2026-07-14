@@ -106,9 +106,20 @@ export const authOptions: AuthOptions = {
       if (token && session.user) {
         session.user.id = token.sub as string;
 
+        const secretRaw = process.env.NEXTAUTH_SECRET || "";
+        if (!secretRaw) {
+          console.error(
+            "[auth] NEXTAUTH_SECRET is missing — cannot mint backend accessToken. " +
+              "Set it to the same value as backend JWT_SECRET."
+          );
+          // Do not fall back to raw user id — backend rejects non-JWT bearers.
+          (session.user as { accessToken?: string }).accessToken = undefined;
+          return session;
+        }
+
         try {
           const { SignJWT } = await import("jose");
-          const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "");
+          const secret = new TextEncoder().encode(secretRaw);
           const accessToken = await new SignJWT({
             sub: token.sub,
             email: token.email,
@@ -121,7 +132,7 @@ export const authOptions: AuthOptions = {
           session.user.accessToken = accessToken;
         } catch (err) {
           console.error("[auth] Failed to encode access token:", err);
-          session.user.accessToken = token.sub as string;
+          (session.user as { accessToken?: string }).accessToken = undefined;
         }
       }
       return session;
@@ -129,8 +140,13 @@ export const authOptions: AuthOptions = {
 
     async signIn({ user }) {
       try {
+        const secretRaw = process.env.NEXTAUTH_SECRET || "";
+        if (!secretRaw) {
+          console.error("[auth] NEXTAUTH_SECRET missing — skipping signup/complete");
+          return true;
+        }
         const { SignJWT } = await import("jose");
-        const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "");
+        const secret = new TextEncoder().encode(secretRaw);
         const token = await new SignJWT({
           sub: user.id,
           email: user.email,

@@ -20,6 +20,7 @@ from app.routes.auth import router as auth_router
 from app.routes.chat import router as chat_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.export import router as export_router
+from app.routes.files import router as files_router
 from app.routes.projects import router as projects_router
 from app.routes.reports import router as reports_router
 
@@ -40,14 +41,15 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    is_prod = settings.environment.lower() == "production"
     application = FastAPI(
         title=settings.app_name,
         description="AI Project Intelligence Platform — Backend API",
         version=settings.app_version,
         lifespan=lifespan,
-        docs_url="/docs",
-        redoc_url="/redoc",
-        openapi_url="/openapi.json",
+        docs_url=None if is_prod else "/docs",
+        redoc_url=None if is_prod else "/redoc",
+        openapi_url=None if is_prod else "/openapi.json",
     )
 
     application.add_middleware(
@@ -66,6 +68,7 @@ def create_app() -> FastAPI:
     application.include_router(auth_router)
     application.include_router(projects_router)
     application.include_router(chat_router)
+    application.include_router(files_router)
     application.include_router(reports_router)
     application.include_router(export_router)
     application.include_router(dashboard_router)

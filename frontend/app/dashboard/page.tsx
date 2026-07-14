@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, formatApiError, isApiError } from "@/lib/api";
 import { AssetsView, type DashboardAsset } from "@/components/dashboard/AssetsView";
 import { ProjectsView } from "@/components/dashboard/ProjectsView";
 import { SettingsView } from "@/components/dashboard/SettingsView";
@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const projectCardsRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
-  const accessToken = (session?.user as any)?.accessToken;
+  const accessToken = session?.user?.accessToken;
 
   // ── Redirect Unauthenticated Users (Fallback) ─────────────────────────────
   useEffect(() => {
@@ -56,7 +56,14 @@ export default function DashboardPage() {
 
   // ── Fetch Dashboard Data ───────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
-    if (status !== "authenticated" || !accessToken) return;
+    if (status !== "authenticated") return;
+    if (!accessToken) {
+      setLoadingData(false);
+      setApiError(
+        "Missing backend access token. Set NEXTAUTH_SECRET to match backend JWT_SECRET, then sign in again."
+      );
+      return;
+    }
     setLoadingData(true);
     setApiError(null);
     try {
@@ -70,9 +77,20 @@ export default function DashboardPage() {
       setStats(statsData || null);
       setRuns(runsData || []);
       setAssets(assetsData || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Dashboard] Failed to fetch data:", err);
-      setApiError(err.detail || "Cannot reach the backend — make sure it is running on port 8000.");
+      if (isApiError(err) && err.status === 401) {
+        setApiError(
+          "Unauthorized — sign out and sign in again. NEXTAUTH_SECRET must match backend JWT_SECRET."
+        );
+      } else {
+        setApiError(
+          formatApiError(
+            err,
+            "Cannot reach the backend — make sure it is running on port 8000."
+          )
+        );
+      }
     } finally {
       setLoadingData(false);
     }
@@ -231,9 +249,11 @@ export default function DashboardPage() {
       } else {
         setModalError("Failed to resolve project identifier.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Dashboard] Project creation error:", err);
-      setModalError(err.detail || "An unexpected error occurred while creating the project.");
+      setModalError(
+        formatApiError(err, "An unexpected error occurred while creating the project.")
+      );
     } finally {
       setCreating(false);
     }
@@ -252,8 +272,9 @@ export default function DashboardPage() {
       });
       // Optimistic update — remove from local state
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Dashboard] Delete error:", err);
+      setApiError(formatApiError(err, "Could not delete project."));
     } finally {
       setDeletingId(null);
     }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 
-import { apiFetch } from "@/lib/api";
+import { api, apiFetch, formatApiError } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import { ChangePasswordOtpForm } from "@/components/auth/ChangePasswordOtpForm";
 
@@ -130,9 +130,9 @@ export function SettingsView({
         if (cancelled) return;
         setMe(data);
         setWorkspaceName(data.workspace?.name || "");
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) {
-          setError(err?.detail || "Could not load account settings.");
+          setError(formatApiError(err, "Could not load account settings."));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -167,9 +167,8 @@ export function SettingsView({
     setSavingWorkspace(true);
     setWorkspaceMsg(null);
     try {
-      await apiFetch("/auth/workspace", {
+      await api.patch("/auth/workspace", {
         accessToken,
-        method: "PATCH",
         body: JSON.stringify({ name }),
       });
       setMe((prev) =>
@@ -183,8 +182,8 @@ export function SettingsView({
           : prev,
       );
       setWorkspaceMsg("Workspace name saved.");
-    } catch (err: any) {
-      setWorkspaceMsg(err?.detail || "Could not save workspace name.");
+    } catch (err: unknown) {
+      setWorkspaceMsg(formatApiError(err, "Could not save workspace name."));
     } finally {
       setSavingWorkspace(false);
     }

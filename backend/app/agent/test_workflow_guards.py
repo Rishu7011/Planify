@@ -69,6 +69,30 @@ def test_detect_prd_request():
         )
         == "TECHNICAL_ARCHITECTURE"
     )
+    # Short command form
+    assert detect_requested_report("PRD") == "PRD"
+    assert detect_requested_report("roadmap please") == "ROADMAP"
+    # Conversational mentions must NOT force a report
+    assert detect_requested_report("what about our roadmap?") is None
+    assert detect_requested_report("tell me about the PRD") is None
+    assert detect_requested_report("how should we think about roi?") is None
+    
+    # Document attachments containing report trigger keywords should NOT trigger a report
+    user_msg_with_file = (
+        "tell me about this pdf\n\n"
+        "The user attached the following documents this turn. Use them for FILE_ANALYSIS / discovery / reports as relevant.\n\n"
+        "### Uploaded file: NextJS Ebook-20-30.pdf\n"
+        "Chapter 3\n"
+        "Roadmap\n"
+        "The Roadmap is a concise guide to web development essentials. It covers HTML, CSS, and JS."
+    )
+    assert detect_requested_report(user_msg_with_file) is None
+
+    # Conceptual questions should NOT trigger a report
+    assert detect_requested_report("How do I create a roadmap?") is None
+    assert detect_requested_report("Explain how to write a PRD") is None
+    assert detect_requested_report("What database options are there for nextjs?") is None
+    assert detect_requested_report("What is React?") is None
 
 
 def test_filter_drops_optional_budget_and_answered_features():
@@ -180,6 +204,27 @@ def test_apply_guards_rewrites_budget_questionnaire():
     assert out["merged_context"]["target_users"]
 
 
+def test_should_run_web_search():
+    from app.agent.web_search import should_run_web_search
+    # Generic introductions/discussions should NOT trigger web search
+    assert not should_run_web_search("I want to build a startup idea for tutoring")
+    assert not should_run_web_search("hi, I have a new project idea")
+    
+    # PDF attachment contents should NOT trigger web search
+    user_msg_with_file = (
+        "tell me about this pdf\n\n"
+        "The user attached the following documents this turn. Use them for FILE_ANALYSIS / discovery / reports as relevant.\n\n"
+        "### Uploaded file: NextJS Ebook-20-30.pdf\n"
+        "This chapter is a roadmap that discusses competitor analysis and market trends."
+    )
+    assert not should_run_web_search(user_msg_with_file)
+
+    # Explicit research questions SHOULD trigger web search
+    assert should_run_web_search("who are the competitors for a crypto trading app?")
+    assert should_run_web_search("what is the market size of edtech in 2026?")
+    assert should_run_web_search("what is the pricing model of stripe?")
+
+
 if __name__ == "__main__":
     test_discovery_complete_soft_gates()
     test_detect_prd_request()
@@ -187,4 +232,5 @@ if __name__ == "__main__":
     test_apply_guards_forces_report_without_stack_or_budget()
     test_apply_guards_stops_discovery_loop()
     test_apply_guards_rewrites_budget_questionnaire()
+    test_should_run_web_search()
     print("All workflow_guards tests passed!")

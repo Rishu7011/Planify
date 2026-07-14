@@ -13,6 +13,11 @@ class CreateProjectRequest(BaseModel):
     organization_id: Optional[str] = None
 
 
+class UpdateProjectRequest(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
+
+
 class ProjectDetailResponse(BaseModel):
     id: str
     title: str

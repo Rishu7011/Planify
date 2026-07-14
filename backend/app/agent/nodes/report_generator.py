@@ -22,6 +22,7 @@ from app.agent.prompts import (
     REPORT_INSTRUCTIONS,
     report_generator_prompt,
 )
+from app.agent.rag import gather_rag_context
 from app.agent.router import REPORT_WORKFLOWS
 from app.agent.state import WorkflowState
 from app.agent.web_search import gather_web_intel
@@ -126,6 +127,17 @@ def report_generator_node(state: WorkflowState) -> dict:
     else:
         web_intel = "(Web search skipped for this report type.)"
 
+    try:
+        rag_context = gather_rag_context(
+            user_input=state.get("user_input") or report_type,
+            project_context=project_context,
+            force=True,
+            report_type=report_type,
+        )
+    except Exception as rag_err:
+        print(f"[report_generator] rag skipped: {rag_err}")
+        rag_context = "(No knowledge base results available.)"
+
     print(f"[report_generator] Generating {report_type}…")
     response = _chain.invoke(
         {
@@ -133,6 +145,7 @@ def report_generator_node(state: WorkflowState) -> dict:
             "project_context": context_str,
             "instructions": instructions,
             "web_intel": web_intel,
+            "rag_context": rag_context,
         }
     )
     report_doc = response.content
@@ -150,10 +163,12 @@ def report_generator_node(state: WorkflowState) -> dict:
             ]
             project_repo.update_context(existing["_id"], ctx)
 
-            user_input = state["user_input"]
+            # Use user_display (clean typed message) for DB — never the expanded
+            # blob that includes extracted file text.
+            user_for_db = state.get("user_display") or state["user_input"]
             conversation_repo.append_turn(
                 session_id=session_id,
-                user_input=user_input,
+                user_input=user_for_db,
                 ai_response=report_doc,
                 metadata={
                     "project_action": "REPORT_REQUEST",

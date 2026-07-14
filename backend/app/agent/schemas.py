@@ -93,6 +93,36 @@ class ProjectAction(str, Enum):
     CLARIFICATION    = "CLARIFICATION"     # Responding to a previous clarification ask
 
 
+class FileIntent(str, Enum):
+    """How the uploaded file relates to this turn's question and to the project.
+
+    The LLM must set this when a file is present this turn:
+
+    ABOUT_FILE_AND_PROJECT  — user's question is about the file AND the file
+                              is relevant to the current project context.
+                              ("tell me about this pdf" + project spec doc)
+
+    ABOUT_FILE_ONLY         — user's question is about the file BUT the file
+                              has nothing to do with the current project.
+                              ("summarize this" + unrelated ebook/manual)
+
+    FILE_AS_PROJECT_CONTEXT — user's question is NOT about the file; the file
+                              enriches the project context as a side effect.
+                              ("what tech stack should I use?" + project spec)
+
+    FILE_IRRELEVANT         — user's question is NOT about the file AND the
+                              file is unrelated to the project. Ignore the file.
+                              ("give me startup ideas" + random PDF)
+
+    NO_FILE                 — no file attached this turn (default).
+    """
+    ABOUT_FILE_AND_PROJECT  = "ABOUT_FILE_AND_PROJECT"
+    ABOUT_FILE_ONLY         = "ABOUT_FILE_ONLY"
+    FILE_AS_PROJECT_CONTEXT = "FILE_AS_PROJECT_CONTEXT"
+    FILE_IRRELEVANT         = "FILE_IRRELEVANT"
+    NO_FILE                 = "NO_FILE"
+
+
 class NextWorkflow(str, Enum):
     """Downstream specialist agents this node can route to."""
     PROJECT_INITIALIZATION = "PROJECT_INITIALIZATION"
@@ -226,13 +256,26 @@ class ProjectWorkflowOutput(BaseModel):
             "NEW_PROJECT / CONTINUE_PROJECT → acknowledge, push back on weak budget/tags/scope/"
             "mismatched stack, propose 2–3 project-specific ideas, summarize, ask ≤3 follow-ups "
             "if needed. "
-            "PROJECT_QUERY → answer from context; honest judgment on budgets/tags/stack. "
+            "PROJECT_QUERY / FILE_ANALYSIS → deliver a direct, logical, and comprehensive answer "
+            "or analysis addressing the user's specific questions or files. Summarize or explain "
+            "clearly based on the provided project context/file content. Do not use coaching structures. "
             "REPORT_REQUEST → confirm generation (User-stated vs Recommendation for stack/budget). "
             "needs_clarification=True → numbered list of ≤3 targeted questions."
         ),
     )
     reasoning_summary:       str           = Field(..., description="Internal reasoning trace — not shown to user.")
     confidence:              float         = Field(..., ge=0.0, le=1.0, description="Confidence in the extraction, 0.0–1.0.")
+    file_intent:             FileIntent    = Field(
+        default=FileIntent.NO_FILE,
+        description=(
+            "Only set when a file is attached this turn. "
+            "ABOUT_FILE_AND_PROJECT: question is about the file AND file is project-relevant — do rich FILE_ANALYSIS, merge findings into project_context. "
+            "ABOUT_FILE_ONLY: question is about the file BUT file is NOT project-relevant — answer about the file, do NOT touch project_context. "
+            "FILE_AS_PROJECT_CONTEXT: question is NOT about the file; use the file to silently enrich project_context, answer the question. "
+            "FILE_IRRELEVANT: question is NOT about the file AND file is unrelated — ignore the file, answer the question, optionally acknowledge attachment. "
+            "NO_FILE: no file attached this turn."
+        ),
+    )
 
     @field_validator("confidence", mode="before")
     @classmethod

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from bson import ObjectId
 from fastapi import APIRouter, Request
 
 from app.db.mongodb import get_database
+from app.utils.objectid import parse_object_id
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
@@ -14,9 +14,10 @@ router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 async def get_dashboard_stats(request: Request) -> dict:
     user = request.state.user
     db = get_database()
+    user_id = parse_object_id(user.get("user_id"), field="user_id")
 
     member_docs = await db.members.find(
-        {"user_id": ObjectId(user["user_id"]), "status": "active"}
+        {"user_id": user_id, "status": "active"}
     ).to_list(None)
     org_ids = [m["organization_id"] for m in member_docs]
 
@@ -76,9 +77,10 @@ async def list_dashboard_assets(request: Request, limit: int = 100) -> list:
     """Artifact library: every generated report the user can access."""
     user = request.state.user
     db = get_database()
+    user_id = parse_object_id(user.get("user_id"), field="user_id")
 
     member_docs = await db.members.find(
-        {"user_id": ObjectId(user["user_id"]), "status": "active"}
+        {"user_id": user_id, "status": "active"}
     ).to_list(None)
     org_ids = [m["organization_id"] for m in member_docs]
     if not org_ids:
@@ -103,6 +105,7 @@ async def list_dashboard_assets(request: Request, limit: int = 100) -> list:
     for doc in docs:
         pid = str(doc["project_id"])
         report_type = str(doc.get("report_type") or "report")
+        created = doc.get("created_at") or doc.get("updated_at")
         assets.append(
             {
                 "asset_id": str(doc["_id"]),
@@ -113,7 +116,7 @@ async def list_dashboard_assets(request: Request, limit: int = 100) -> list:
                 "project_title": project_map.get(pid, "Untitled"),
                 "version": doc.get("version_number", 1),
                 "updated_at": doc["updated_at"].isoformat() if doc.get("updated_at") else None,
-                "created_at": doc["created_at"].isoformat() if doc.get("created_at") else None,
+                "created_at": created.isoformat() if created else None,
             }
         )
     return assets
@@ -123,9 +126,10 @@ async def list_dashboard_assets(request: Request, limit: int = 100) -> list:
 async def get_recent_runs(request: Request, limit: int = 10) -> list:
     user = request.state.user
     db = get_database()
+    user_id = parse_object_id(user.get("user_id"), field="user_id")
 
     member_docs = await db.members.find(
-        {"user_id": ObjectId(user["user_id"]), "status": "active"}
+        {"user_id": user_id, "status": "active"}
     ).to_list(None)
     org_ids = [m["organization_id"] for m in member_docs]
     if not org_ids:
@@ -142,7 +146,7 @@ async def get_recent_runs(request: Request, limit: int = 10) -> list:
     runs = (
         await db.ai_workflow_runs.find({"project_id": {"$in": project_ids}})
         .sort("created_at", -1)
-        .limit(limit)
+        .limit(max(1, min(limit, 50)))
         .to_list(None)
     )
 

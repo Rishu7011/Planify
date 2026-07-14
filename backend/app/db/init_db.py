@@ -35,6 +35,13 @@ async def init_indexes() -> None:
     await _safe_create_index(db.chat_messages, [("project_id", 1)])
     await _safe_create_index(db.ai_workflow_runs, [("project_id", 1), ("created_at", -1)])
     await _safe_create_index(db.members, [("organization_id", 1), ("user_id", 1)], unique=True)
+    # One personal workspace per owner (team orgs are not constrained).
+    await _safe_create_index(
+        db.organizations,
+        [("owner_id", 1), ("type", 1)],
+        unique=True,
+        partialFilterExpression={"type": "personal"},
+    )
     await _safe_create_index(
         db.generated_reports,
         [("project_id", 1), ("report_type", 1)],
@@ -42,3 +49,9 @@ async def init_indexes() -> None:
     )
     await _safe_create_index(db.conversations, "session_id")
     await _safe_create_index(db.agent_project_snapshots, "session_id")
+    await _safe_create_index(
+        db.ai_workflow_runs,
+        [("project_id", 1), ("status", 1)],
+    )
+    await _safe_create_index(db.project_files, [("project_id", 1), ("created_at", -1)])
+    await _safe_create_index(db.project_files, [("uploaded_by", 1)])

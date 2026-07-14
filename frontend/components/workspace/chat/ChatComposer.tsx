@@ -3,6 +3,12 @@
 import { useCallback, useEffect, useRef, type KeyboardEvent } from "react";
 import { GLASS_PANEL, TRANSITION } from "./constants";
 
+export type PendingAttachment = {
+  /** Local id for UI list keys before/during upload */
+  localId: string;
+  file: File;
+};
+
 interface Props {
   value: string;
   onChange: (value: string) => void;
@@ -11,9 +17,21 @@ interface Props {
   loading: boolean;
   streaming?: boolean;
   disabled?: boolean;
+  attachments?: PendingAttachment[];
+  onAttachmentsChange?: (files: PendingAttachment[]) => void;
+  uploading?: boolean;
+  maxFiles?: number;
 }
 
 const MAX_HEIGHT_PX = 200;
+const DEFAULT_MAX_FILES = 5;
+const ACCEPT = ".pdf,application/pdf";
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export function ChatComposer({
   value,
@@ -23,8 +41,13 @@ export function ChatComposer({
   loading,
   streaming = false,
   disabled,
+  attachments = [],
+  onAttachmentsChange,
+  uploading = false,
+  maxFiles = DEFAULT_MAX_FILES,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const adjustHeight = useCallback(() => {
     const el = textareaRef.current;
@@ -41,85 +64,170 @@ export function ChatComposer({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (streaming) {
-        if (value.trim()) onSend();
+        if (value.trim() || attachments.length) onSend();
         return;
       }
-      if (!loading && value.trim()) onSend();
+      if (!loading && !uploading && (value.trim() || attachments.length)) onSend();
     }
   };
 
   const isGenerating = loading || streaming;
-  const canSend = !disabled && value.trim().length > 0;
+  const canSend =
+    !disabled &&
+    !uploading &&
+    (value.trim().length > 0 || attachments.length > 0);
   const showStop = isGenerating;
+  const canAttach = !disabled && !isGenerating && !uploading && attachments.length < maxFiles;
+
+  const pickFiles = () => {
+    if (!canAttach) return;
+    fileInputRef.current?.click();
+  };
+
+  const onFilePicked = (list: FileList | null) => {
+    if (!list?.length || !onAttachmentsChange) return;
+    const remaining = maxFiles - attachments.length;
+    const next = [...attachments];
+    for (const file of Array.from(list).slice(0, remaining)) {
+      const isPdf =
+        file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) continue;
+      next.push({
+        localId:
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `f-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file,
+      });
+    }
+    onAttachmentsChange(next);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAttachment = (localId: string) => {
+    onAttachmentsChange?.(attachments.filter((a) => a.localId !== localId));
+  };
 
   return (
-    <div
-      className={`${GLASS_PANEL} mx-auto flex max-w-4xl items-end gap-1 rounded-2xl p-2 shadow-2xl shadow-black/20 ring-1 ring-white/[0.04] focus-within:border-[#AEC6FF]/25 focus-within:ring-[#AEC6FF]/20 ${TRANSITION}`}
-    >
-      <button
-        type="button"
-        className="mb-0.5 shrink-0 rounded-xl p-2.5 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/40"
-        aria-label="Attach file"
-        disabled={isGenerating}
-      >
-        <span className="material-symbols-outlined text-[22px]">attach_file</span>
-      </button>
-
-      <textarea
-        ref={textareaRef}
-        rows={1}
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={
-          isGenerating
-            ? "Type to interrupt and send a new message…"
-            : "Message Planify AI… (@ to mention an agent)"
-        }
-        aria-label="Message input"
-        className={`max-h-[200px] min-h-[44px] min-w-0 flex-1 resize-none border-none bg-transparent py-2.5 text-sm leading-relaxed text-[#F7F8FC] placeholder:text-[#7C869A] focus:outline-none focus:ring-0 md:text-[15px] ${CUSTOM_SCROLLBAR}`}
-        style={{ height: "44px" }}
-      />
-
-      <div className="mb-0.5 flex shrink-0 items-center gap-0.5 pr-1">
-        <button
-          type="button"
-          className="hidden rounded-xl p-2 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/40 sm:block"
-          aria-label="Voice input (coming soon)"
-          disabled
-          title="Voice input coming soon"
-        >
-          <span className="material-symbols-outlined text-[22px]">mic</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={showStop && !canSend ? onStop : onSend}
-          disabled={showStop ? !onStop && !canSend : !canSend}
-          aria-label={
-            showStop && !canSend
-              ? "Stop generating"
-              : showStop && canSend
-              ? "Interrupt and send message"
-              : "Send message"
-          }
-          className={`flex h-10 w-10 items-center justify-center rounded-xl md:h-11 md:w-11 ${TRANSITION} ${
-            showStop && !canSend
-              ? "bg-[#151A2B] text-[#F7F8FC] ring-1 ring-white/10 hover:bg-[#1B2136] active:scale-[0.97]"
-              : canSend
-              ? "bg-[#AEC6FF] text-[#090B14] shadow-lg shadow-[#AEC6FF]/25 hover:scale-[1.03] active:scale-[0.97]"
-              : "bg-white/[0.06] text-[#7C869A]"
-          } focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/50 disabled:pointer-events-none`}
-        >
-          {showStop && !canSend ? (
-            <span className="material-symbols-outlined text-xl">stop_circle</span>
-          ) : showStop && canSend ? (
-            <span className="material-symbols-outlined text-xl">send</span>
-          ) : (
-            <span className="material-symbols-outlined text-xl">send</span>
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-2">
+      {attachments.length > 0 && (
+        <div className="flex flex-wrap gap-2 px-1">
+          {attachments.map((a) => (
+            <div
+              key={a.localId}
+              className="group flex max-w-full items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.04] px-2.5 py-1.5 text-xs text-[#B4BCCB]"
+            >
+              <span className="material-symbols-outlined text-base text-[#AEC6FF]">
+                draft
+              </span>
+              <span className="truncate font-medium text-[#F7F8FC]">{a.file.name}</span>
+              <span className="shrink-0 text-[10px] text-[#7C869A]">
+                {formatBytes(a.file.size)}
+              </span>
+              <button
+                type="button"
+                aria-label={`Remove ${a.file.name}`}
+                disabled={isGenerating || uploading}
+                onClick={() => removeAttachment(a.localId)}
+                className="rounded-md p-0.5 text-[#7C869A] transition-colors hover:bg-white/10 hover:text-[#F7F8FC] disabled:opacity-40"
+              >
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+          ))}
+          {uploading && (
+            <span className="flex items-center gap-1.5 text-[11px] text-[#AEC6FF]">
+              <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+              Uploading…
+            </span>
           )}
+        </div>
+      )}
+
+      <div
+        className={`${GLASS_PANEL} flex items-end gap-1 rounded-2xl p-2 shadow-2xl shadow-black/20 ring-1 ring-white/[0.04] focus-within:border-[#AEC6FF]/25 focus-within:ring-[#AEC6FF]/20 ${TRANSITION}`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept={ACCEPT}
+          multiple
+          onChange={(e) => onFilePicked(e.target.files)}
+        />
+
+        <button
+          type="button"
+          className="mb-0.5 shrink-0 rounded-xl p-2.5 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/40 disabled:opacity-40"
+          aria-label="Attach file"
+          disabled={!canAttach}
+          title={
+            attachments.length >= maxFiles
+              ? `Max ${maxFiles} files per message`
+              : "Attach PDF"
+          }
+          onClick={pickFiles}
+        >
+          <span className="material-symbols-outlined text-[22px]">attach_file</span>
         </button>
+
+        <textarea
+          ref={textareaRef}
+          rows={1}
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={
+            isGenerating
+              ? "Type to interrupt and send a new message…"
+              : attachments.length
+              ? "Add a note about the PDF(s), or press send…"
+              : "Message Planify AI… (attach a PDF with the paperclip)"
+          }
+          aria-label="Message input"
+          className={`max-h-[200px] min-h-[44px] min-w-0 flex-1 resize-none border-none bg-transparent py-2.5 text-sm leading-relaxed text-[#F7F8FC] placeholder:text-[#7C869A] focus:outline-none focus:ring-0 md:text-[15px] ${CUSTOM_SCROLLBAR}`}
+          style={{ height: "44px" }}
+        />
+
+        <div className="mb-0.5 flex shrink-0 items-center gap-0.5 pr-1">
+          <button
+            type="button"
+            className="hidden rounded-xl p-2 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/40 sm:block"
+            aria-label="Voice input (coming soon)"
+            disabled
+            title="Voice input coming soon"
+          >
+            <span className="material-symbols-outlined text-[22px]">mic</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={showStop && !canSend ? onStop : onSend}
+            disabled={showStop ? !onStop && !canSend : !canSend}
+            aria-label={
+              showStop && !canSend
+                ? "Stop generating"
+                : showStop && canSend
+                ? "Interrupt and send message"
+                : "Send message"
+            }
+            className={`flex h-10 w-10 items-center justify-center rounded-xl md:h-11 md:w-11 ${TRANSITION} ${
+              showStop && !canSend
+                ? "bg-[#151A2B] text-[#F7F8FC] ring-1 ring-white/10 hover:bg-[#1B2136] active:scale-[0.97]"
+                : canSend
+                ? "bg-[#AEC6FF] text-[#090B14] shadow-lg shadow-[#AEC6FF]/25 hover:scale-[1.03] active:scale-[0.97]"
+                : "bg-white/[0.06] text-[#7C869A]"
+            } focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AEC6FF]/50 disabled:pointer-events-none`}
+          >
+            {showStop && !canSend ? (
+              <span className="material-symbols-outlined text-xl">stop_circle</span>
+            ) : (
+              <span className="material-symbols-outlined text-xl">send</span>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

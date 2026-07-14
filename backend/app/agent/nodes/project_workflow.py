@@ -33,6 +33,7 @@ from langchain_core.messages import AIMessage, BaseMessage
 from app.agent.db import conversation_repo, project_repo
 from app.agent.llm import get_structured_llm
 from app.agent.prompts import project_workflow_prompt
+from app.agent.rag import gather_rag_context
 from app.agent.router import REPORT_WORKFLOWS
 from app.agent.schemas import ProjectWorkflowOutput
 from app.agent.state import WorkflowState
@@ -119,12 +120,22 @@ def project_workflow_node(state: WorkflowState) -> dict:
     else:
         web_intel = "(Web search skipped — not needed for this message.)"
 
+    try:
+        rag_context = gather_rag_context(
+            user_input=user_input,
+            project_context=project_context,
+        )
+    except Exception as rag_err:
+        print(f"[project_workflow] rag skipped: {rag_err}")
+        rag_context = "(No knowledge base results available.)"
+
     result: ProjectWorkflowOutput = _chain.invoke(
         {
             "user_input": user_input,
             "conversation_history": history,
             "project_context": context_str,
             "web_intel": web_intel,
+            "rag_context": rag_context,
         }
     )
 
@@ -180,10 +191,14 @@ def project_workflow_node(state: WorkflowState) -> dict:
             for wf in next_workflows
         )
 
+        # Use user_display (clean typed message) for DB — never the expanded
+        # blob that includes extracted file text.
+        user_for_db = state.get("user_display") or user_input
+
         if not will_route_to_report:
             conversation_repo.append_turn(
                 session_id=session_id,
-                user_input=user_input,
+                user_input=user_for_db,
                 ai_response=assistant_response,
                 metadata={
                     "project_action": project_action,
@@ -214,7 +229,8 @@ def project_workflow_node(state: WorkflowState) -> dict:
         "discovery_complete": discovery_complete,
         "workflow_confidence": result.confidence,
         "workflow_reasoning": result.reasoning_summary,
-        "project_id": project_id,
+        # Snapshot id only — never overwrite the API project_id from chat_service
+        "agent_snapshot_id": project_id,
         "requested_report": guarded.get("requested_report"),
     }
 

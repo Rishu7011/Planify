@@ -33,29 +33,21 @@ _LIGHT_MESSAGE = re.compile(
     re.IGNORECASE,
 )
 
-# Only search when the user is actually asking for market/idea/evidence help.
+# Only search when the user is actually asking for external market / competitor / pricing facts.
 _SEARCH_TRIGGERS = (
-    "startup",
-    "idea",
-    "ideas",
-    "niche",
-    "market",
+    "search",
+    "look up",
     "competitor",
-    "competitors",
     "competition",
-    "trend",
-    "trends",
-    "opportunity",
-    "opportunities",
-    "validate",
-    "research",
-    "funding",
-    "raise",
-    "pricing",
-    "what should i build",
-    "what can i build",
-    "give me idea",
-    "brainstorm",
+    "market size",
+    "market trend",
+    "market research",
+    "latest trend",
+    "pricing model",
+    "cost of building",
+    "funding round",
+    "latest news",
+    "recent news",
 )
 
 
@@ -77,6 +69,16 @@ def is_light_message(user_input: str) -> bool:
     return bool(_LIGHT_MESSAGE.match(text))
 
 
+def clean_user_message(user_input: str) -> str:
+    """Extract only the user's actual prompt, ignoring any appended file/document content blocks."""
+    if not user_input:
+        return ""
+    marker = "The user attached the following documents this turn."
+    if marker in user_input:
+        return user_input.split(marker)[0].strip()
+    return user_input.strip()
+
+
 def should_run_web_search(
     user_input: str,
     project_context: dict[str, Any] | None = None,
@@ -86,10 +88,12 @@ def should_run_web_search(
     """Gate expensive DuckDuckGo calls — off for hi/ok/thanks and thin turns."""
     if force:
         return True
-    if is_light_message(user_input):
+    
+    clean_input = clean_user_message(user_input)
+    if is_light_message(clean_input):
         return False
 
-    text = (user_input or "").strip().lower()
+    text = clean_input.strip().lower()
     if len(text) < 20:
         # Short project fragments without research intent — skip search.
         return False

@@ -4,12 +4,15 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { apiFetch, apiStream } from "@/lib/api";
+import { apiFetch, apiStream, apiUpload, formatApiError, isApiError } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { WorkspaceClarificationPanel } from "@/components/workspace/WorkspaceClarificationPanel";
 import { DiscoveryOptionsPanel } from "@/components/workspace/DiscoveryOptionsPanel";
 import { ChatMessage } from "@/components/workspace/chat/ChatMessage";
-import { ChatComposer } from "@/components/workspace/chat/ChatComposer";
+import {
+  ChatComposer,
+  type PendingAttachment,
+} from "@/components/workspace/chat/ChatComposer";
 import { ThinkingIndicator } from "@/components/workspace/chat/ThinkingIndicator";
 import { ScrollToBottomButton } from "@/components/workspace/chat/ScrollToBottomButton";
 import {
@@ -43,6 +46,12 @@ interface Message {
     reports_generated?: string[];
     [key: string]: any;
   };
+  attachments?: {
+    file_id: string;
+    filename: string;
+    content_type?: string | null;
+    size_bytes?: number;
+  }[];
 }
 
 interface ChatHistoryResponse {
@@ -158,12 +167,14 @@ export default function ChatPage() {
   } | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [copiedShare, setCopiedShare] = useState(false);
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpenMobile, setSidebarOpenMobile] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
 
-  const accessToken = (session?.user as any)?.accessToken;
+  const accessToken = session?.user?.accessToken;
 
   const activeAgentMeta = activeAgent ? getAgentMeta(activeAgent) : null;
 
@@ -228,7 +239,7 @@ export default function ChatPage() {
       for (let attempt = 0; attempt <= retries; attempt++) {
         try {
           const data = await apiFetch<ChatHistoryResponse>(
-            `/api/projects/${projectId}/chat/messages`,
+            `/api/projects/${projectId}/chat/messages?limit=100`,
             { accessToken }
           );
           if (!mountedRef.current) return data;
@@ -245,6 +256,29 @@ export default function ChatPage() {
     },
     [accessToken, projectId, applyChatHistory]
   );
+
+  const refreshProject = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const p = await apiFetch<{
+        title: string;
+        objective?: string;
+        priority?: string;
+        target?: string;
+        memory?: MemoryItem[];
+      }>(`/api/projects/${projectId}`, { accessToken });
+      if (!mountedRef.current) return;
+      setProject({
+        title: p.title,
+        objective: p.objective,
+        priority: p.priority,
+        target: p.target,
+        memory: p.memory,
+      });
+    } catch (err) {
+      console.error("Failed to refresh project context", err);
+    }
+  }, [accessToken, projectId]);
 
   const ensureStreamingMessage = useCallback((agent?: string) => {
     setMessages((prev) => {
@@ -319,11 +353,23 @@ export default function ChatPage() {
   }, [sidebarCollapsed]);
 
   useEffect(() => {
-    if (!session || !accessToken) return;
+    if (!session) return;
+    if (!accessToken) {
+      setErrorBanner(
+        "Missing backend access token. Ensure NEXTAUTH_SECRET matches backend JWT_SECRET, then sign in again."
+      );
+      return;
+    }
 
     const fetchProject = async () => {
       try {
-        const p = await apiFetch<any>(`/api/projects/${projectId}`, { accessToken });
+        const p = await apiFetch<{
+          title: string;
+          objective?: string;
+          priority?: string;
+          target?: string;
+          memory?: MemoryItem[];
+        }>(`/api/projects/${projectId}`, { accessToken });
         if (!mountedRef.current) return;
         setProject({
           title: p.title,
@@ -334,21 +380,27 @@ export default function ChatPage() {
         });
       } catch (err) {
         console.error("Failed to load project", err);
-        if (mountedRef.current) setErrorBanner("Couldn't load project details.");
+        if (mountedRef.current) {
+          setErrorBanner(
+            formatApiError(err, "Couldn't load project details.")
+          );
+        }
       }
     };
 
     const fetchMessages = async () => {
       try {
         const data = await apiFetch<ChatHistoryResponse>(
-          `/api/projects/${projectId}/chat/messages`,
+          `/api/projects/${projectId}/chat/messages?limit=100`,
           { accessToken }
         );
         if (!mountedRef.current) return;
         applyChatHistory(data);
       } catch (err) {
         console.error("Failed to load messages", err);
-        if (mountedRef.current) setErrorBanner("Couldn't load chat history.");
+        if (mountedRef.current) {
+          setErrorBanner(formatApiError(err, "Couldn't load chat history."));
+        }
       }
     };
 
@@ -357,12 +409,26 @@ export default function ChatPage() {
   }, [session, accessToken, projectId, applyChatHistory]);
 
   const sendMessage = useCallback(
-    async (content: string, opts?: { keepClarificationVisible?: boolean; keepDiscoveryVisible?: boolean }) => {
-      if (!content.trim() || !accessToken) return;
+    async (
+      content: string,
+      opts?: {
+        keepClarificationVisible?: boolean;
+        keepDiscoveryVisible?: boolean;
+        /** When false, ignore composer file chips (discovery/clarification answers). Default true. */
+        includeAttachments?: boolean;
+      }
+    ) => {
+      if (!accessToken) return;
+      const trimmed = content.trim();
+      const filesToSend =
+        opts?.includeAttachments === false ? [] : [...pendingAttachments];
+      if (!trimmed && filesToSend.length === 0) return;
 
       // Interrupt any in-flight generation (ChatGPT-style).
       if (sendingRef.current) {
         abortRef.current?.abort();
+        // Give the backend a moment to mark the prior run cancelled before we POST again.
+        await new Promise((r) => setTimeout(r, 350));
       }
 
       const streamGen = ++streamGenRef.current;
@@ -377,12 +443,22 @@ export default function ChatPage() {
           ? crypto.randomUUID()
           : `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+      const optimisticAttachments = filesToSend.map((a) => ({
+        file_id: a.localId,
+        filename: a.file.name,
+        content_type: a.file.type,
+        size_bytes: a.file.size,
+      }));
+
       const userMsg: Message = {
         id: tempId,
         role: "user",
-        content,
+        content: trimmed || (filesToSend.length
+          ? `[Attached: ${filesToSend.map((f) => f.file.name).join(", ")}]`
+          : ""),
         message_type: "text",
         created_at: new Date().toISOString(),
+        attachments: optimisticAttachments,
       };
 
       setMessages((prev) => [
@@ -390,6 +466,7 @@ export default function ChatPage() {
         userMsg,
       ]);
       setInput("");
+      setPendingAttachments([]);
       setLoading(true);
       setStreaming(false);
       if (!opts?.keepClarificationVisible) {
@@ -401,6 +478,51 @@ export default function ChatPage() {
       }
 
       let receivedEvent = false;
+      let fileIds: string[] = [];
+
+      try {
+        if (filesToSend.length) {
+          setUploadingFiles(true);
+          const uploaded = await Promise.all(
+            filesToSend.map((a) =>
+              apiUpload<{ file_id: string }>(
+                `/api/projects/${projectId}/files`,
+                a.file,
+                accessToken
+              )
+            )
+          );
+          fileIds = uploaded.map((u) => u.file_id);
+          // Swap optimistic local ids for real file ids in the bubble
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === tempId
+                ? {
+                    ...m,
+                    attachments: filesToSend.map((a, i) => ({
+                      file_id: fileIds[i],
+                      filename: a.file.name,
+                      content_type: a.file.type,
+                      size_bytes: a.file.size,
+                    })),
+                  }
+                : m
+            )
+          );
+        }
+      } catch (uploadErr) {
+        console.error("File upload failed", uploadErr);
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
+        setPendingAttachments(filesToSend);
+        setInput(trimmed);
+        setErrorBanner(formatApiError(uploadErr, "File upload failed."));
+        sendingRef.current = false;
+        setLoading(false);
+        setUploadingFiles(false);
+        return;
+      } finally {
+        setUploadingFiles(false);
+      }
 
       const handleEvent = async (event: WorkflowEvent) => {
         if (streamGen !== streamGenRef.current) return;
@@ -430,9 +552,8 @@ export default function ChatPage() {
           setDiscoveryAcknowledgment(null);
         } else if (event.type === "discovery_turn_complete") {
           setActiveAgent(null);
-          // Mid-discovery turn — the assistant reply arrives via conversation_complete.
-          // No options panel is expected when the model replies in plain text.
           await refreshMessages();
+          await refreshProject();
         } else if (event.type === "clarification") {
           setActiveAgent(null);
           if (event.questions?.length) {
@@ -468,6 +589,7 @@ export default function ChatPage() {
             );
           }
           const updated = await refreshMessages();
+          await refreshProject();
           removeStreamingMessage();
           if (!updated && mountedRef.current) {
             setErrorBanner(
@@ -486,12 +608,14 @@ export default function ChatPage() {
       try {
         const res = await apiStream(
           `/api/projects/${projectId}/chat/messages`,
-          { content },
+          {
+            content: trimmed || "",
+            ...(fileIds.length ? { file_ids: fileIds } : {}),
+          },
           accessToken,
           { signal: controller.signal }
         );
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         if (!res.body) throw new Error("No response stream from server");
 
         const reader = res.body.getReader();
@@ -532,8 +656,8 @@ export default function ChatPage() {
         if (streamGen === streamGenRef.current && !receivedEvent) {
           await refreshMessages();
         }
-      } catch (err: any) {
-        if (err?.name === "AbortError") {
+      } catch (err: unknown) {
+        if (err && typeof err === "object" && (err as { name?: string }).name === "AbortError") {
           if (streamGen === streamGenRef.current) {
             removeStreamingMessage();
             await refreshMessages();
@@ -545,6 +669,28 @@ export default function ChatPage() {
         if (streamGen !== streamGenRef.current) return;
 
         removeStreamingMessage();
+
+        if (isApiError(err) && err.status === 409) {
+          setMessages((prev) => prev.filter((m) => m.id !== tempId));
+          setInput(trimmed);
+          setPendingAttachments(filesToSend);
+          setErrorBanner(
+            err.detail ||
+              "A workflow is already running for this project. Wait a moment, then try again."
+          );
+          setActiveAgent(null);
+          return;
+        }
+
+        if (isApiError(err) && err.status === 401) {
+          setMessages((prev) => prev.filter((m) => m.id !== tempId));
+          setErrorBanner(
+            "Session expired or invalid. Sign out and sign in again (NEXTAUTH_SECRET must match JWT_SECRET)."
+          );
+          setActiveAgent(null);
+          return;
+        }
+
         const recovered = await refreshMessages();
         if (!recovered && mountedRef.current) {
           setMessages((prev) => [
@@ -552,11 +698,13 @@ export default function ChatPage() {
             {
               id: `err-${Date.now()}`,
               role: "assistant",
-              content: `Something went wrong: ${err.message || "Unknown error"}. Please try again.`,
+              content: `Something went wrong: ${formatApiError(err)}. Please try again.`,
               message_type: "text",
               created_at: new Date().toISOString(),
             },
           ]);
+        } else if (mountedRef.current) {
+          setErrorBanner(formatApiError(err, "Something went wrong. Please try again."));
         }
         setActiveAgent(null);
         setClarificationQuestions([]);
@@ -575,10 +723,12 @@ export default function ChatPage() {
     [
       accessToken,
       projectId,
+      pendingAttachments,
       ensureStreamingMessage,
       appendContentDelta,
       removeStreamingMessage,
       refreshMessages,
+      refreshProject,
     ]
   );
 
@@ -1001,6 +1151,7 @@ export default function ChatPage() {
                         projectId={projectId}
                         agentMeta={agentMeta}
                         streaming={isStreamingMsg && streaming}
+                        accessToken={accessToken}
                       />
                     );
                   })}
@@ -1016,7 +1167,10 @@ export default function ChatPage() {
                     options={discoveryQuestion.options}
                     acknowledgment={discoveryAcknowledgment}
                     onSelect={(option) => {
-                      sendMessage(option, { keepDiscoveryVisible: true });
+                      sendMessage(option, {
+                        keepDiscoveryVisible: true,
+                        includeAttachments: false,
+                      });
                     }}
                     loading={loading}
                   />
@@ -1026,7 +1180,10 @@ export default function ChatPage() {
                   <WorkspaceClarificationPanel
                     questions={clarificationQuestions}
                     onSubmit={(combinedAnswer) => {
-                      sendMessage(combinedAnswer, { keepClarificationVisible: true });
+                      sendMessage(combinedAnswer, {
+                        keepClarificationVisible: true,
+                        includeAttachments: false,
+                      });
                     }}
                     loading={loading}
                   />
@@ -1049,6 +1206,9 @@ export default function ChatPage() {
               onStop={stopGeneration}
               loading={loading}
               streaming={streaming}
+              attachments={pendingAttachments}
+              onAttachmentsChange={setPendingAttachments}
+              uploading={uploadingFiles}
             />
           </div>
         </main>

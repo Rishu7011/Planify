@@ -16,6 +16,12 @@ export interface ChatMessageData {
     reports_generated?: string[];
     [key: string]: unknown;
   };
+  attachments?: {
+    file_id: string;
+    filename: string;
+    content_type?: string | null;
+    size_bytes?: number;
+  }[];
 }
 
 interface AgentMeta {
@@ -29,9 +35,23 @@ interface Props {
   projectId: string;
   agentMeta?: AgentMeta | null;
   streaming?: boolean;
+  accessToken?: string;
 }
 
-export function ChatMessage({ message, projectId, agentMeta, streaming }: Props) {
+function formatBytes(n?: number): string {
+  if (n == null) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function ChatMessage({
+  message,
+  projectId,
+  agentMeta,
+  streaming,
+  accessToken,
+}: Props) {
   const isUser = message.role === "user";
   const content = message.content?.trim() ?? "";
 
@@ -40,7 +60,31 @@ export function ChatMessage({ message, projectId, agentMeta, streaming }: Props)
   const bubbleWidth =
     "w-full max-w-[92%] sm:max-w-[min(78%,42rem)]";
 
+  const downloadAttachment = async (fileId: string, filename: string) => {
+    if (!accessToken) return;
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(
+        `${API_BASE}/api/projects/${projectId}/files/${fileId}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!res.ok) throw new Error(`Download failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Attachment download failed", err);
+    }
+  };
+
   if (isUser) {
+    const atts = message.attachments ?? [];
+    const hidePlaceholder =
+      content.startsWith("[Attached:") && atts.length > 0;
     return (
       <motion.div
         {...FADE_UP}
@@ -52,9 +96,32 @@ export function ChatMessage({ message, projectId, agentMeta, streaming }: Props)
           role="article"
           aria-label="Your message"
         >
-          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[#F7F8FC] md:text-[15px] md:leading-7">
-            {content}
-          </p>
+          {atts.length > 0 && (
+            <div className={`flex flex-wrap gap-1.5 ${hidePlaceholder || !content ? "" : "mb-2"}`}>
+              {atts.map((a) => (
+                <button
+                  key={a.file_id}
+                  type="button"
+                  onClick={() => downloadAttachment(a.file_id, a.filename)}
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-[#AEC6FF]/20 bg-[#090B14]/40 px-2 py-1 text-[11px] text-[#AEC6FF] transition-colors hover:border-[#AEC6FF]/40 hover:bg-[#090B14]/60"
+                  title={`Download ${a.filename}`}
+                >
+                  <span className="material-symbols-outlined text-sm">attach_file</span>
+                  <span className="truncate">{a.filename}</span>
+                  {a.size_bytes ? (
+                    <span className="shrink-0 text-[10px] text-[#7C869A]">
+                      {formatBytes(a.size_bytes)}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          )}
+          {content && !hidePlaceholder ? (
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[#F7F8FC] md:text-[15px] md:leading-7">
+              {content}
+            </p>
+          ) : null}
         </div>
       </motion.div>
     );

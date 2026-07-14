@@ -4,20 +4,25 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Request, status
+from pydantic import BaseModel, Field
 
 from app.db.mongodb import get_database
+from app.utils.objectid import parse_object_id
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 UTC = timezone.utc
+
+
+class UpdateWorkspaceRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=80)
 
 
 @router.get("/me", summary="Current user + personal workspace profile")
 async def get_me(request: Request) -> dict:
     user = request.state.user
     db = get_database()
-    user_id = ObjectId(user["user_id"])
+    user_id = parse_object_id(user.get("user_id"), field="user_id")
 
     org = await db.organizations.find_one(
         {"owner_id": user_id, "type": "personal"}
@@ -55,18 +60,17 @@ async def get_me(request: Request) -> dict:
 
 
 @router.patch("/workspace", summary="Update personal workspace name")
-async def update_workspace(request: Request) -> dict:
+async def update_workspace(request: Request, body: UpdateWorkspaceRequest) -> dict:
     user = request.state.user
     db = get_database()
-    body = await request.json()
-    name = (body.get("name") or "").strip()
-    if not name or len(name) > 80:
+    name = body.name.strip()
+    if not name:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Workspace name must be 1–80 characters",
         )
 
-    user_id = ObjectId(user["user_id"])
+    user_id = parse_object_id(user.get("user_id"), field="user_id")
     org = await db.organizations.find_one(
         {"owner_id": user_id, "type": "personal"}
     )
@@ -88,9 +92,10 @@ async def update_workspace(request: Request) -> dict:
 async def complete_signup(request: Request) -> dict:
     user = request.state.user
     db = get_database()
+    user_id = parse_object_id(user.get("user_id"), field="user_id")
 
     existing_org = await db.organizations.find_one(
-        {"owner_id": ObjectId(user["user_id"]), "type": "personal"}
+        {"owner_id": user_id, "type": "personal"}
     )
     if existing_org:
         return {
@@ -100,29 +105,41 @@ async def complete_signup(request: Request) -> dict:
         }
 
     now = datetime.now(UTC)
-    org_result = await db.organizations.insert_one(
-        {
-            "name": f"{user.get('email', 'My')} Workspace",
-            "owner_id": ObjectId(user["user_id"]),
-            "type": "personal",
-            "plan_tier": "free",
-            "settings": {},
-            "created_at": now,
-            "updated_at": now,
-        }
-    )
-    org_id = org_result.inserted_id
+    try:
+        org_result = await db.organizations.insert_one(
+            {
+                "name": f"{user.get('email', 'My')} Workspace",
+                "owner_id": user_id,
+                "type": "personal",
+                "plan_tier": "free",
+                "settings": {},
+                "created_at": now,
+                "updated_at": now,
+            }
+        )
+        org_id = org_result.inserted_id
 
-    await db.members.insert_one(
-        {
-            "organization_id": org_id,
-            "user_id": ObjectId(user["user_id"]),
-            "role": "OWNER",
-            "invited_by": ObjectId(user["user_id"]),
-            "joined_at": now,
-            "status": "active",
-        }
-    )
+        await db.members.insert_one(
+            {
+                "organization_id": org_id,
+                "user_id": user_id,
+                "role": "OWNER",
+                "invited_by": user_id,
+                "joined_at": now,
+                "status": "active",
+            }
+        )
+    except Exception:
+        existing_org = await db.organizations.find_one(
+            {"owner_id": user_id, "type": "personal"}
+        )
+        if existing_org:
+            return {
+                "organization_id": str(existing_org["_id"]),
+                "created": False,
+                "message": "Personal workspace already exists",
+            }
+        raise
 
     return {
         "organization_id": str(org_id),

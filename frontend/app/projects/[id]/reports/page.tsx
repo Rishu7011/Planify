@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, formatApiError } from "@/lib/api";
 import {
   REPORT_TABS,
   type ReportType,
@@ -66,7 +66,7 @@ export default function ReportsPage() {
     setRightPanelOpen(false);
   };
 
-  const accessToken = (session?.user as { accessToken?: string })?.accessToken;
+  const accessToken = session?.user?.accessToken;
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   const fetchVersions = useCallback(
@@ -90,7 +90,14 @@ export default function ReportsPage() {
   );
 
   useEffect(() => {
-    if (!session || !accessToken) return;
+    if (!session) return;
+    if (!accessToken) {
+      setLoading(false);
+      setLoadError(
+        "Missing backend access token. Ensure NEXTAUTH_SECRET matches JWT_SECRET, then sign in again."
+      );
+      return;
+    }
 
     const fetchData = async () => {
       setLoadError(null);
@@ -125,7 +132,7 @@ export default function ReportsPage() {
         }
       } catch (err) {
         console.error("Failed to load reports:", err);
-        setLoadError("Could not load reports from the backend.");
+        setLoadError(formatApiError(err, "Could not load reports from the backend."));
       } finally {
         setLoading(false);
       }
@@ -141,12 +148,25 @@ export default function ReportsPage() {
   }, [accessToken, activeTab, fetchVersions]);
 
   const handleExport = async (format: "pdf" | "docx") => {
+    if (!accessToken) {
+      alert("Not signed in to the backend. Sign in again and retry export.");
+      return;
+    }
     setExporting(format);
     try {
       const res = await fetch(`${API_BASE}/api/projects/${projectId}/export/${format}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      if (!res.ok) throw new Error("Export failed");
+      if (!res.ok) {
+        let detail = "Export failed";
+        try {
+          const body = await res.json();
+          if (typeof body?.detail === "string") detail = body.detail;
+        } catch {
+          /* ignore */
+        }
+        throw new Error(detail);
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -156,7 +176,12 @@ export default function ReportsPage() {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export failed:", err);
-      alert("Export failed. Make sure system libraries are installed (see docs).");
+      alert(
+        formatApiError(
+          err,
+          "Export failed. Make sure system libraries are installed (see docs)."
+        )
+      );
     } finally {
       setExporting(null);
     }

@@ -8,7 +8,17 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 
-PUBLIC_ROUTES = {"/health", "/docs", "/openapi.json", "/redoc"}
+ALWAYS_PUBLIC = frozenset({"/health"})
+DEV_DOCS_ROUTES = frozenset({"/docs", "/openapi.json", "/redoc"})
+
+
+def _is_public_path(path: str) -> bool:
+    if path in ALWAYS_PUBLIC:
+        return True
+    settings = get_settings()
+    if settings.environment.lower() != "production" and path in DEV_DOCS_ROUTES:
+        return True
+    return False
 
 
 async def verify_jwt(token: str) -> dict:
@@ -19,14 +29,23 @@ async def verify_jwt(token: str) -> dict:
             detail="JWT_SECRET not configured on server.",
         )
     try:
-        return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
-    except Exception as exc:
-        if "." not in token:
-            return {"sub": token, "email": "user@example.com", "name": "Planify User"}
+        claims = jwt.decode(
+            token,
+            settings.jwt_secret,
+            algorithms=[settings.jwt_algorithm],
+        )
+    except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {exc}",
+            detail="Invalid or expired token",
         ) from exc
+
+    if not claims.get("sub"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token: missing subject",
+        )
+    return claims
 
 
 async def get_current_user(request: Request) -> dict:
@@ -53,7 +72,7 @@ async def get_current_user(request: Request) -> dict:
 
 
 async def auth_middleware(request: Request, call_next):
-    if request.url.path in PUBLIC_ROUTES or request.method == "OPTIONS":
+    if _is_public_path(request.url.path) or request.method == "OPTIONS":
         return await call_next(request)
 
     try:

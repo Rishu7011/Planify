@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Request, status
 
 from app.db.mongodb import get_database
 from app.routes.projects import _assert_project_access
+from app.utils.objectid import parse_object_id
 
 router = APIRouter(prefix="/api/projects/{project_id}/reports", tags=["Reports"])
 
@@ -40,9 +40,10 @@ async def get_all_reports(request: Request, project_id: str) -> dict:
     user = request.state.user
     db = get_database()
     await _assert_project_access(project_id, user, db)
+    project_oid = parse_object_id(project_id, field="project_id")
 
     report_docs = await db.generated_reports.find(
-        {"project_id": ObjectId(project_id)}
+        {"project_id": project_oid}
     ).to_list(None)
 
     result: dict = {}
@@ -65,7 +66,10 @@ async def get_report(request: Request, project_id: str, report_type: str) -> dic
 
     await _assert_project_access(project_id, user, db)
     doc = await db.generated_reports.find_one(
-        {"project_id": ObjectId(project_id), "report_type": report_type}
+        {
+            "project_id": parse_object_id(project_id, field="project_id"),
+            "report_type": report_type,
+        }
     )
     if not doc:
         return {"type": report_type, "content": None, "version": 0}
@@ -85,7 +89,10 @@ async def get_report_versions(request: Request, project_id: str, report_type: st
     await _assert_project_access(project_id, user, db)
     versions = (
         await db.report_versions.find(
-            {"project_id": ObjectId(project_id), "report_type": report_type}
+            {
+                "project_id": parse_object_id(project_id, field="project_id"),
+                "report_type": report_type,
+            }
         )
         .sort("version_number", -1)
         .to_list(None)

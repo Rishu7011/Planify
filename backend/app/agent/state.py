@@ -41,6 +41,7 @@ class WorkflowState(TypedDict):
     """
 
     user_input: str
+    user_display: str  # clean typed message — never includes extracted file blobs
     conversation_history: Annotated[list[BaseMessage], add_messages]
     conversation_summary: str
     project_context: dict[str, Any]
@@ -54,6 +55,7 @@ def build_initial_state(user_input: str) -> WorkflowState:
     """Convenience factory for a fresh conversation state."""
     return WorkflowState(
         user_input=user_input,
+        user_display=user_input,  # initially same; chat_service overrides for file turns
         conversation_history=[],
         conversation_summary="",
         project_context={},
