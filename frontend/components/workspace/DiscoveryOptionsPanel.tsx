@@ -27,7 +27,7 @@ export function DiscoveryOptionsPanel({
   return (
     <motion.div
       {...FADE_UP}
-      className={`${GLASS_PANEL} w-full max-w-[min(78%,42rem)] rounded-2xl p-4 md:p-5`}
+      className={`${GLASS_PANEL} w-full max-w-full sm:max-w-[min(78%,42rem)] rounded-2xl p-4 md:p-5`}
       role="group"
       aria-label="Discovery question"
     >

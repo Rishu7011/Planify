@@ -47,21 +47,21 @@ const Navbar = () => {
     }, []);
     return (
         <><nav
-            className={`fixed left-4 right-4 md:left-8 md:right-8 z-50 mx-auto max-w-[1200px] flex items-center transition-all duration-500 ease-in-out border border-white/10 rounded-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.35)] ${scrolled
-                ? "h-[64px] bg-[#0F1220]/85 backdrop-blur-2xl"
-                : "h-[72px] bg-[#0F1220]/60 backdrop-blur-xl"
+            className={`fixed left-3 right-3 sm:left-4 sm:right-4 md:left-8 md:right-8 z-50 mx-auto max-w-[1200px] flex items-center transition-all duration-500 ease-in-out border border-white/10 rounded-[20px] sm:rounded-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.35)] safe-top ${scrolled
+                ? "h-[56px] sm:h-[64px] bg-[#0F1220]/85 backdrop-blur-2xl"
+                : "h-[64px] sm:h-[72px] bg-[#0F1220]/60 backdrop-blur-xl"
                 } ${navVisible
-                    ? "top-6 opacity-100 translate-y-0"
-                    : "-translate-y-[150%] top-6 opacity-0 pointer-events-none"
+                    ? "top-4 sm:top-6 opacity-100 translate-y-0"
+                    : "-translate-y-[150%] top-4 sm:top-6 opacity-0 pointer-events-none"
                 }`}
         >
-            <div className="flex items-center justify-between px-6 md:px-8 w-full">
+            <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 w-full min-w-0">
                 {/* Brand Logo */}
-                <Link href={ROUTES.home} className="flex items-center gap-3 cursor-pointer group">
-                    <span className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] grid place-items-center shadow-[0_0_20px_rgba(79,141,255,0.3)] transition-transform duration-300 group-hover:scale-105">
+                <Link href={ROUTES.home} className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0">
+                    <span className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] grid place-items-center shadow-[0_0_20px_rgba(79,141,255,0.3)] transition-transform duration-300 group-hover:scale-105 shrink-0">
                         <Hexagon className="w-4.5 h-4.5 text-white fill-white" />
                     </span>
-                    <span className="font-sans text-lg font-bold text-[#F7F8FC] tracking-tight">
+                    <span className="font-sans text-base sm:text-lg font-bold text-[#F7F8FC] tracking-tight truncate">
                         Planify
                     </span>
                 </Link>
@@ -81,11 +81,11 @@ const Navbar = () => {
                 </div>
 
                 {/* Nav Actions */}
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                     {status === "loading" ? (
-                        <div className="h-9 w-9 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        <div className="h-8 w-8 sm:h-9 sm:w-9 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                     ) : session ? (
-                        <div className="flex items-center gap-3">
+                        <div className="hidden md:flex items-center gap-3">
                             <div className="hidden sm:flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5">
                                 {session.user?.image ? (
                                     <img
@@ -106,11 +106,11 @@ const Navbar = () => {
                             <AppEntryCta
                                 authLabel="Dashboard"
                                 guestLabel="Get Started"
-                                className="bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-[#4F8DFF]/20 hover:shadow-[#4F8DFF]/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+                                className="hidden md:inline-flex bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-[#4F8DFF]/20 hover:shadow-[#4F8DFF]/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
                             />
                             <button
                                 onClick={() => signOut({ callbackUrl: ROUTES.home })}
-                                className="hidden sm:inline-flex rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white bg-white/5 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400 transition cursor-pointer"
+                                className="hidden lg:inline-flex rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white bg-white/5 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400 transition cursor-pointer"
                             >
                                 Sign out
                             </button>
@@ -118,7 +118,7 @@ const Navbar = () => {
                     ) : (
                         <>
                             <Link
-                                className="hidden sm:inline-block font-sans text-sm text-[#F7F8FC] hover:bg-white/5 transition-all duration-200 px-4 py-2 rounded-lg"
+                                className="hidden md:inline-block font-sans text-sm text-[#F7F8FC] hover:bg-white/5 transition-all duration-200 px-4 py-2 rounded-lg"
                                 href={loginHref()}
                             >
                                 Sign In
@@ -126,7 +126,7 @@ const Navbar = () => {
                             <AppEntryCta
                                 guestLabel="Get Started"
                                 authLabel="Dashboard"
-                                className="bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-5 py-2.5 rounded-full font-semibold shadow-lg shadow-[#4F8DFF]/20 hover:shadow-[#4F8DFF]/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+                                className="hidden sm:inline-flex bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] font-sans text-sm text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-semibold shadow-lg shadow-[#4F8DFF]/20 hover:shadow-[#4F8DFF]/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
                             />
                         </>
                     )}
@@ -149,7 +149,7 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.3 }}
-                        className="fixed top-24 left-4 right-4 z-40 bg-[#0F1220] border border-white/10 p-6 rounded-[20px] shadow-2xl flex flex-col space-y-4 md:hidden"
+                        className="fixed top-[4.5rem] sm:top-24 left-3 right-3 sm:left-4 sm:right-4 z-40 bg-[#0F1220] border border-white/10 p-5 sm:p-6 rounded-[20px] shadow-2xl flex flex-col space-y-4 md:hidden max-h-[calc(100vh-6rem)] overflow-y-auto"
                     >
                         {["Product", "Solutions", "Resources", "Pricing"].map((link) => (
                             <a

@@ -74,7 +74,7 @@ const MainSection = () => {
         {/* Hero Section */}
         <section
           ref={heroRef}
-          className="relative min-h-screen flex items-center bg-[#090B14] pt-40 pb-24 overflow-hidden"
+          className="relative min-h-[100svh] flex items-center bg-[#090B14] pt-28 sm:pt-36 md:pt-40 pb-16 sm:pb-24 overflow-hidden"
         >
           {/* Ambient Glows */}
           <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -83,8 +83,8 @@ const MainSection = () => {
             <div className="vignette-edges absolute inset-0" />
           </div>
 
-          <div className="max-w-[1200px] mx-auto px-6 md:px-8 relative z-10 w-full">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 relative z-10 w-full">
+            <div className="grid lg:grid-cols-2 gap-10 sm:gap-12 lg:gap-16 items-center">
               {/* Hero Copy (Left) */}
               <motion.div
                 variants={containerVariants}
@@ -104,9 +104,9 @@ const MainSection = () => {
 
                 <motion.h1
                   variants={itemVariants}
-                  className="text-4xl md:text-5xl lg:text-[56px] font-extrabold text-[#F7F8FC] leading-[1.1] tracking-tight"
+                  className="text-[clamp(2rem,8vw,3.5rem)] font-extrabold text-[#F7F8FC] leading-[1.1] tracking-tight"
                 >
-                  Turn messy ideas into <br />
+                  Turn messy ideas into{" "}
                   <span className="text-gradient">execution-ready plans</span>
                 </motion.h1>
 
@@ -153,9 +153,9 @@ const MainSection = () => {
                     <div className="w-3 h-3 rounded-full bg-[#22c55e]/80" />
                   </div>
 
-                  <div className="flex h-[360px] md:h-[400px] bg-[#11131a]/85 backdrop-blur-md">
+                  <div className="flex h-[280px] sm:h-[360px] md:h-[400px] bg-[#11131a]/85 backdrop-blur-md">
                     {/* Sidebar */}
-                    <div className="w-40 md:w-48 border-r border-white/5 p-4 flex flex-col space-y-4">
+                    <div className="hidden sm:flex w-40 md:w-48 border-r border-white/5 p-4 flex-col space-y-4">
                       <div className="flex items-center space-x-2 text-[#F7F8FC] font-medium text-sm mb-4">
                         <Hexagon className="w-4 h-4 text-[#aec6ff] fill-[#aec6ff]/20" />
                         <span className="text-xs md:text-sm">Workspace</span>
@@ -269,12 +269,12 @@ const MainSection = () => {
         </section>
 
         {/* Features Section */}
-        <section id="product" className="max-w-[1200px] mx-auto px-6 md:px-8 py-24 bg-[#090B14]">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+        <section id="product" className="max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 py-16 sm:py-24 bg-[#090B14]">
+          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-4">
             <span className="font-mono text-xs font-bold text-[#aec6ff] uppercase tracking-wider">
               Product Capabilities
             </span>
-            <h2 className="text-3xl md:text-[40px] font-extrabold text-[#F7F8FC] leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-[40px] font-extrabold text-[#F7F8FC] leading-tight">
               Intelligent structuring at scale
             </h2>
             <p className="text-base md:text-lg text-[#B4BCCB]">
@@ -321,7 +321,7 @@ const MainSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: 0.5, delay: idx * 0.08 }}
-                className="glass-panel p-8 rounded-2xl hover:border-[#4F8DFF]/40 transition-all duration-300 flex flex-col text-left group cursor-pointer"
+                className="glass-panel p-6 sm:p-8 rounded-2xl hover:border-[#4F8DFF]/40 transition-all duration-300 flex flex-col text-left group cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-[#4F8DFF]/10 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-300">
                   <feature.icon className="w-6 h-6 text-[#4F8DFF]" />
@@ -338,14 +338,14 @@ const MainSection = () => {
         </section>
 
         {/* Final CTA Section */}
-        <section id="pricing" className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-24 mb-16">
+        <section id="pricing" className="relative max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 py-16 sm:py-24 mb-8 sm:mb-16">
           <div className="cta-floating-gradient" />
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.6 }}
-            className="relative z-10 glass-panel rounded-[32px] p-8 md:p-16 flex flex-col items-center text-center max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.4)] border-white/10 overflow-hidden"
+            className="relative z-10 glass-panel rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 md:p-16 flex flex-col items-center text-center max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.4)] border-white/10 overflow-hidden"
           >
             <div className="absolute inset-0 bg-[#131827]/40 pointer-events-none z-0" />
             <div className="relative z-10 space-y-6 max-w-2xl">

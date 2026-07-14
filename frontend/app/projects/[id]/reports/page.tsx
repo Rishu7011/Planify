@@ -58,6 +58,13 @@ export default function ReportsPage() {
   
   // AI Regenerate prompt state (passed to chat workspace via sessionStorage)
   const [aiPrompt, setAiPrompt] = useState("");
+  const [leftNavOpen, setLeftNavOpen] = useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
+
+  const closePanels = () => {
+    setLeftNavOpen(false);
+    setRightPanelOpen(false);
+  };
 
   const accessToken = (session?.user as { accessToken?: string })?.accessToken;
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -200,8 +207,16 @@ export default function ReportsPage() {
 
   return (
     <div className="r-shell">
+      {(leftNavOpen || rightPanelOpen) && (
+        <div
+          className={`r-overlay ${leftNavOpen || rightPanelOpen ? "is-visible" : ""}`}
+          onClick={closePanels}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Tab/Outline Left Navigation */}
-      <aside className="r-left-nav">
+      <aside className={`r-left-nav ${leftNavOpen ? "is-open" : ""}`}>
         {/* Project info link */}
         <div style={{ padding: "16px 20px 8px" }}>
           <Link
@@ -228,6 +243,7 @@ export default function ReportsPage() {
                 onClick={() => {
                   setActiveTab(tab.key);
                   setActiveSection("overview");
+                  closePanels();
                 }}
               >
                 <span>{tab.icon}</span>
@@ -262,6 +278,35 @@ export default function ReportsPage() {
 
       {/* Main Document Content */}
       <main className="r-center-doc">
+        {/* Mobile navigation bar */}
+        <div className="r-mobile-bar">
+          <button
+            type="button"
+            className="r-mobile-bar-btn"
+            onClick={() => {
+              setRightPanelOpen(false);
+              setLeftNavOpen((v) => !v);
+            }}
+            aria-label={leftNavOpen ? "Close document tabs" : "Open document tabs"}
+            aria-expanded={leftNavOpen}
+          >
+            ☰ Tabs
+          </button>
+          <span className="r-mobile-bar-title">{project?.title || "Reports"}</span>
+          <button
+            type="button"
+            className="r-mobile-bar-btn"
+            onClick={() => {
+              setLeftNavOpen(false);
+              setRightPanelOpen((v) => !v);
+            }}
+            aria-label={rightPanelOpen ? "Close panel" : "Open versions and comments"}
+            aria-expanded={rightPanelOpen}
+          >
+            Panel
+          </button>
+        </div>
+
         {/* Document Top bar with Title & Export Actions */}
         <header className="r-doc-topbar">
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--r-muted)" }}>
@@ -368,7 +413,7 @@ export default function ReportsPage() {
       </main>
 
       {/* Right Sidebar: Version History & Comments */}
-      <aside className="r-right-panel">
+      <aside className={`r-right-panel ${rightPanelOpen ? "is-open" : ""}`}>
         <div className="r-tabs">
           <button
             type="button"

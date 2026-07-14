@@ -638,13 +638,13 @@ export default function ChatPage() {
   const showThinking = loading && !activeAgent && !streaming;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-[#090B14] text-[#F7F8FC]">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#090B14] text-[#F7F8FC]">
       {/* Top Nav */}
-      <header className="z-40 flex h-16 shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#090B14]/80 px-4 backdrop-blur-md lg:px-6">
-        <div className="flex min-w-0 items-center gap-4">
+      <header className="z-40 flex h-14 sm:h-16 shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#090B14]/80 px-3 backdrop-blur-md sm:px-4 lg:px-6 safe-top">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
           <button
             aria-label="Toggle Sidebar"
-            className="rounded-lg p-2 transition-colors hover:bg-white/5"
+            className="shrink-0 rounded-lg p-2 transition-colors hover:bg-white/5"
             onClick={() => {
               if (typeof window !== "undefined" && window.innerWidth < 768) {
                 setSidebarOpenMobile((v) => !v);
@@ -656,22 +656,26 @@ export default function ChatPage() {
             <span className="material-symbols-outlined">menu</span>
           </button>
 
-          <div className="hidden min-w-0 items-center gap-3 text-sm sm:flex">
-            <span className="text-[#7C869A]">Projects</span>
-            <span className="material-symbols-outlined text-xs text-[#7C869A]">
-              chevron_right
-            </span>
-            <span className="max-w-[120px] truncate font-medium md:max-w-none">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium sm:hidden">
               {project?.title || "Loading..."}
-            </span>
-            <span className="ml-2 whitespace-nowrap rounded bg-[#AEC6FF]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#AEC6FF]">
-              Stage:{" "}
-              {stageLabel}
-            </span>
+            </p>
+            <div className="hidden min-w-0 items-center gap-3 text-sm sm:flex">
+              <span className="text-[#7C869A]">Projects</span>
+              <span className="material-symbols-outlined text-xs text-[#7C869A]">
+                chevron_right
+              </span>
+              <span className="max-w-[120px] truncate font-medium md:max-w-none">
+                {project?.title || "Loading..."}
+              </span>
+              <span className="ml-2 whitespace-nowrap rounded bg-[#AEC6FF]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#AEC6FF]">
+                Stage: {stageLabel}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-4">
           <div className="flex items-center">
             <button
               onClick={handleShare}
@@ -683,14 +687,15 @@ export default function ChatPage() {
 
             <Link
               href={reportsReady ? `/projects/${projectId}/reports` : "#"}
-              className={`hidden items-center gap-2 rounded-lg border border-white/[0.08] bg-white/5 px-3 py-1.5 text-xs font-medium transition-colors sm:flex ${
+              aria-label="Export reports"
+              className={`flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/5 px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 ${
                 reportsReady
                   ? "hover:bg-white/10"
                   : "pointer-events-none opacity-40"
               }`}
             >
               <span className="material-symbols-outlined text-lg">download</span>
-              Export
+              <span className="hidden sm:inline">Export</span>
             </Link>
           </div>
 
@@ -1032,7 +1037,7 @@ export default function ChatPage() {
             </div>
           </div>
 
-          <div className="relative shrink-0 border-t border-white/[0.06] bg-[#0F1220]/90 px-4 py-3 backdrop-blur-xl md:px-8 md:py-4">
+          <div className="relative shrink-0 border-t border-white/[0.06] bg-[#0F1220]/90 px-3 py-3 backdrop-blur-xl safe-bottom sm:px-4 md:px-8 md:py-4">
             <ScrollToBottomButton
               visible={showScrollButton}
               onClick={() => scrollToBottom("smooth")}
@@ -1230,8 +1235,8 @@ export default function ChatPage() {
       </div>
 
       {/* Footer */}
-      <footer className="relative z-40 flex h-10 shrink-0 items-center justify-between border-t border-white/[0.08] bg-[#090B14] px-6">
-        <p className="text-[9px] font-medium uppercase tracking-tighter text-[#7C869A]">
+      <footer className="relative z-40 hidden h-10 shrink-0 items-center justify-between border-t border-white/[0.08] bg-[#090B14] px-4 sm:flex sm:px-6">
+        <p className="truncate text-[9px] font-medium uppercase tracking-tighter text-[#7C869A]">
           © {new Date().getFullYear()} ProjectPilot AI • Secure Enterprise
         </p>
 

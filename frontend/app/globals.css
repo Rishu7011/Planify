@@ -121,12 +121,25 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+}
+
+/* Safe area for fixed mobile nav bars (notch / home indicator) */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* Custom design system matching temp.html */

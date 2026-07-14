@@ -140,11 +140,11 @@ export function AssetsView({
             research, roadmaps, and more — in one place.
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
           <button
             type="button"
             onClick={onRefresh}
-            className="inline-flex items-center gap-2 h-11 px-4 rounded-xl border border-white/10 text-sm font-semibold text-[#B4BCCB] hover:text-[#F7F8FC] hover:bg-white/5 transition-colors"
+            className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-white/10 text-sm font-semibold text-[#B4BCCB] hover:text-[#F7F8FC] hover:bg-white/5 transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">refresh</span>
             Refresh
@@ -152,7 +152,7 @@ export function AssetsView({
           <button
             type="button"
             onClick={onCreateProject}
-            className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-[#aec6ff] text-[#00275e] text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all"
+            className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-[#aec6ff] text-[#00275e] text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             New project

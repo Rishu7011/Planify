@@ -353,7 +353,7 @@ export default function DashboardPage() {
               : "h-20 items-center px-4"
           }`}
         >
-          <div className={`flex items-center gap-3 min-w-0 ${sidebarCollapsed ? "" : "flex-1"}`}>
+          <Link href="/" className={`flex items-center gap-3 min-w-0 ${sidebarCollapsed ? "" : "flex-1"}`}>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F8DFF] to-[#8E6BFF] flex items-center justify-center shadow-lg shrink-0">
               <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
             </div>
@@ -362,7 +362,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-bold text-[#F7F8FC] tracking-tight">Planify</p>
               </div>
             )}
-          </div>
+          </Link>
 
           <button
             onClick={() => setSidebarCollapsed((p) => !p)}
@@ -508,28 +508,39 @@ export default function DashboardPage() {
         {/* Header */}
         <header
           ref={headerRef}
-          className="h-16 border-b border-white/[0.05] sticky top-0 bg-[#090B14]/80 backdrop-blur-xl z-50 px-6 sm:px-8 shrink-0"
+          className="border-b border-white/[0.05] sticky top-0 bg-[#090B14]/80 backdrop-blur-xl z-50 px-4 sm:px-6 md:px-8 shrink-0 safe-top"
         >
-          <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 flex-1">
+          <div className="max-w-[1440px] mx-auto min-h-16 py-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-0 sm:h-16">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
               <button
                 onClick={() => setSidebarOpen((p) => !p)}
                 aria-label={sidebarOpen ? "Close menu" : "Open menu"}
                 aria-expanded={sidebarOpen}
-                className="lg:hidden p-2 -ml-2 text-[#7C869A] hover:text-[#F7F8FC] transition-colors"
+                className="lg:hidden p-2 -ml-1 text-[#7C869A] hover:text-[#F7F8FC] transition-colors shrink-0"
               >
                 <span className="material-symbols-outlined">{sidebarOpen ? "close" : "menu"}</span>
               </button>
-              <div className="hidden sm:flex items-center gap-2 text-sm text-[#7C869A]">
+              <div className="flex sm:hidden min-w-0 flex-1">
+                <p className="text-sm font-semibold text-[#F7F8FC] truncate">
+                  {activeNav === "projects"
+                    ? "Projects"
+                    : activeNav === "assets"
+                      ? "Assets"
+                      : activeNav === "settings"
+                        ? "Settings"
+                        : "Dashboard"}
+                </p>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 text-sm text-[#7C869A] min-w-0">
                 <button
                   type="button"
                   onClick={() => goToView("dashboard")}
-                  className="hover:text-[#F7F8FC] transition-colors"
+                  className="hover:text-[#F7F8FC] transition-colors shrink-0"
                 >
                   Dashboard
                 </button>
-                <span className="material-symbols-outlined text-xs">chevron_right</span>
-                <span className="text-[#F7F8FC] font-medium">
+                <span className="material-symbols-outlined text-xs shrink-0">chevron_right</span>
+                <span className="text-[#F7F8FC] font-medium truncate">
                   {activeNav === "projects"
                     ? "Projects"
                     : activeNav === "assets"
@@ -541,7 +552,19 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="flex md:hidden flex-1 items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 gap-2 min-w-0 focus-within:border-[#aec6ff]/50 transition-all">
+                <span className="material-symbols-outlined text-sm text-[#7C869A] shrink-0">search</span>
+                <input
+                  className="bg-transparent border-none outline-none text-xs text-[#F7F8FC] placeholder:text-[#7C869A] w-full min-w-0"
+                  placeholder="Search projects..."
+                  type="text"
+                  aria-label="Search projects"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
               <div className="hidden md:flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 gap-2 w-64 focus-within:border-[#aec6ff]/50 transition-all">
                 <span className="material-symbols-outlined text-sm text-[#7C869A]">search</span>
                 <input
@@ -552,15 +575,15 @@ export default function DashboardPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <span className="text-[10px] bg-white/10 px-1 rounded text-[#7C869A]">⌘K</span>
+                <span className="text-[10px] bg-white/10 px-1 rounded text-[#7C869A] hidden lg:inline">⌘K</span>
               </div>
 
-              <button aria-label="Notifications" className="w-9 h-9 flex items-center justify-center rounded-lg text-[#7C869A] hover:text-[#F7F8FC] hover:bg-white/5 transition-colors relative">
+              <button aria-label="Notifications" className="w-9 h-9 flex items-center justify-center rounded-lg text-[#7C869A] hover:text-[#F7F8FC] hover:bg-white/5 transition-colors relative shrink-0">
                 <span className="material-symbols-outlined">notifications</span>
                 <span className="absolute top-2 right-2 w-2 h-2 bg-[#aec6ff] rounded-full border-2 border-[#090B14]" />
               </button>
 
-              <button className="bg-[#508eff] text-[#00275e] px-4 h-9 rounded-lg text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#508eff]/10">
+              <button className="hidden sm:inline-flex bg-[#508eff] text-[#00275e] px-3 sm:px-4 h-9 rounded-lg text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#508eff]/10 shrink-0">
                 Upgrade
               </button>
             </div>
@@ -568,7 +591,7 @@ export default function DashboardPage() {
         </header>
 
         {/* ── Main Body ────────────────────────────────────────── */}
-        <div className="p-6 sm:p-8 md:p-10 max-w-[1440px] mx-auto w-full flex-1 pb-24 lg:pb-10">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-10 max-w-[1440px] mx-auto w-full flex-1 pb-24 lg:pb-10">
           {/* ── Error Banner ───────────────────────────────────────────────── */}
           {apiError && (
             <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3">
@@ -617,8 +640,8 @@ export default function DashboardPage() {
           ) : (
           <>
           {/* Greeting */}
-          <section ref={welcomeRef} className="mb-10">
-            <h1 className="text-3xl font-bold text-[#F7F8FC] tracking-tight mb-2">
+          <section ref={welcomeRef} className="mb-8 sm:mb-10">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#F7F8FC] tracking-tight mb-2">
               Welcome back, {session?.user?.name?.split(" ")[0] || "User"}.
             </h1>
             {loadingData ? (
@@ -672,12 +695,12 @@ export default function DashboardPage() {
               <div ref={commandCenterRef} className="bg-[#151A2B] p-6 rounded-2xl border border-white/[0.08] relative overflow-hidden">
                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#aec6ff]/5 blur-[60px] rounded-full pointer-events-none" />
 
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-[#8E6BFF]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-                    <h2 className="text-lg font-bold">AI Activity Monitor</h2>
+                    <h2 className="text-base sm:text-lg font-bold">AI Activity Monitor</h2>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-[#34D399]/10 border border-[#34D399]/20 rounded-full">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-[#34D399]/10 border border-[#34D399]/20 rounded-full w-fit">
                     <span className="flex h-1.5 w-1.5 rounded-full bg-[#34D399] pulse-dot" />
                     <span className="text-[10px] font-bold text-[#34D399] uppercase tracking-widest">System Live</span>
                   </div>
@@ -802,9 +825,9 @@ export default function DashboardPage() {
 
               {/* Active Projects */}
               <div>
-                <div className="flex items-center justify-between mb-6 gap-3">
-                  <h2 className="text-xl font-bold">Active Projects</h2>
-                  <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+                  <h2 className="text-lg sm:text-xl font-bold">Active Projects</h2>
+                  <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                     <button
                       type="button"
                       onClick={() => goToView("projects")}
@@ -883,7 +906,7 @@ export default function DashboardPage() {
                                 <span className="material-symbols-outlined text-blue-400 text-xl">folder</span>
                               </div>
                               <div className="min-w-0">
-                                <h3 className="text-base font-bold truncate max-w-[160px]">{project.title}</h3>
+                                <h3 className="text-base font-bold truncate">{project.title}</h3>
                                 <p className="text-[10px] text-[#7C869A] uppercase tracking-widest font-bold">Updated {timeAgo()}</p>
                               </div>
                             </div>
@@ -928,7 +951,7 @@ export default function DashboardPage() {
 
             {/* Right Sidebar */}
             <div ref={rightPanelRef} className="col-span-12 xl:col-span-3 space-y-8">
-              <div className="bg-[#151A2B] rounded-2xl border border-white/[0.08] p-6 sticky top-24">
+              <div className="bg-[#151A2B] rounded-2xl border border-white/[0.08] p-6 xl:sticky xl:top-24">
                 {/* AI Assistant header */}
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-[1.5px]">
@@ -1012,12 +1035,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-auto border-t border-white/[0.08] bg-[#090B14]/50 py-10 px-8 flex flex-col md:flex-row justify-between items-center gap-6 text-[11px] font-bold text-[#7C869A] uppercase tracking-widest">
-          <div className="flex items-center gap-4">
+        <footer className="mt-auto border-t border-white/[0.08] bg-[#090B14]/50 py-8 sm:py-10 px-4 sm:px-8 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 text-[10px] sm:text-[11px] font-bold text-[#7C869A] uppercase tracking-widest text-center md:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
             <span className="opacity-40 font-bold text-xs">PLANIFY AI</span>
-            <p>© 2026 Planify AI. Engineered for Excellence.</p>
+            <p className="normal-case sm:uppercase tracking-normal sm:tracking-widest">© 2026 Planify AI. Engineered for Excellence.</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-8">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
             {["Privacy", "Terms", "Security", "Status"].map((item) => (
               <Link key={item} href="#" className="hover:text-[#aec6ff] transition-colors">{item}</Link>
             ))}
@@ -1123,7 +1146,7 @@ export default function DashboardPage() {
       />
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────── */}
-      <nav aria-label="Primary" className="lg:hidden fixed bottom-0 left-0 w-full bg-[#0F1220] border-t border-white/10 flex justify-around items-center h-16 z-[70] px-4 backdrop-blur-2xl">
+      <nav aria-label="Primary" className="lg:hidden fixed bottom-0 left-0 w-full bg-[#0F1220] border-t border-white/10 flex justify-around items-center h-16 z-[70] px-2 sm:px-4 backdrop-blur-2xl safe-bottom">
         <button
           type="button"
           aria-label="Dashboard"

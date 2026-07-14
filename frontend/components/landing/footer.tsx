@@ -4,9 +4,9 @@ import React from 'react'
 const Footer = () => {
   return (
     <>
-    <footer className="w-full bg-[#070F19] border-t border-white/5 pt-24 pb-8 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 px-6 md:px-8 max-w-[1200px] mx-auto mb-16">
-          <div className="col-span-2 space-y-4">
+    <footer className="w-full bg-[#070F19] border-t border-white/5 pt-16 sm:pt-24 pb-8 relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 px-4 sm:px-6 md:px-8 max-w-[1200px] mx-auto mb-12 sm:mb-16">
+          <div className="sm:col-span-2 space-y-4">
             <div className="font-sans text-lg font-bold text-[#F7F8FC] tracking-tight flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#4F8DFF] to-[#8E6BFF] grid place-items-center">
                 <Hexagon className="w-4 h-4 text-white fill-white" />
@@ -77,7 +77,7 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="border-t border-white/5 px-6 md:px-8 pt-8 max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-[#7C869A]">
+        <div className="border-t border-white/5 px-4 sm:px-6 md:px-8 pt-8 max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#7C869A] text-center md:text-left">
           <div className="mb-4 md:mb-0">
             © 2026 Planify Enterprise. All rights reserved.
           </div>
