@@ -6,6 +6,9 @@
 export const ROUTES = {
   home: "/",
   login: "/login",
+  signup: "/signup",
+  setPassword: "/set-password",
+  forgotPassword: "/forgot-password",
   dashboard: "/dashboard",
 } as const;
 
@@ -16,7 +19,7 @@ export const DEFAULT_LOGIN_REDIRECT = ROUTES.dashboard;
 export const PROTECTED_PREFIXES = ["/dashboard", "/projects"] as const;
 
 /** Public auth screens — bounce authenticated users away. */
-export const AUTH_PAGES = ["/login"] as const;
+export const AUTH_PAGES = ["/login", "/signup", "/forgot-password"] as const;
 
 export function isProtectedPath(pathname: string): boolean {
   return PROTECTED_PREFIXES.some(
@@ -63,7 +66,12 @@ export function loginHref(callbackUrl: string = DEFAULT_LOGIN_REDIRECT): string 
   return `${ROUTES.login}?callbackUrl=${encodeURIComponent(safe)}`;
 }
 
-/** Destination for primary CTAs: dashboard if signed in, else login → dashboard. */
+/** Destination for primary CTAs: dashboard if signed in, else signup. */
 export function appEntryHref(isAuthenticated: boolean): string {
-  return isAuthenticated ? ROUTES.dashboard : loginHref(DEFAULT_LOGIN_REDIRECT);
+  return isAuthenticated ? ROUTES.dashboard : ROUTES.signup;
+}
+
+/** `/signup` for guests who want to create an account. */
+export function signupHref(): string {
+  return ROUTES.signup;
 }

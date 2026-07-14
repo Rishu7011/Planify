@@ -1,28 +1,24 @@
 /**
  * Auth.js (NextAuth) configuration.
  *
- * Auth strategy:
- * - MongoDB adapter stores users/sessions in the planify DB.
- * - JWT session strategy (no DB session lookup on every request).
- * - Each session includes a signed HS256 access token that the FastAPI
- *   backend can verify using the shared NEXTAUTH_SECRET.
+ * Providers:
+ * - Google OAuth
+ * - Email/password (Credentials) after signup + set-password flow
+ * - Optional GitHub when env is present
  *
- * Token flow:
- *   1. User signs in (Google OAuth or Magic Link).
- *   2. NextAuth JWT callback stores user.id in token.sub.
- *   3. NextAuth session callback encodes a signed HS256 JWT containing
- *      { sub, email, name } and stores it as session.user.accessToken.
- *   4. Frontend sends Authorization: Bearer <accessToken> to FastAPI.
- *   5. FastAPI middleware verifies the HS256 signature using JWT_SECRET
- *      (must match NEXTAUTH_SECRET) and extracts user claims.
+ * Sessions use JWT strategy. Each session includes a signed HS256 accessToken
+ * for the FastAPI backend (must share NEXTAUTH_SECRET / JWT_SECRET).
  */
 
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
-import EmailProvider from "next-auth/providers/email";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
+
 import clientPromise from "./mongodb";
+import { normalizeEmail, usersCollection } from "./password-auth";
+import { verifyPassword } from "./password-crypto";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -35,7 +31,6 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
 
-    // GitHub OAuth — credentials added when ready
     ...(process.env.GITHUB_CLIENT_ID
       ? [
           GithubProvider({
@@ -45,34 +40,47 @@ export const authOptions: AuthOptions = {
         ]
       : []),
 
-    EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: Number(process.env.EMAIL_SERVER_PORT || 587),
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        },
+    CredentialsProvider({
+      id: "credentials",
+      name: "Email and Password",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
-      from: process.env.EMAIL_FROM || "noreply@planify.com",
+      async authorize(credentials) {
+        const email = normalizeEmail(String(credentials?.email || ""));
+        const password = String(credentials?.password || "");
+        if (!email || !password) return null;
+
+        const users = await usersCollection();
+        const user = await users.findOne({ email });
+        if (!user?.passwordHash) return null;
+
+        const ok = await verifyPassword(password, user.passwordHash);
+        if (!ok) return null;
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name || user.email,
+          image: user.image || null,
+        };
+      },
     }),
   ],
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
 
   pages: {
     signIn: "/login",
     error: "/login",
+    newUser: "/dashboard",
   },
 
   callbacks: {
-    /**
-     * Always land authenticated users on an in-app route.
-     * Blocks open redirects to external hosts.
-     */
     async redirect({ url, baseUrl }) {
       const { DEFAULT_LOGIN_REDIRECT, safeCallbackUrl } = await import("./routes");
       if (url.startsWith("/")) {
@@ -85,10 +93,6 @@ export const authOptions: AuthOptions = {
       return `${baseUrl}${DEFAULT_LOGIN_REDIRECT}`;
     },
 
-    /**
-     * jwt — runs on every token creation/refresh.
-     * Stores user id, email, and name in the token so they survive across requests.
-     */
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
@@ -98,17 +102,10 @@ export const authOptions: AuthOptions = {
       return token;
     },
 
-    /**
-     * session — runs on every getSession() / useSession() call.
-     * Encodes a signed HS256 JWT that the FastAPI backend can verify.
-     * This accessToken is what gets sent as Authorization: Bearer <token>.
-     */
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub as string;
 
-        // Encode a proper HS256 JWT so FastAPI can cryptographically verify it.
-        // This token contains: sub (userId), email, name, iat, exp.
         try {
           const { SignJWT } = await import("jose");
           const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "");
@@ -123,7 +120,6 @@ export const authOptions: AuthOptions = {
             .sign(secret);
           session.user.accessToken = accessToken;
         } catch (err) {
-          // Fallback: pass token.sub directly (FastAPI middleware has a workaround)
           console.error("[auth] Failed to encode access token:", err);
           session.user.accessToken = token.sub as string;
         }
@@ -131,11 +127,6 @@ export const authOptions: AuthOptions = {
       return session;
     },
 
-    /**
-     * signIn — called after successful authentication.
-     * Auto-creates the user's personal workspace on first sign-in.
-     * Non-blocking: if this fails, the user still gets signed in.
-     */
     async signIn({ user }) {
       try {
         const { SignJWT } = await import("jose");
@@ -154,7 +145,6 @@ export const authOptions: AuthOptions = {
         });
       } catch (err) {
         console.error("[auth] Failed to complete signup:", err);
-        // Non-blocking — workspace created lazily on first project creation too
       }
       return true;
     },

@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { AssetsView, type DashboardAsset } from "@/components/dashboard/AssetsView";
 import { ProjectsView } from "@/components/dashboard/ProjectsView";
+import { SettingsView } from "@/components/dashboard/SettingsView";
 import { ROUTES } from "@/lib/routes";
 
-type NavView = "dashboard" | "projects";
+type NavView = "dashboard" | "projects" | "assets" | "settings";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -20,6 +22,7 @@ export default function DashboardPage() {
 
   // API States
   const [projects, setProjects] = useState<any[]>([]);
+  const [assets, setAssets] = useState<DashboardAsset[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [runs, setRuns] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -57,14 +60,16 @@ export default function DashboardPage() {
     setLoadingData(true);
     setApiError(null);
     try {
-      const [projectsData, statsData, runsData] = await Promise.all([
+      const [projectsData, statsData, runsData, assetsData] = await Promise.all([
         apiFetch<any[]>("/api/projects", { accessToken }),
         apiFetch<any>("/api/dashboard/stats", { accessToken }),
         apiFetch<any[]>("/api/dashboard/runs", { accessToken }),
+        apiFetch<DashboardAsset[]>("/api/dashboard/assets", { accessToken }),
       ]);
       setProjects(projectsData || []);
       setStats(statsData || null);
       setRuns(runsData || []);
+      setAssets(assetsData || []);
     } catch (err: any) {
       console.error("[Dashboard] Failed to fetch data:", err);
       setApiError(err.detail || "Cannot reach the backend — make sure it is running on port 8000.");
@@ -412,9 +417,16 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-[20px] shrink-0">folder_copy</span>
               {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">Projects</span>}
             </button>
+            <button
+              type="button"
+              onClick={() => goToView("assets")}
+              className={`w-full ${navItemClass(activeNav === "assets")}`}
+            >
+              <span className="material-symbols-outlined text-[20px] shrink-0">inventory_2</span>
+              {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">Assets</span>}
+            </button>
             {[
               { icon: "bolt", label: "AI Workspace" },
-              { icon: "inventory_2", label: "Assets" },
               { icon: "group", label: "Team" },
               { icon: "insights", label: "Analytics" },
             ].map(({ icon, label }) => (
@@ -441,29 +453,42 @@ export default function DashboardPage() {
 
         {/* Bottom user section */}
         <div className="p-3 border-t border-white/[0.05] space-y-1">
-          {[{ icon: "settings", label: "Settings" }, { icon: "help", label: "Help Center" }].map(({ icon, label }) => (
-            <Link
-              key={label}
-              href="#"
-              onClick={closeMobileSidebar}
-              className={`flex items-center gap-3 text-[#7C869A] hover:bg-white/5 hover:text-[#F7F8FC] rounded-xl transition-colors text-sm ${sidebarCollapsed ? "justify-center py-2.5 px-0" : "px-4 py-2.5"}`}
-            >
-              <span className="material-symbols-outlined text-[20px] shrink-0">{icon}</span>
-              {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">{label}</span>}
-            </Link>
-          ))}
+          <button
+            type="button"
+            onClick={() => goToView("settings")}
+            className={`w-full ${navItemClass(activeNav === "settings")}`}
+          >
+            <span className="material-symbols-outlined text-[20px] shrink-0">settings</span>
+            {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">Settings</span>}
+          </button>
+          <Link
+            href="#"
+            onClick={closeMobileSidebar}
+            title="Coming soon"
+            className={`flex items-center gap-3 text-[#7C869A] hover:bg-white/5 hover:text-[#F7F8FC] rounded-xl transition-colors text-sm opacity-60 ${sidebarCollapsed ? "justify-center py-2.5 px-0" : "px-4 py-2.5"}`}
+          >
+            <span className="material-symbols-outlined text-[20px] shrink-0">help</span>
+            {!sidebarCollapsed && <span className="fade-text whitespace-nowrap">Help Center</span>}
+          </Link>
 
           {/* User profile & Logout */}
           <div className={`mt-4 p-2 bg-white/5 rounded-xl flex items-center gap-3 border border-white/5 overflow-hidden ${sidebarCollapsed ? "justify-center" : ""}`}>
-            <div className="w-8 h-8 rounded-lg bg-[#aec6ff]/10 text-[#aec6ff] flex items-center justify-center text-xs font-bold shrink-0">
-              {initials}
-            </div>
-            {!sidebarCollapsed && (
-              <div className="flex-1 min-w-0 fade-text">
-                <p className="text-xs font-bold truncate">{session?.user?.name || session?.user?.email || "User"}</p>
-                <p className="text-[10px] text-[#7C869A] truncate">Admin Plan</p>
+            <button
+              type="button"
+              onClick={() => goToView("settings")}
+              title="Open settings"
+              className={`flex items-center gap-3 min-w-0 ${sidebarCollapsed ? "" : "flex-1"}`}
+            >
+              <div className="w-8 h-8 rounded-lg bg-[#aec6ff]/10 text-[#aec6ff] flex items-center justify-center text-xs font-bold shrink-0">
+                {initials}
               </div>
-            )}
+              {!sidebarCollapsed && (
+                <div className="flex-1 min-w-0 fade-text text-left">
+                  <p className="text-xs font-bold truncate">{session?.user?.name || session?.user?.email || "User"}</p>
+                  <p className="text-[10px] text-[#7C869A] truncate">Settings</p>
+                </div>
+              )}
+            </button>
             {!sidebarCollapsed && (
               <button
                 onClick={() => signOut({ callbackUrl: ROUTES.home })}
@@ -505,7 +530,13 @@ export default function DashboardPage() {
                 </button>
                 <span className="material-symbols-outlined text-xs">chevron_right</span>
                 <span className="text-[#F7F8FC] font-medium">
-                  {activeNav === "projects" ? "Projects" : "Control Center"}
+                  {activeNav === "projects"
+                    ? "Projects"
+                    : activeNav === "assets"
+                      ? "Assets"
+                      : activeNav === "settings"
+                        ? "Settings"
+                        : "Control Center"}
                 </span>
               </div>
             </div>
@@ -565,6 +596,23 @@ export default function DashboardPage() {
               onDelete={handleDeleteProject}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
+            />
+          ) : activeNav === "assets" ? (
+            <AssetsView
+              assets={assets}
+              loading={loadingData}
+              onRefresh={fetchData}
+              onCreateProject={() => setModalOpen(true)}
+            />
+          ) : activeNav === "settings" ? (
+            <SettingsView
+              accessToken={accessToken}
+              sessionName={session?.user?.name}
+              sessionEmail={session?.user?.email}
+              sessionImage={session?.user?.image}
+              initials={initials}
+              projectCount={stats?.total_projects ?? projects.length}
+              reportCount={stats?.total_reports ?? assets.length}
             />
           ) : (
           <>
@@ -901,7 +949,18 @@ export default function DashboardPage() {
                   {/* Recent Generated Artifacts */}
                   {stats?.recent_reports?.length > 0 && (
                     <div>
-                      <h4 className="text-[10px] font-bold text-[#7C869A] uppercase tracking-widest mb-4">Recent Reports</h4>
+                      <div className="flex items-center justify-between mb-4 gap-2">
+                        <h4 className="text-[10px] font-bold text-[#7C869A] uppercase tracking-widest">
+                          Recent Reports
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => goToView("assets")}
+                          className="text-[10px] font-bold uppercase tracking-widest text-[#aec6ff] hover:underline underline-offset-4"
+                        >
+                          All assets
+                        </button>
+                      </div>
                       <div className="space-y-4">
                         {stats.recent_reports.map((rep: any) => (
                           <Link
@@ -1108,11 +1167,41 @@ export default function DashboardPage() {
         >
           <span className="material-symbols-outlined">add</span>
         </button>
-        <button type="button" aria-label="Team" className="text-[#7C869A] opacity-50" title="Coming soon">
-          <span className="material-symbols-outlined">group</span>
+        <button
+          type="button"
+          aria-label="Assets"
+          aria-current={activeNav === "assets" ? "page" : undefined}
+          onClick={() => goToView("assets")}
+          className={activeNav === "assets" ? "text-[#aec6ff]" : "text-[#7C869A]"}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={
+              activeNav === "assets"
+                ? { fontVariationSettings: "'FILL' 1" }
+                : undefined
+            }
+          >
+            inventory_2
+          </span>
         </button>
-        <button type="button" aria-label="Settings" className="text-[#7C869A] opacity-50" title="Coming soon">
-          <span className="material-symbols-outlined">settings</span>
+        <button
+          type="button"
+          aria-label="Settings"
+          aria-current={activeNav === "settings" ? "page" : undefined}
+          onClick={() => goToView("settings")}
+          className={activeNav === "settings" ? "text-[#aec6ff]" : "text-[#7C869A]"}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={
+              activeNav === "settings"
+                ? { fontVariationSettings: "'FILL' 1" }
+                : undefined
+            }
+          >
+            settings
+          </span>
         </button>
       </nav>
     </div>

@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "frontend/app/(auth)/login/page.tsx": {
-    "mtime": 1783974669.7019026,
-    "ast_hash": "917c3c2d03170ef2d4864b407ff1a136",
+    "mtime": 1783976127.7965996,
+    "ast_hash": "449b64fe5b814e674dced73c3926ba42",
     "semantic_hash": ""
   },
   "frontend/app/(root)/layout.tsx": {
@@ -105,8 +105,8 @@
     "semantic_hash": "e04ce5251d6b0dd04020988126c905e9"
   },
   "frontend/lib/auth.ts": {
-    "mtime": 1783974654.763418,
-    "ast_hash": "c44e0fc6b87def474981a08e6d075050",
+    "mtime": 1783975529.178127,
+    "ast_hash": "67ae1604a10a6b53d10a084373b792bd",
     "semantic_hash": ""
   },
   "frontend/lib/mongodb.ts": {
@@ -120,8 +120,8 @@
     "semantic_hash": "5a6fd53fdcf2be529e9cc0b718fde352"
   },
   "frontend/package.json": {
-    "mtime": 1783880891.052839,
-    "ast_hash": "e98a1f497dcf2e91c22cd586e05f0a43",
+    "mtime": 1783975512.4835846,
+    "ast_hash": "7576f5b85b42d50ca47e5194d7ca2465",
     "semantic_hash": ""
   },
   "frontend/types/next-auth.d.ts": {
@@ -150,8 +150,8 @@
     "semantic_hash": ""
   },
   "backend/app/routes/auth.py": {
-    "mtime": 1783964061.844227,
-    "ast_hash": "9cd5a25d718997acad829f0d5ae1df54",
+    "mtime": 1783975270.1393363,
+    "ast_hash": "9006b6274541458cda3104ad0011abe5",
     "semantic_hash": ""
   },
   "backend/app/routes/chat.py": {
@@ -190,8 +190,8 @@
     "semantic_hash": ""
   },
   "frontend/app/dashboard/page.tsx": {
-    "mtime": 1783975056.3880167,
-    "ast_hash": "28f68b700471529651b7cec50f357dd0",
+    "mtime": 1783975327.6146889,
+    "ast_hash": "c983bde9de44a397cd606497c6d471e8",
     "semantic_hash": ""
   },
   "frontend/app/projects/[id]/chat/page.tsx": {
@@ -240,8 +240,8 @@
     "semantic_hash": ""
   },
   "backend/app/routes/dashboard.py": {
-    "mtime": 1783964075.211605,
-    "ast_hash": "8827e75757358acdd54b1f3b00800939",
+    "mtime": 1783975135.1312335,
+    "ast_hash": "157d9e76b88b663c93afdcf84eca96ee",
     "semantic_hash": ""
   },
   "frontend/components/ui/icons.tsx": {
@@ -260,8 +260,8 @@
     "semantic_hash": ""
   },
   "frontend/proxy.ts": {
-    "mtime": 1783974650.1125772,
-    "ast_hash": "8a271b1999609472ce4b56201fcb25d4",
+    "mtime": 1783976122.5787585,
+    "ast_hash": "3dbea8b059f44decd3c8ece87d796cb5",
     "semantic_hash": ""
   },
   "frontend/components/landing/footer.tsx": {
@@ -435,13 +435,88 @@
     "semantic_hash": ""
   },
   "frontend/lib/routes.ts": {
-    "mtime": 1783974647.988124,
-    "ast_hash": "7b25e5c102cdda84002e973284887cd1",
+    "mtime": 1783976121.843201,
+    "ast_hash": "6b3327402d7a001e0163819ea523942b",
     "semantic_hash": ""
   },
   "frontend/components/dashboard/ProjectsView.tsx": {
     "mtime": 1783974875.9772046,
     "ast_hash": "9235ad2e1f3adcf564e6a747fb40ecb1",
+    "semantic_hash": ""
+  },
+  "frontend/components/dashboard/AssetsView.tsx": {
+    "mtime": 1783975172.252309,
+    "ast_hash": "783743c4be4d23eeac78f08cb8330907",
+    "semantic_hash": ""
+  },
+  "frontend/components/dashboard/SettingsView.tsx": {
+    "mtime": 1783976134.2421348,
+    "ast_hash": "8ab06fafef74b888c17c26653bcc6161",
+    "semantic_hash": ""
+  },
+  "frontend/app/(auth)/set-password/page.tsx": {
+    "mtime": 1783975577.0086107,
+    "ast_hash": "5fd097c4cfc022e71bef34193d4ad8bc",
+    "semantic_hash": ""
+  },
+  "frontend/app/(auth)/signup/page.tsx": {
+    "mtime": 1783975627.6705697,
+    "ast_hash": "2fa2293cec53f165a98cdaa52a3bb8e9",
+    "semantic_hash": ""
+  },
+  "frontend/app/api/auth/set-password/route.ts": {
+    "mtime": 1783975528.876021,
+    "ast_hash": "79dc7b54ba587ff61b32ba55fdce2ab8",
+    "semantic_hash": ""
+  },
+  "frontend/app/api/auth/signup/route.ts": {
+    "mtime": 1783975627.7066364,
+    "ast_hash": "7135612f1c11aa44dba012e8e588c88f",
+    "semantic_hash": ""
+  },
+  "frontend/app/api/auth/verify-setup-token/route.ts": {
+    "mtime": 1783975522.5046725,
+    "ast_hash": "788b14fdcceae4e69f68573a7452f8f9",
+    "semantic_hash": ""
+  },
+  "frontend/components/auth/AuthShell.tsx": {
+    "mtime": 1783975545.4804502,
+    "ast_hash": "93247c76e99870ed9d09d15b9f8d8097",
+    "semantic_hash": ""
+  },
+  "frontend/lib/mail.ts": {
+    "mtime": 1783976094.4647024,
+    "ast_hash": "6af99af79bf011abdeecefa757d95ffc",
+    "semantic_hash": ""
+  },
+  "frontend/lib/password-auth.ts": {
+    "mtime": 1783976083.1346948,
+    "ast_hash": "a55d1670fb7262da30f39463b5a3a359",
+    "semantic_hash": ""
+  },
+  "frontend/lib/password-crypto.ts": {
+    "mtime": 1783976091.3342266,
+    "ast_hash": "cf8fc8ee27048d38b9b8778f6611ead0",
+    "semantic_hash": ""
+  },
+  "frontend/app/(auth)/forgot-password/page.tsx": {
+    "mtime": 1783976120.9678137,
+    "ast_hash": "80eb5e2390f143102fd3d34d064f0f81",
+    "semantic_hash": ""
+  },
+  "frontend/app/api/auth/password-otp/confirm/route.ts": {
+    "mtime": 1783976099.848881,
+    "ast_hash": "19c556a660686a3d97df21f3bab92aa9",
+    "semantic_hash": ""
+  },
+  "frontend/app/api/auth/password-otp/request/route.ts": {
+    "mtime": 1783976099.30002,
+    "ast_hash": "a3070caae3851d6979b0314bdd410d8d",
+    "semantic_hash": ""
+  },
+  "frontend/components/auth/ChangePasswordOtpForm.tsx": {
+    "mtime": 1783976119.4963188,
+    "ast_hash": "03d27b1b3fa02096d769f6d1ce5201fe",
     "semantic_hash": ""
   }
 }
