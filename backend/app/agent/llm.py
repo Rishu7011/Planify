@@ -33,6 +33,10 @@ ACTIVE_PROVIDER = os.getenv("LLM_PROVIDER", "groq").lower().strip()
 # Groq
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL   = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_API_KEYS_STR = os.getenv("GROQ_API_KEYS", "")
+GROQ_API_KEYS = [k.strip() for k in GROQ_API_KEYS_STR.split(",") if k.strip()]
+if not GROQ_API_KEYS and GROQ_API_KEY:
+    GROQ_API_KEYS = [GROQ_API_KEY]
 
 # Ollama
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -64,17 +68,26 @@ def get_base_llm(temperature: float = 0.0):
     """Returns a cached LLM instance for the configured provider."""
 
     if ACTIVE_PROVIDER == "groq":
-        if not GROQ_API_KEY:
+        if not GROQ_API_KEYS:
             raise RuntimeError(
-                "LLM_PROVIDER=groq but GROQ_API_KEY is not set in .env"
+                "LLM_PROVIDER=groq but no keys are configured in GROQ_API_KEYS or GROQ_API_KEY in .env"
             )
         from langchain_groq import ChatGroq
-        print(f"[llm] Groq — model: {GROQ_MODEL}")
-        return ChatGroq(
-            api_key=GROQ_API_KEY,
-            model=GROQ_MODEL,
-            temperature=temperature,
-        )
+        models = [
+            ChatGroq(
+                api_key=key,
+                model=GROQ_MODEL,
+                temperature=temperature,
+            )
+            for key in GROQ_API_KEYS
+        ]
+        primary_model = models[0]
+        if len(models) > 1:
+            print(f"[llm] Groq — model: {GROQ_MODEL} with {len(models)} API keys rotating.")
+            return primary_model.with_fallbacks(models[1:])
+        else:
+            print(f"[llm] Groq — model: {GROQ_MODEL} with single API key.")
+            return primary_model
 
     if ACTIVE_PROVIDER == "gemini":
         if not GOOGLE_API_KEY:
@@ -118,6 +131,21 @@ def get_structured_llm(schema: type, temperature: float = 0.0):
     Wrapped with `.with_retry(stop_after_attempt=3)` to handle transient
     server hiccups automatically.
     """
+    if ACTIVE_PROVIDER == "groq" and len(GROQ_API_KEYS) > 1:
+        from langchain_groq import ChatGroq
+        models = [
+            ChatGroq(
+                api_key=key,
+                model=GROQ_MODEL,
+                temperature=temperature,
+            )
+            for key in GROQ_API_KEYS
+        ]
+        structured_models = [m.with_structured_output(schema) for m in models]
+        primary_structured = structured_models[0]
+        fallback_structured = primary_structured.with_fallbacks(structured_models[1:])
+        return fallback_structured.with_retry(stop_after_attempt=3)
+
     llm = get_base_llm(temperature=temperature)
     structured = llm.with_structured_output(schema)
     return structured.with_retry(stop_after_attempt=3)

@@ -23,12 +23,222 @@
     {
       "label": "page.tsx",
       "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page",
+      "community": 42,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "Message",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_message",
+      "community": 42,
+      "norm_label": "message"
+    },
+    {
+      "label": "ChatHistoryResponse",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_chathistoryresponse",
+      "community": 42,
+      "norm_label": "chathistoryresponse"
+    },
+    {
+      "label": "MemoryItem",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L62",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_memoryitem",
+      "community": 42,
+      "norm_label": "memoryitem"
+    },
+    {
+      "label": "WorkflowEventType",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L70",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_workfloweventtype",
+      "community": 42,
+      "norm_label": "workfloweventtype"
+    },
+    {
+      "label": "WorkflowEvent",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L85",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_workflowevent",
+      "community": 42,
+      "norm_label": "workflowevent"
+    },
+    {
+      "label": "isWorkflowEvent()",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L98",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_isworkflowevent",
+      "community": 42,
+      "norm_label": "isworkflowevent()"
+    },
+    {
+      "label": "getMemoryTone()",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L108",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_getmemorytone",
+      "community": 42,
+      "norm_label": "getmemorytone()"
+    },
+    {
+      "label": "createStreamingMessage()",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L127",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_createstreamingmessage",
+      "community": 42,
+      "norm_label": "createstreamingmessage()"
+    },
+    {
+      "label": "ChatPage()",
+      "file_type": "code",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L142",
+      "_origin": "ast",
+      "id": "frontend_app_projects_id_chat_page_chatpage",
+      "community": 42,
+      "norm_label": "chatpage()"
+    },
+    {
+      "label": "ChatComposer.tsx",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatcomposer",
+      "community": 42,
+      "norm_label": "chatcomposer.tsx"
+    },
+    {
+      "label": "PendingAttachment",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatcomposer_pendingattachment",
+      "community": 42,
+      "norm_label": "pendingattachment"
+    },
+    {
+      "label": "Props",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatcomposer_props",
+      "community": 42,
+      "norm_label": "props"
+    },
+    {
+      "label": "formatBytes()",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatcomposer_formatbytes",
+      "community": 42,
+      "norm_label": "formatbytes()"
+    },
+    {
+      "label": "ChatComposer()",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatcomposer_chatcomposer",
+      "community": 42,
+      "norm_label": "chatcomposer()"
+    },
+    {
+      "label": "ChatMessage.tsx",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatmessage",
+      "community": 42,
+      "norm_label": "chatmessage.tsx"
+    },
+    {
+      "label": "ChatMessageData",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatmessage_chatmessagedata",
+      "community": 42,
+      "norm_label": "chatmessagedata"
+    },
+    {
+      "label": "AgentMeta",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatmessage_agentmeta",
+      "community": 42,
+      "norm_label": "agentmeta"
+    },
+    {
+      "label": "Props",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatmessage_props",
+      "community": 42,
+      "norm_label": "props"
+    },
+    {
+      "label": "formatBytes()",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L41",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatmessage_formatbytes",
+      "community": 42,
+      "norm_label": "formatbytes()"
+    },
+    {
+      "label": "ChatMessage()",
+      "file_type": "code",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "frontend_components_workspace_chat_chatmessage_chatmessage",
+      "community": 42,
+      "norm_label": "chatmessage()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
       "source_file": "frontend/app/(auth)/signup/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "frontend_app_auth_signup_page",
       "community": 57,
-      "norm_label": "page.tsx"
+      "norm_label": "page.tsx",
+      "id": "frontend_app_auth_signup_page"
     },
     {
       "label": "SignupPage()",
@@ -36,9 +246,9 @@
       "source_file": "frontend/app/(auth)/signup/page.tsx",
       "source_location": "L15",
       "_origin": "ast",
-      "id": "frontend_app_auth_signup_page_signuppage",
       "community": 57,
-      "norm_label": "signuppage()"
+      "norm_label": "signuppage()",
+      "id": "frontend_app_auth_signup_page_signuppage"
     },
     {
       "label": "page.tsx",
@@ -149,106 +359,6 @@
       "community": 15,
       "norm_label": "dashboardpage()",
       "id": "frontend_app_dashboard_page_dashboardpage"
-    },
-    {
-      "label": "page.tsx",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "page.tsx",
-      "id": "frontend_app_projects_id_chat_page"
-    },
-    {
-      "label": "Message",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L38",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "message",
-      "id": "frontend_app_projects_id_chat_page_message"
-    },
-    {
-      "label": "ChatHistoryResponse",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L57",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "chathistoryresponse",
-      "id": "frontend_app_projects_id_chat_page_chathistoryresponse"
-    },
-    {
-      "label": "MemoryItem",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L62",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "memoryitem",
-      "id": "frontend_app_projects_id_chat_page_memoryitem"
-    },
-    {
-      "label": "WorkflowEventType",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L70",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "workfloweventtype",
-      "id": "frontend_app_projects_id_chat_page_workfloweventtype"
-    },
-    {
-      "label": "WorkflowEvent",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L85",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "workflowevent",
-      "id": "frontend_app_projects_id_chat_page_workflowevent"
-    },
-    {
-      "label": "isWorkflowEvent()",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L98",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "isworkflowevent()",
-      "id": "frontend_app_projects_id_chat_page_isworkflowevent"
-    },
-    {
-      "label": "getMemoryTone()",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L108",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "getmemorytone()",
-      "id": "frontend_app_projects_id_chat_page_getmemorytone"
-    },
-    {
-      "label": "createStreamingMessage()",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L127",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "createstreamingmessage()",
-      "id": "frontend_app_projects_id_chat_page_createstreamingmessage"
-    },
-    {
-      "label": "ChatPage()",
-      "file_type": "code",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L142",
-      "_origin": "ast",
-      "community": 42,
-      "norm_label": "chatpage()",
-      "id": "frontend_app_projects_id_chat_page_chatpage"
     },
     {
       "label": "page.tsx",
@@ -4001,116 +4111,6 @@
       "id": "backend_app_utils_objectid_rationale_1"
     },
     {
-      "label": "ChatComposer.tsx",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 55,
-      "norm_label": "chatcomposer.tsx",
-      "id": "frontend_components_workspace_chat_chatcomposer"
-    },
-    {
-      "label": "PendingAttachment",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L6",
-      "_origin": "ast",
-      "community": 55,
-      "norm_label": "pendingattachment",
-      "id": "frontend_components_workspace_chat_chatcomposer_pendingattachment"
-    },
-    {
-      "label": "Props",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L12",
-      "_origin": "ast",
-      "community": 55,
-      "norm_label": "props",
-      "id": "frontend_components_workspace_chat_chatcomposer_props"
-    },
-    {
-      "label": "formatBytes()",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L30",
-      "_origin": "ast",
-      "community": 55,
-      "norm_label": "formatbytes()",
-      "id": "frontend_components_workspace_chat_chatcomposer_formatbytes"
-    },
-    {
-      "label": "ChatComposer()",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L36",
-      "_origin": "ast",
-      "community": 55,
-      "norm_label": "chatcomposer()",
-      "id": "frontend_components_workspace_chat_chatcomposer_chatcomposer"
-    },
-    {
-      "label": "ChatMessage.tsx",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 39,
-      "norm_label": "chatmessage.tsx",
-      "id": "frontend_components_workspace_chat_chatmessage"
-    },
-    {
-      "label": "ChatMessageData",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L8",
-      "_origin": "ast",
-      "community": 39,
-      "norm_label": "chatmessagedata",
-      "id": "frontend_components_workspace_chat_chatmessage_chatmessagedata"
-    },
-    {
-      "label": "AgentMeta",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L27",
-      "_origin": "ast",
-      "community": 39,
-      "norm_label": "agentmeta",
-      "id": "frontend_components_workspace_chat_chatmessage_agentmeta"
-    },
-    {
-      "label": "Props",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L33",
-      "_origin": "ast",
-      "community": 39,
-      "norm_label": "props",
-      "id": "frontend_components_workspace_chat_chatmessage_props"
-    },
-    {
-      "label": "formatBytes()",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L41",
-      "_origin": "ast",
-      "community": 39,
-      "norm_label": "formatbytes()",
-      "id": "frontend_components_workspace_chat_chatmessage_formatbytes"
-    },
-    {
-      "label": "ChatMessage()",
-      "file_type": "code",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L48",
-      "_origin": "ast",
-      "community": 39,
-      "norm_label": "chatmessage()",
-      "id": "frontend_components_workspace_chat_chatmessage_chatmessage"
-    },
-    {
       "label": "api.ts",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
@@ -7124,12 +7124,302 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_chathistoryresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L142",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_chatpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L127",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_createstreamingmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L108",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_getmemorytone",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L98",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_isworkflowevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_memoryitem",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_message",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_workflowevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_app_projects_id_chat_page_workfloweventtype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_components_workspace_chat_chatcomposer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_components_workspace_chat_chatcomposer_chatcomposer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_components_workspace_chat_chatcomposer_pendingattachment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_components_workspace_chat_chatmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page",
+      "target": "frontend_components_workspace_chat_chatmessage_chatmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L647",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page_chatpage",
+      "target": "frontend_app_projects_id_chat_page_isworkflowevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L1298",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page_chatpage",
+      "target": "frontend_app_projects_id_chat_page_getmemorytone",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
+      "source_location": "L286",
+      "weight": 1.0,
+      "source": "frontend_app_projects_id_chat_page_chatpage",
+      "target": "frontend_app_projects_id_chat_page_createstreamingmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatcomposer",
+      "target": "frontend_components_workspace_chat_chatcomposer_chatcomposer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatcomposer",
+      "target": "frontend_components_workspace_chat_chatcomposer_formatbytes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatcomposer",
+      "target": "frontend_components_workspace_chat_chatcomposer_pendingattachment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatcomposer",
+      "target": "frontend_components_workspace_chat_chatcomposer_props",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
+      "source_location": "L126",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatcomposer_chatcomposer",
+      "target": "frontend_components_workspace_chat_chatcomposer_formatbytes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatmessage",
+      "target": "frontend_components_workspace_chat_chatmessage_agentmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatmessage",
+      "target": "frontend_components_workspace_chat_chatmessage_chatmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatmessage",
+      "target": "frontend_components_workspace_chat_chatmessage_chatmessagedata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatmessage",
+      "target": "frontend_components_workspace_chat_chatmessage_formatbytes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatmessage",
+      "target": "frontend_components_workspace_chat_chatmessage_props",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
+      "source_location": "L113",
+      "weight": 1.0,
+      "source": "frontend_components_workspace_chat_chatmessage_chatmessage",
+      "target": "frontend_components_workspace_chat_chatmessage_formatbytes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "frontend/app/(auth)/signup/page.tsx",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_app_auth_signup_page",
-      "target": "frontend_app_auth_signup_page_signuppage",
-      "confidence_score": 1.0
+      "target": "frontend_app_auth_signup_page_signuppage"
     },
     {
       "relation": "contains",
@@ -7365,129 +7655,6 @@
       "confidence_score": 1.0,
       "source": "frontend_app_dashboard_page",
       "target": "frontend_components_dashboard_settingsview_settingsview"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L57",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_chathistoryresponse"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L142",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_chatpage"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L127",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_createstreamingmessage"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L108",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_getmemorytone"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L98",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_isworkflowevent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L62",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_memoryitem"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L38",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_message"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L85",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_workflowevent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L70",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page",
-      "target": "frontend_app_projects_id_chat_page_workfloweventtype"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L647",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page_chatpage",
-      "target": "frontend_app_projects_id_chat_page_isworkflowevent"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L1298",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page_chatpage",
-      "target": "frontend_app_projects_id_chat_page_getmemorytone"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/app/projects/[id]/chat/page.tsx",
-      "source_location": "L286",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_app_projects_id_chat_page_chatpage",
-      "target": "frontend_app_projects_id_chat_page_createstreamingmessage"
     },
     {
       "relation": "contains",
@@ -14428,118 +14595,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatcomposer",
-      "target": "frontend_components_workspace_chat_chatcomposer_chatcomposer"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatcomposer",
-      "target": "frontend_components_workspace_chat_chatcomposer_formatbytes"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatcomposer",
-      "target": "frontend_components_workspace_chat_chatcomposer_pendingattachment"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatcomposer",
-      "target": "frontend_components_workspace_chat_chatcomposer_props"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatComposer.tsx",
-      "source_location": "L126",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatcomposer_chatcomposer",
-      "target": "frontend_components_workspace_chat_chatcomposer_formatbytes"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L27",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatmessage",
-      "target": "frontend_components_workspace_chat_chatmessage_agentmeta"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L48",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatmessage",
-      "target": "frontend_components_workspace_chat_chatmessage_chatmessage"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatmessage",
-      "target": "frontend_components_workspace_chat_chatmessage_chatmessagedata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L41",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatmessage",
-      "target": "frontend_components_workspace_chat_chatmessage_formatbytes"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatmessage",
-      "target": "frontend_components_workspace_chat_chatmessage_props"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/components/workspace/chat/ChatMessage.tsx",
-      "source_location": "L113",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "frontend_components_workspace_chat_chatmessage_chatmessage",
-      "target": "frontend_components_workspace_chat_chatmessage_formatbytes"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
       "source_location": "L84",
       "weight": 1.0,
@@ -18328,5 +18383,5 @@
       "source_file": "frontend/AGENTS.md"
     }
   ],
-  "built_at_commit": "10d4a78c7079b85a0692e121f210e940a0b7ef37"
+  "built_at_commit": "ac48399926082ea48838e66d320c1a1ecefb5908"
 }

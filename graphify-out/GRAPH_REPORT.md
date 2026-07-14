@@ -5,12 +5,12 @@
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 708 nodes · 1066 edges · 66 communities (42 shown, 24 thin omitted)
+- 708 nodes · 1071 edges · 64 communities (40 shown, 24 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 104 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `10d4a78c`
+- Built from commit: `ac483999`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -48,7 +48,6 @@
 - get_llm
 - prd_agent
 - roadmap_agent
-- ChatMessage.tsx
 - page.tsx
 - mongodb.ts
 - __init__.py
@@ -61,7 +60,6 @@
 - constants.ts
 - providers.tsx
 - useChatScroll.ts
-- ProjectContext
 - agents.ts
 - project_context.py
 - check-db.js
@@ -101,7 +99,7 @@
 ## Hyperedges (group relationships)
 - **Next.js Breaking Change Surfaces** — frontend_agents_nextjs_apis, frontend_agents_nextjs_conventions, frontend_agents_nextjs_file_structure, frontend_agents_deprecation_notices [EXTRACTED 1.00]
 
-## Communities (66 total, 24 thin omitted)
+## Communities (64 total, 24 thin omitted)
 
 ### Community 0 - "Frontend Dependencies"
 Cohesion: 0.05
@@ -191,25 +189,17 @@ Nodes (3): Button(), buttonVariants, cn()
 Cohesion: 0.33
 Nodes (8): api, ApiError, apiFetch(), apiStream(), apiUpload(), formatApiError(), isApiError(), readErrorDetail()
 
-### Community 39 - "ChatMessage.tsx"
-Cohesion: 0.40
-Nodes (5): AgentMeta, ChatMessage(), ChatMessageData, formatBytes(), Props
-
 ### Community 40 - "page.tsx"
 Cohesion: 0.40
 Nodes (3): Comment, SAMPLE_COMMENTS, Version
 
 ### Community 42 - "__init__.py"
-Cohesion: 0.27
-Nodes (9): ChatHistoryResponse, ChatPage(), createStreamingMessage(), getMemoryTone(), isWorkflowEvent(), MemoryItem, Message, WorkflowEvent (+1 more)
+Cohesion: 0.13
+Nodes (18): ChatHistoryResponse, ChatPage(), createStreamingMessage(), getMemoryTone(), isWorkflowEvent(), MemoryItem, Message, WorkflowEvent (+10 more)
 
 ### Community 51 - "constants.ts"
 Cohesion: 0.21
 Nodes (5): FADE_UP, MESSAGE_SPRING, Props, Props, Props
-
-### Community 55 - "ProjectContext"
-Cohesion: 0.50
-Nodes (4): ChatComposer(), formatBytes(), PendingAttachment, Props
 
 ### Community 56 - "agents.ts"
 Cohesion: 0.20
@@ -228,7 +218,7 @@ Cohesion: 0.28
 Nodes (8): _active_model_name(), get_base_llm(), get_provider_info(), get_structured_llm(), llm.py ------ Multi-provider LLM instantiation for Planify agents.  Switch provi, Returns a structured-output chain backed by the active provider.      Wrapped wi, Returns provider metadata for logging / health checks., Returns a cached LLM instance for the configured provider.
 
 ## Knowledge Gaps
-- **122 isolated node(s):** `NavView`, `Message`, `ChatHistoryResponse`, `MemoryItem`, `WorkflowEventType` (+117 more)
+- **121 isolated node(s):** `Message`, `ChatHistoryResponse`, `MemoryItem`, `WorkflowEventType`, `WorkflowEvent` (+116 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **24 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 

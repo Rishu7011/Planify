@@ -8,11 +8,12 @@ and generated reports to MongoDB.
 from __future__ import annotations
 
 import asyncio
+import contextvars
 import json
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Callable, Awaitable
 
 from starlette.requests import Request
 
@@ -32,6 +33,11 @@ MAX_HISTORY = 20
 
 # Serialize concurrent streams per project (shared LangGraph thread_id).
 _project_locks: dict[str, asyncio.Lock] = {}
+
+_active_callbacks: dict[str, Callable[[str], None]] = {}
+
+def get_active_callback(project_id: str) -> Callable[[str], None] | None:
+    return _active_callbacks.get(project_id)
 
 
 def _lock_for_project(project_id: str) -> asyncio.Lock:
@@ -377,7 +383,7 @@ async def _emit_content_deltas(
     text: str,
     *,
     already_streamed: int,
-    chunk_size: int = 24,
+    chunk_size: int = 6,
 ) -> AsyncGenerator[tuple[str, int], None]:
     """Yield SSE payloads for newly available assistant text, then the new offset."""
     if len(text) <= already_streamed:
@@ -388,7 +394,7 @@ async def _emit_content_deltas(
         delta = remainder[i : i + chunk_size]
         already_streamed += len(delta)
         yield _sse({"type": "content_delta", "delta": delta}), already_streamed
-        await asyncio.sleep(0)
+        await asyncio.sleep(0.015)
 
 
 async def run_workflow_and_stream(
@@ -513,100 +519,139 @@ async def _run_workflow_and_stream_locked(
     routing_decision: str | None = None
     cancelled = False
 
+    queue = asyncio.Queue()
+    loop = asyncio.get_running_loop()
+
+    def stream_callback(token: str):
+        loop.call_soon_threadsafe(queue.put_nowait, ("token", token))
+
+    _active_callbacks[project_id] = stream_callback
+
     try:
         config = {"configurable": {"thread_id": project_id}}
 
-        async for chunk in workflow_graph.astream(state_input, config=config):
+        async def run_graph():
+            try:
+                async for chunk in workflow_graph.astream(state_input, config=config):
+                    await queue.put(("chunk", chunk))
+            except Exception as e:
+                await queue.put(("error", e))
+            finally:
+                await queue.put(("done", None))
+
+        graph_task = asyncio.create_task(run_graph())
+
+        while True:
             if request is not None and await request.is_disconnected():
                 cancelled = True
+                graph_task.cancel()
                 break
 
-            for node_name, state_update in chunk.items():
-                if not isinstance(state_update, dict):
-                    continue
+            try:
+                item_type, val = await asyncio.wait_for(queue.get(), timeout=0.5)
+            except asyncio.TimeoutError:
+                continue
 
-                if "metadata" in state_update:
-                    final_metadata.update(state_update["metadata"])
-                    routing_decision = final_metadata.get("routing_decision", routing_decision)
+            if item_type == "done":
+                break
+            if item_type == "error":
+                raise val
 
-                if "project_context" in state_update and state_update["project_context"]:
-                    final_context = dict(state_update["project_context"])
+            if item_type == "token":
+                if not message_started:
+                    message_started = True
+                    yield _sse({"type": "message_start"})
+                yield _sse({"type": "content_delta", "delta": val})
+            elif item_type == "chunk":
+                for node_name, state_update in val.items():
+                    if not isinstance(state_update, dict):
+                        continue
 
-                ai_text = _extract_ai_content(state_update)
-                if ai_text:
-                    assistant_content = ai_text
-                    if not message_started:
-                        message_started = True
-                        yield _sse({"type": "message_start"})
-                    async for payload, streamed_content_len in _emit_content_deltas(
-                        ai_text,
-                        already_streamed=streamed_content_len,
-                    ):
-                        yield payload
+                    if "metadata" in state_update:
+                        final_metadata.update(state_update["metadata"])
+                        routing_decision = final_metadata.get("routing_decision", routing_decision)
 
-                frontend_agent = _frontend_agent_for_node(
-                    node_name, final_metadata, state_update
-                )
-                last_frontend_agent = frontend_agent
+                    if "project_context" in state_update and state_update["project_context"]:
+                        final_context = dict(state_update["project_context"])
 
-                if node_name not in announced_nodes:
-                    announced_nodes.add(node_name)
-                    agents_executed.append(frontend_agent)
-                    yield _sse({"type": "agent_start", "agent": frontend_agent})
+                    ai_text = _extract_ai_content(state_update)
+                    if ai_text:
+                        assistant_content = ai_text
+                        if not message_started:
+                            message_started = True
+                            yield _sse({"type": "message_start"})
+                        if node_name != "report_generator":
+                            async for payload, streamed_content_len in _emit_content_deltas(
+                                ai_text,
+                                already_streamed=streamed_content_len,
+                            ):
+                                yield payload
+                        else:
+                            streamed_content_len = len(ai_text)
 
-                if node_name == "project_workflow":
-                    needs_clarification = final_metadata.get("needs_clarification", False)
-                    clarification_questions = _extract_clarification_questions(
-                        assistant_content,
-                        final_context,
-                        needs_clarification=needs_clarification,
-                        metadata=final_metadata,
+                    frontend_agent = _frontend_agent_for_node(
+                        node_name, final_metadata, state_update
                     )
+                    last_frontend_agent = frontend_agent
 
-                    if needs_clarification and clarification_questions:
-                        question = clarification_questions[0]
-                        options = _discovery_options_for_question(
-                            question,
-                            clarification_questions[1:4],
-                        )
-                        pending = {"question": question, "options": options}
-                        final_context["pending_discovery"] = pending
-                        await _persist_project_context(db, project_id, final_context)
+                    if node_name not in announced_nodes:
+                        announced_nodes.add(node_name)
+                        agents_executed.append(frontend_agent)
+                        yield _sse({"type": "agent_start", "agent": frontend_agent})
 
-                        yield _sse(
-                            {
-                                "type": "discovery_question",
-                                "question": question,
-                                "options": options,
-                                "acknowledgment": assistant_content,
-                                "message": assistant_content,
-                            }
+                    if node_name == "project_workflow":
+                        needs_clarification = final_metadata.get("needs_clarification", False)
+                        clarification_questions = _extract_clarification_questions(
+                            assistant_content,
+                            final_context,
+                            needs_clarification=needs_clarification,
+                            metadata=final_metadata,
                         )
-                        yield _sse(
-                            {
-                                "type": "clarification",
-                                "questions": clarification_questions,
-                                "message": assistant_content,
-                            }
-                        )
-                    elif not final_metadata.get("discovery_complete", False):
-                        # Clear stale pending_discovery labels from earlier buggy turns.
-                        if final_context.pop("pending_discovery", None) is not None:
+
+                        if needs_clarification and clarification_questions:
+                            question = clarification_questions[0]
+                            options = _discovery_options_for_question(
+                                question,
+                                clarification_questions[1:4],
+                            )
+                            pending = {"question": question, "options": options}
+                            final_context["pending_discovery"] = pending
                             await _persist_project_context(db, project_id, final_context)
-                        yield _sse({"type": "discovery_turn_complete"})
-                    else:
-                        if final_context.pop("pending_discovery", None) is not None:
-                            await _persist_project_context(db, project_id, final_context)
-                        yield _sse({"type": "discovery_complete"})
 
-                if node_name == "report_generator":
-                    report_type = final_metadata.get("last_generated_report")
-                    if report_type:
-                        api_type = AGENT_TO_API_REPORT.get(report_type, report_type.lower())
-                        if api_type not in completed_reports:
-                            completed_reports.append(api_type)
+                            yield _sse(
+                                {
+                                    "type": "discovery_question",
+                                    "question": question,
+                                    "options": options,
+                                    "acknowledgment": assistant_content,
+                                    "message": assistant_content,
+                                }
+                            )
+                            yield _sse(
+                                {
+                                    "type": "clarification",
+                                    "questions": clarification_questions,
+                                    "message": assistant_content,
+                                }
+                            )
+                        elif not final_metadata.get("discovery_complete", False):
+                            # Clear stale pending_discovery labels from earlier buggy turns.
+                            if final_context.pop("pending_discovery", None) is not None:
+                                await _persist_project_context(db, project_id, final_context)
+                            yield _sse({"type": "discovery_turn_complete"})
+                        else:
+                            if final_context.pop("pending_discovery", None) is not None:
+                                await _persist_project_context(db, project_id, final_context)
+                            yield _sse({"type": "discovery_complete"})
 
-                yield _sse({"type": "agent_complete", "agent": frontend_agent})
+                    if node_name == "report_generator":
+                        report_type = final_metadata.get("last_generated_report")
+                        if report_type:
+                            api_type = AGENT_TO_API_REPORT.get(report_type, report_type.lower())
+                            if api_type not in completed_reports:
+                                completed_reports.append(api_type)
+
+                    yield _sse({"type": "agent_complete", "agent": frontend_agent})
 
         if cancelled:
             await db.ai_workflow_runs.update_one(
@@ -721,6 +766,14 @@ async def _run_workflow_and_stream_locked(
             },
         )
         yield _sse({"type": "error", "message": "Workflow failed. Please try again."})
+    finally:
+        _active_callbacks.pop(project_id, None)
+        if "graph_task" in locals() and not graph_task.done():
+            graph_task.cancel()
+            try:
+                await graph_task
+            except asyncio.CancelledError:
+                pass
 
 
 async def _persist_assistant_message(

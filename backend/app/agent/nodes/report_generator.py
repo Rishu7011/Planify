@@ -139,7 +139,11 @@ def report_generator_node(state: WorkflowState) -> dict:
         rag_context = "(No knowledge base results available.)"
 
     print(f"[report_generator] Generating {report_type}…")
-    response = _chain.invoke(
+    from app.services.chat_service import get_active_callback
+    callback = get_active_callback(session_id)
+
+    report_chunks = []
+    for chunk in _chain.stream(
         {
             "report_type": report_type,
             "project_context": context_str,
@@ -147,8 +151,13 @@ def report_generator_node(state: WorkflowState) -> dict:
             "web_intel": web_intel,
             "rag_context": rag_context,
         }
-    )
-    report_doc = response.content
+    ):
+        content_chunk = chunk.content
+        report_chunks.append(content_chunk)
+        if callback and content_chunk:
+            callback(content_chunk)
+
+    report_doc = "".join(report_chunks)
 
     try:
         existing = project_repo.find_by_session(session_id)

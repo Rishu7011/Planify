@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "frontend/app/projects/[id]/chat/page.tsx": {
-    "mtime": 1784052517.0747774,
-    "ast_hash": "53bc6115a7329d655f21c46dadeba3b3",
+    "mtime": 1784053228.6802957,
+    "ast_hash": "68d2d82ce75480f7f2a8dd94f351e87b",
     "semantic_hash": ""
   },
   "frontend/app/projects/[id]/reports/page.tsx": {
@@ -285,8 +285,8 @@
     "semantic_hash": ""
   },
   "frontend/components/workspace/chat/ChatComposer.tsx": {
-    "mtime": 1784025339.119078,
-    "ast_hash": "136ec41e884b8542dec7057900aaf076",
+    "mtime": 1784053271.1354487,
+    "ast_hash": "ed642ffdfda1d6764cf01f7c80bd7e8d",
     "semantic_hash": ""
   },
   "frontend/components/workspace/chat/ChatMarkdown.tsx": {
@@ -295,8 +295,8 @@
     "semantic_hash": ""
   },
   "frontend/components/workspace/chat/ChatMessage.tsx": {
-    "mtime": 1784025120.6222124,
-    "ast_hash": "9b3cbab1bb345fb17c7e66736f255516",
+    "mtime": 1784053200.8397493,
+    "ast_hash": "2db0071d532a3fe7ec7a9f427bf7ba61",
     "semantic_hash": ""
   },
   "frontend/components/workspace/chat/ScrollToBottomButton.tsx": {
