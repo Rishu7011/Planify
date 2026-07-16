@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, type KeyboardEvent } from "react";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { GLASS_PANEL, TRANSITION } from "./constants";
 
 export type PendingAttachment = {
@@ -48,6 +49,30 @@ export function ChatComposer({
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const baseTextRef = useRef("");
+
+  const handleSpeechResult = useCallback(
+    (transcript: string) => {
+      const base = baseTextRef.current;
+      const separator = base ? " " : "";
+      onChange(base + separator + transcript);
+    },
+    [onChange]
+  );
+
+  const { isListening, supported, startListening, stopListening } = useSpeechRecognition({
+    onResult: handleSpeechResult,
+  });
+
+  const toggleListening = useCallback(() => {
+    if (!supported) return;
+    if (!isListening) {
+      baseTextRef.current = value;
+      startListening();
+    } else {
+      stopListening();
+    }
+  }, [supported, isListening, value, startListening, stopListening]);
 
   const adjustHeight = useCallback(() => {
     const el = textareaRef.current;
@@ -180,7 +205,9 @@ export function ChatComposer({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={
-            isGenerating
+            isListening
+              ? "Listening... Speak now."
+              : isGenerating
               ? "Type to interrupt and send a new message…"
               : attachments.length
               ? "Add a note about the PDF(s), or press send…"
@@ -194,10 +221,21 @@ export function ChatComposer({
         <div className="mb-0.5 flex shrink-0 items-center gap-0.5 pr-1">
           <button
             type="button"
-            className="hidden rounded-xl p-2 text-[#7C869A] transition-colors hover:bg-white/[0.04] hover:text-[#F7F8FC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.75_0.12_190)]/40 sm:block"
-            aria-label="Voice input (coming soon)"
-            disabled
-            title="Voice input coming soon"
+            className={`rounded-xl p-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.75_0.12_190)]/40 ${
+              isListening
+                ? "bg-red-500/20 text-red-400 animate-pulse ring-2 ring-red-500/30 shadow-[0_0_12px_rgba(239,68,68,0.2)]"
+                : "text-[#7C869A] hover:bg-white/[0.04] hover:text-[#F7F8FC]"
+            }`}
+            aria-label={isListening ? "Stop voice input" : "Voice input"}
+            title={
+              !supported
+                ? "Voice input not supported in this browser"
+                : isListening
+                ? "Listening... Click to stop"
+                : "Voice input"
+            }
+            disabled={!supported || disabled}
+            onClick={toggleListening}
           >
             <span className="material-symbols-outlined text-[22px]">mic</span>
           </button>
